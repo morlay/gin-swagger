@@ -101,6 +101,10 @@ func (scanner *Scanner) getBasicSchemaFromType(t types.Type) spec.Schema {
 	case *types.Named:
 		namedType := t.(*types.Named)
 		astType := scanner.Program.WhereDecl(namedType)
+		newSchema = scanner.getBasicSchemaFromType(namedType.Underlying())
+
+		newSchema.AddExtension("x-go-name", getExportedNameOfPackage(namedType.String()))
+		newSchema.AddExtension("x-go-package", namedType.Obj().Pkg().Path())
 
 		var fmtName string
 		var doc string
@@ -113,8 +117,6 @@ func (scanner *Scanner) getBasicSchemaFromType(t types.Type) spec.Schema {
 			return newSchema
 		}
 
-		newSchema = scanner.getBasicSchemaFromType(namedType.Underlying())
-
 		var enums []interface{}
 		var enumLabels []string
 
@@ -123,10 +125,6 @@ func (scanner *Scanner) getBasicSchemaFromType(t types.Type) spec.Schema {
 			newSchema.AddExtension("x-enum-values", enums)
 			newSchema.AddExtension("x-enum-labels", enumLabels)
 			newSchema.WithDescription(doc)
-
-			if ident, ok := astType.(*ast.Ident); ok {
-				newSchema.AddExtension("x-enum-type", ident.Name)
-			}
 		}
 
 		newSchema.WithDescription(doc)
@@ -145,12 +143,14 @@ func (scanner *Scanner) defineSchemaBy(tpe types.Type) spec.Schema {
 	case *types.Basic:
 		schema = scanner.getBasicSchemaFromType(tpe)
 	case *types.Named:
-		named := tpe.(*types.Named)
+		namedType := tpe.(*types.Named)
 		schema = scanner.getBasicSchemaFromType(tpe)
 
 		if len(schema.Type) == 0 {
-			name := getExportedNameOfPackage(named.String())
-			schema = scanner.Swagger.AddDefinition(name, scanner.defineSchemaBy(named.Underlying()))
+			name := getExportedNameOfPackage(namedType.String())
+			schema = scanner.Swagger.AddDefinition(name, scanner.defineSchemaBy(namedType.Underlying()))
+			schema.AddExtension("x-go-name", name)
+			schema.AddExtension("x-go-package", namedType.Obj().Pkg().Path())
 		}
 	case *types.Pointer:
 		schema = scanner.defineSchemaBy(tpe.(*types.Pointer).Elem())

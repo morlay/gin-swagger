@@ -38,6 +38,8 @@
           {
             "type": "string",
             "format": "date-time",
+            "x-go-name": "Date",
+            "x-go-package": "github.com/morlay/gin-swagger/example/test2",
             "name": "startTime",
             "in": "query",
             "required": true
@@ -47,6 +49,8 @@
             "name": "body",
             "in": "body",
             "schema": {
+              "x-go-name": "ReqBody",
+              "x-go-package": "github.com/morlay/gin-swagger/example/test",
               "$ref": "#/definitions/ReqBody"
             }
           }
@@ -55,6 +59,8 @@
           "200": {
             "description": "正常返回",
             "schema": {
+              "x-go-name": "SomeTest",
+              "x-go-package": "github.com/morlay/gin-swagger/example/test",
               "$ref": "#/definitions/SomeTest"
             }
           }
@@ -131,11 +137,12 @@
               "one",
               "two"
             ],
-            "x-enum-type": "State",
             "x-enum-values": [
               "ONE",
               "TWO"
             ],
+            "x-go-name": "State",
+            "x-go-package": "github.com/morlay/gin-swagger/example/test2",
             "name": "state",
             "in": "query",
             "required": true
@@ -143,6 +150,8 @@
           {
             "type": "string",
             "format": "date-time",
+            "x-go-name": "Date",
+            "x-go-package": "github.com/morlay/gin-swagger/example/test2",
             "name": "startTime",
             "in": "query",
             "required": true
@@ -152,6 +161,8 @@
           "200": {
             "description": "正常返回",
             "schema": {
+              "x-go-name": "Some",
+              "x-go-package": "github.com/morlay/gin-swagger/example/test2",
               "$ref": "#/definitions/Some"
             }
           }
@@ -202,7 +213,9 @@
         },
         "startTime": {
           "type": "string",
-          "format": "date-time"
+          "format": "date-time",
+          "x-go-name": "Date",
+          "x-go-package": "github.com/morlay/gin-swagger/example/test2"
         },
         "state": {
           "type": "integer",
@@ -215,11 +228,12 @@
             "one",
             "two"
           ],
-          "x-enum-type": "State",
           "x-enum-values": [
             "ONE",
             "TWO"
-          ]
+          ],
+          "x-go-name": "State",
+          "x-go-package": "github.com/morlay/gin-swagger/example/test2"
         }
       }
     },
@@ -250,6 +264,8 @@
         "data": {
           "type": "array",
           "items": {
+            "x-go-name": "ItemData",
+            "x-go-package": "github.com/morlay/gin-swagger/example/test2",
             "$ref": "#/definitions/ItemData"
           }
         },
@@ -259,7 +275,9 @@
         },
         "startTime": {
           "type": "string",
-          "format": "date-time"
+          "format": "date-time",
+          "x-go-name": "Date",
+          "x-go-package": "github.com/morlay/gin-swagger/example/test2"
         },
         "state": {
           "type": "integer",
@@ -272,11 +290,12 @@
             "one",
             "two"
           ],
-          "x-enum-type": "State",
           "x-enum-values": [
             "ONE",
             "TWO"
-          ]
+          ],
+          "x-go-name": "State",
+          "x-go-package": "github.com/morlay/gin-swagger/example/test2"
         }
       }
     },
@@ -284,6 +303,8 @@
       "description": "SomeTest",
       "allOf": [
         {
+          "x-go-name": "Common",
+          "x-go-package": "github.com/morlay/gin-swagger/example/test2",
           "$ref": "#/definitions/Common"
         },
         {
@@ -293,6 +314,8 @@
           ],
           "properties": {
             "errorMap": {
+              "x-go-name": "ErrorMap",
+              "x-go-package": "github.com/morlay/gin-swagger/example/test",
               "$ref": "#/definitions/ErrorMap"
             }
           }

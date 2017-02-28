@@ -3,7 +3,6 @@ package swagger
 import (
 	"fmt"
 	"github.com/go-openapi/spec"
-	"log"
 	"reflect"
 	"regexp"
 	"strconv"
@@ -189,8 +188,6 @@ func BindSchemaWithCommonValidations(schema *spec.Schema, commonValidations spec
 
 			}
 		}
-
-		log.Printf("%#v\n", enums)
 
 		schema.Enum = enums
 	}
