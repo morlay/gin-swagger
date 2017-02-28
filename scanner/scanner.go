@@ -120,6 +120,7 @@ func (scanner *Scanner) getBasicSchemaFromType(t types.Type) spec.Schema {
 
 		if enums, enumLabels, doc = scanner.getEnums(doc, astType); len(enums) > 0 {
 			newSchema.WithEnum(enums...)
+			newSchema.AddExtension("x-enum-values", enums)
 			newSchema.AddExtension("x-enum-labels", enumLabels)
 			newSchema.WithDescription(doc)
 
@@ -180,8 +181,8 @@ func (scanner *Scanner) defineSchemaBy(tpe types.Type) spec.Schema {
 			} else {
 				name, flags := getJSONNameAndFlags(structFieldTags.Get("json"))
 
-				if (name == "-") {
-					continue;
+				if name == "-" {
+					continue
 				}
 
 				defaultValue, hasDefault := structFieldTags.Lookup("default")
@@ -247,19 +248,22 @@ func (scanner *Scanner) getNonBodyParameter(name string, location string, tags p
 		return param
 	case *types.Slice:
 		sliceElem := t.(*types.Slice).Elem()
+		var schema spec.Schema
 		items := spec.Items{}
-
-		if hasValidate {
-			commonValidations := swagger.GetCommonValidations(validate)
-			items.CommonValidations = commonValidations
-		}
 
 		switch sliceElem.(type) {
 		case *types.Pointer:
-			swagger.BindItemsWithSchema(&items, scanner.getBasicSchemaFromType(sliceElem.(*types.Pointer).Elem()))
+			schema = scanner.getBasicSchemaFromType(sliceElem.(*types.Pointer).Elem())
 		case *types.Named, *types.Basic:
-			swagger.BindItemsWithSchema(&items, scanner.getBasicSchemaFromType(sliceElem))
+			schema = scanner.getBasicSchemaFromType(sliceElem)
 		}
+
+		if hasValidate {
+			commonValidations := swagger.GetCommonValidations(validate)
+			swagger.BindSchemaWithCommonValidations(&schema, commonValidations)
+		}
+
+		swagger.BindItemsWithSchema(&items, schema)
 
 		// todo support other collection format
 		param.CollectionOf(&items, "csv")
@@ -268,10 +272,11 @@ func (scanner *Scanner) getNonBodyParameter(name string, location string, tags p
 
 		if hasValidate {
 			commonValidations := swagger.GetCommonValidations(validate)
-			param.CommonValidations = commonValidations
+			swagger.BindSchemaWithCommonValidations(&schema, commonValidations)
 		}
 
 		swagger.BindParameterWithSchema(&param, schema)
+
 	}
 
 	if !hasDefault {
@@ -439,7 +444,7 @@ func (scanner *Scanner) collectOperationByCallExpr(callExpr *ast.CallExpr, prefi
 
 	if isGinMethod(method) {
 		args := callExpr.Args
-		lastArg := args[len(args) - 1]
+		lastArg := args[len(args)-1]
 
 		var id string
 		var path string

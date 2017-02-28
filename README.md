@@ -37,12 +37,44 @@ Pick Swagger from code which wrote by [gin](https://github.com/gin-gonic/gin)
 - [x] only support `json`
 - [x] basic type will be translated, but `json:"key,string"` will force converting to `string`
 - [x] tag `default` will be set the default value, if it not exists, we will set field `required`
-- [x] tag `validate` will be set common validations, for example,  `validate:"@int[^0, 100]"` will be `{ "minimum": 0, "exclusiveMinimum": true, "maximum": 100 }`
+- [x] tag `validate` will be set common validations, for example, `validate:"@int[0,100)"` will be `{ "minimum": 0, "exclusiveMinimum": true, "maximum": 100 }`
 - [x] anonymous struct field will be used with `allOf`
 
 ##### Enums
 
 - [x] pick `enum` from commented `swagger:enum` type
+
+- [x] string `enum` from const
+
+```go
+// swagger:enum State
+type State int
+
+const (
+	STATE_UNKNOWN = iota
+	STATE__ONE    // one
+	STATE__TWO    // two
+	STATE__THREE  // three
+)
+``` 
+will be 
+```json
+{
+  "enum": [
+    "ONE",
+    "TWO",
+    "THREE"
+  ],
+  "x-enum-labels": [
+    "one",
+    "two",
+    "three"
+  ],
+  "x-enum-type": "State"
+}
+```
+
+- [x] `validate:"@string{ONE,TWO}"` or `validate:"@int{1,2}"` will be used for partial pick enum values;  
 
 ##### String format
 

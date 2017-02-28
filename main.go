@@ -38,7 +38,6 @@ func WriteToJSON(swagger *swagger.Swagger, path string) {
 
 func main() {
 	sc := scanner.NewScanner(&scanner.ScannerOpts{
-		//PackagePath: "github.com/morlay/gin-swagger/example",
 		PackagePath: getPackageName(),
 	})
 

@@ -26,9 +26,14 @@ func TestGetCommonValidations(t *testing.T) {
 }
 
 func TestGetCommonValidationsWithExclusive(t *testing.T) {
-	c := GetCommonValidations("@int[^1,^2]")
+	c := GetCommonValidations("@int(1,2)")
 	assert.NotNil(t, c.Minimum)
 	assert.NotNil(t, c.Maximum)
 	assert.Equal(t, true, c.ExclusiveMinimum)
 	assert.Equal(t, true, c.ExclusiveMaximum)
+}
+
+func TestGetCommonValidationsWithEnum(t *testing.T) {
+	c := GetCommonValidations("@int{1,2}")
+	assert.Equal(t, c.Enum, []interface{}{int64(1), int64(2)})
 }

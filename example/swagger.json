@@ -1,0 +1,303 @@
+{
+  "swagger": "2.0",
+  "paths": {
+    "/": {
+      "post": {
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "test"
+        ],
+        "operationId": "Test",
+        "parameters": [
+          {
+            "maximum": 20,
+            "exclusiveMaximum": true,
+            "minimum": -1,
+            "type": "integer",
+            "format": "int8",
+            "default": "10",
+            "description": "分页大小",
+            "name": "size",
+            "in": "query"
+          },
+          {
+            "maximum": 100,
+            "minimum": -1,
+            "type": "integer",
+            "format": "int8",
+            "default": "0",
+            "description": "分页偏移",
+            "name": "offset",
+            "in": "query"
+          },
+          {
+            "type": "string",
+            "format": "date-time",
+            "name": "startTime",
+            "in": "query",
+            "required": true
+          },
+          {
+            "type": "object",
+            "name": "body",
+            "in": "body",
+            "schema": {
+              "$ref": "#/definitions/ReqBody"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "正常返回",
+            "schema": {
+              "$ref": "#/definitions/SomeTest"
+            }
+          }
+        }
+      }
+    },
+    "/user/test/{name}/0": {
+      "get": {
+        "description": "Others\nheheheh",
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "test2"
+        ],
+        "summary": "Summary",
+        "operationId": "Test2",
+        "parameters": [
+          {
+            "maximum": 20,
+            "exclusiveMaximum": true,
+            "minimum": -1,
+            "type": "integer",
+            "format": "int8",
+            "default": "10",
+            "description": "分页大小",
+            "name": "size",
+            "in": "query"
+          },
+          {
+            "maximum": 100,
+            "minimum": -1,
+            "type": "integer",
+            "format": "int8",
+            "default": "0",
+            "description": "分页偏移",
+            "name": "offset",
+            "in": "query"
+          },
+          {
+            "type": "array",
+            "items": {
+              "maximum": 100,
+              "minimum": -1,
+              "type": "integer",
+              "format": "int8"
+            },
+            "collectionFormat": "csv",
+            "description": "ids",
+            "name": "ids",
+            "in": "query",
+            "required": true
+          },
+          {
+            "type": "integer",
+            "format": "int8",
+            "name": "id",
+            "in": "query",
+            "required": true
+          },
+          {
+            "type": "string",
+            "name": "name",
+            "in": "path",
+            "required": true
+          },
+          {
+            "enum": [
+              "ONE"
+            ],
+            "type": "integer",
+            "format": "int64",
+            "x-enum-labels": [
+              "one",
+              "two"
+            ],
+            "x-enum-type": "State",
+            "x-enum-values": [
+              "ONE",
+              "TWO"
+            ],
+            "name": "state",
+            "in": "query",
+            "required": true
+          },
+          {
+            "type": "string",
+            "format": "date-time",
+            "name": "startTime",
+            "in": "query",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "正常返回",
+            "schema": {
+              "$ref": "#/definitions/Some"
+            }
+          }
+        }
+      }
+    }
+  },
+  "definitions": {
+    "Common": {
+      "type": "object",
+      "required": [
+        "total"
+      ],
+      "properties": {
+        "total": {
+          "description": "总数",
+          "type": "integer",
+          "format": "int8"
+        }
+      }
+    },
+    "ErrorMap": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "object",
+        "additionalProperties": {
+          "type": "integer",
+          "format": "int64"
+        }
+      }
+    },
+    "ItemData": {
+      "type": "object",
+      "required": [
+        "name",
+        "id",
+        "state",
+        "startTime"
+      ],
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string",
+          "default": "",
+          "minLength": 0
+        },
+        "startTime": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "state": {
+          "type": "integer",
+          "format": "int64",
+          "enum": [
+            "ONE",
+            "TWO"
+          ],
+          "x-enum-labels": [
+            "one",
+            "two"
+          ],
+          "x-enum-type": "State",
+          "x-enum-values": [
+            "ONE",
+            "TWO"
+          ]
+        }
+      }
+    },
+    "ReqBody": {
+      "type": "object",
+      "required": [
+        "name",
+        "username"
+      ],
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "username": {
+          "type": "string"
+        }
+      }
+    },
+    "Some": {
+      "type": "object",
+      "required": [
+        "state",
+        "name",
+        "data",
+        "startTime"
+      ],
+      "properties": {
+        "data": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/ItemData"
+          }
+        },
+        "name": {
+          "type": "string",
+          "format": "uint64"
+        },
+        "startTime": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "state": {
+          "type": "integer",
+          "format": "int64",
+          "default": "",
+          "enum": [
+            "TWO"
+          ],
+          "x-enum-labels": [
+            "one",
+            "two"
+          ],
+          "x-enum-type": "State",
+          "x-enum-values": [
+            "ONE",
+            "TWO"
+          ]
+        }
+      }
+    },
+    "SomeTest": {
+      "description": "SomeTest",
+      "allOf": [
+        {
+          "$ref": "#/definitions/Common"
+        },
+        {
+          "type": "object",
+          "required": [
+            "errorMap"
+          ],
+          "properties": {
+            "errorMap": {
+              "$ref": "#/definitions/ErrorMap"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

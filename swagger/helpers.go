@@ -3,6 +3,8 @@ package swagger
 import (
 	"fmt"
 	"github.com/go-openapi/spec"
+	"log"
+	"reflect"
 	"regexp"
 	"strconv"
 	"strings"
@@ -11,7 +13,7 @@ import (
 var (
 	rxEnum     = regexp.MustCompile(`swagger:enum`)
 	rxStrFmt   = regexp.MustCompile(`swagger:strfmt\s+(\S+)([\s\S]+)?$`)
-	rxValidate = regexp.MustCompile(`^@([^\[]+)\[([^\]]+)\]$`)
+	rxValidate = regexp.MustCompile(`^@([^\[\(\{]+)([\[\(\{])([^\}^\]^\)]+)([\}\]\)])$`)
 )
 
 func ParseEnum(str string) (string, bool) {
@@ -41,36 +43,54 @@ func exclusiveValues(str string) (string, bool) {
 func GetCommonValidations(validateTag string) (commonValidations spec.CommonValidations) {
 	var matched = rxValidate.FindAllStringSubmatch(validateTag, -1)
 
-	if len(matched) > 0 && len(matched[0]) == 3 {
+	// "@int[1,2]", "int", "[", "1,2", "]"
+	if len(matched) > 0 && len(matched[0]) == 5 {
 		tpe := matched[0][1]
-		params := strings.Split(matched[0][2], ",")
-		switch tpe {
-		case "byte", "int", "int8", "int16", "int32", "int64", "rune", "uint", "uint8", "uint16", "uint32", "uint64", "uintptr", "float32", "float64":
-			if len(params) > 0 {
-				value, exclusive := exclusiveValues(params[0])
-				if val, err := strconv.ParseFloat(value, 64); err == nil {
-					commonValidations.Minimum = &val
-					commonValidations.ExclusiveMinimum = exclusive
+		startBracket := matched[0][2]
+		endBracket := matched[0][4]
+		values := strings.Split(matched[0][3], ",")
+
+		if startBracket != "{" && endBracket != "}" {
+			switch tpe {
+			case "byte", "int", "int8", "int16", "int32", "int64", "rune", "uint", "uint8", "uint16", "uint32", "uint64", "uintptr", "float32", "float64":
+				if len(values) > 0 {
+					if val, err := strconv.ParseFloat(values[0], 64); err == nil {
+						commonValidations.Minimum = &val
+						commonValidations.ExclusiveMinimum = (startBracket == "(")
+					}
+				}
+				if len(values) > 1 {
+					if val, err := strconv.ParseFloat(values[1], 64); err == nil {
+						commonValidations.Maximum = &val
+						commonValidations.ExclusiveMaximum = (endBracket == ")")
+					}
+				}
+			case "string":
+				if len(values) > 0 {
+					if val, err := strconv.ParseInt(values[0], 10, 64); err == nil {
+						commonValidations.MinLength = &val
+					}
+				}
+				if len(values) > 1 {
+					if val, err := strconv.ParseInt(values[1], 10, 64); err == nil {
+						commonValidations.MaxLength = &val
+					}
 				}
 			}
-			if len(params) > 1 {
-				value, exclusive := exclusiveValues(params[1])
-				if val, err := strconv.ParseFloat(value, 64); err == nil {
-					commonValidations.Maximum = &val
-					commonValidations.ExclusiveMaximum = exclusive
+		} else {
+			var enums = []interface{}{}
+
+			for _, value := range values {
+				if tpe != "string" {
+					if val, err := strconv.ParseInt(value, 10, 64); err == nil {
+						enums = append(enums, val)
+					}
+				} else {
+					enums = append(enums, value)
 				}
 			}
-		case "string":
-			if len(params) > 0 {
-				if val, err := strconv.ParseInt(params[0], 10, 64); err == nil {
-					commonValidations.MinLength = &val
-				}
-			}
-			if len(params) > 1 {
-				if val, err := strconv.ParseInt(params[1], 10, 64); err == nil {
-					commonValidations.MaxLength = &val
-				}
-			}
+
+			commonValidations.Enum = enums
 		}
 	}
 
@@ -121,6 +141,18 @@ func GetSchemaTypeFromBasicType(basicTypeName string) (string, string, bool) {
 	return "", "", false
 }
 
+func EnumContainsValue(enum []interface{}, value interface{}) bool {
+	var isContains = false
+
+	for _, enumValue := range enum {
+		if enumValue == value {
+			isContains = true
+		}
+	}
+
+	return isContains
+}
+
 func BindSchemaWithCommonValidations(schema *spec.Schema, commonValidations spec.CommonValidations) {
 	schema.Maximum = commonValidations.Maximum
 	schema.ExclusiveMaximum = commonValidations.ExclusiveMaximum
@@ -133,7 +165,35 @@ func BindSchemaWithCommonValidations(schema *spec.Schema, commonValidations spec
 	schema.MinItems = commonValidations.MinItems
 	schema.UniqueItems = commonValidations.UniqueItems
 	schema.MultipleOf = commonValidations.MultipleOf
-	schema.Enum = commonValidations.Enum
+
+	// for partial enum
+	if len(schema.Enum) != 0 && len(commonValidations.Enum) != 0 {
+		var enums []interface{}
+
+		for _, enumValueOrIndex := range commonValidations.Enum {
+			switch reflect.TypeOf(enumValueOrIndex).Name() {
+			case "string":
+				if EnumContainsValue(schema.Enum, enumValueOrIndex) {
+					enums = append(enums, enumValueOrIndex)
+				} else {
+					panic(fmt.Errorf("%s is not value of %s", enumValueOrIndex, schema.Enum))
+				}
+			default:
+				if idx, ok := enumValueOrIndex.(int); ok {
+					if schema.Enum[idx] != nil {
+						enums = append(enums, schema.Enum[idx])
+					} else {
+						panic(fmt.Errorf("%s is out-range of  %s", enumValueOrIndex, schema.Enum))
+					}
+				}
+
+			}
+		}
+
+		log.Printf("%#v\n", enums)
+
+		schema.Enum = enums
+	}
 }
 
 func BindCommonValidationsWithSchema(commonValidations *spec.CommonValidations, schema spec.Schema) {
