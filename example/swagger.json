@@ -21,6 +21,7 @@
             "type": "integer",
             "format": "int8",
             "default": "10",
+            "x-go-field-name": "Size",
             "description": "分页大小",
             "name": "size",
             "in": "query"
@@ -31,6 +32,7 @@
             "type": "integer",
             "format": "int8",
             "default": "0",
+            "x-go-field-name": "Offset",
             "description": "分页偏移",
             "name": "offset",
             "in": "query"
@@ -38,6 +40,7 @@
           {
             "type": "string",
             "format": "date-time",
+            "x-go-field-name": "StartTime",
             "x-go-name": "Date",
             "x-go-package": "github.com/morlay/gin-swagger/example/test2",
             "name": "startTime",
@@ -46,6 +49,7 @@
           },
           {
             "type": "object",
+            "x-go-field-name": "Body",
             "name": "body",
             "in": "body",
             "schema": {
@@ -86,6 +90,7 @@
             "type": "integer",
             "format": "int8",
             "default": "10",
+            "x-go-field-name": "Size",
             "description": "分页大小",
             "name": "size",
             "in": "query"
@@ -96,6 +101,7 @@
             "type": "integer",
             "format": "int8",
             "default": "0",
+            "x-go-field-name": "Offset",
             "description": "分页偏移",
             "name": "offset",
             "in": "query"
@@ -109,6 +115,7 @@
               "format": "int8"
             },
             "collectionFormat": "csv",
+            "x-go-field-name": "Ids",
             "description": "ids",
             "name": "ids",
             "in": "query",
@@ -117,12 +124,14 @@
           {
             "type": "integer",
             "format": "int8",
+            "x-go-field-name": "Id",
             "name": "id",
             "in": "query",
             "required": true
           },
           {
             "type": "string",
+            "x-go-field-name": "Name",
             "name": "name",
             "in": "path",
             "required": true
@@ -141,6 +150,7 @@
               "ONE",
               "TWO"
             ],
+            "x-go-field-name": "State",
             "x-go-name": "State",
             "x-go-package": "github.com/morlay/gin-swagger/example/test2",
             "name": "state",
@@ -150,6 +160,7 @@
           {
             "type": "string",
             "format": "date-time",
+            "x-go-field-name": "StartTime",
             "x-go-name": "Date",
             "x-go-package": "github.com/morlay/gin-swagger/example/test2",
             "name": "startTime",
@@ -180,7 +191,8 @@
         "total": {
           "description": "总数",
           "type": "integer",
-          "format": "int8"
+          "format": "int8",
+          "x-go-field-name": "Total"
         }
       }
     },
@@ -204,16 +216,19 @@
       ],
       "properties": {
         "id": {
-          "type": "string"
+          "type": "string",
+          "x-go-field-name": "Id"
         },
         "name": {
           "type": "string",
           "default": "",
-          "minLength": 0
+          "minLength": 0,
+          "x-go-field-name": "Name"
         },
         "startTime": {
           "type": "string",
           "format": "date-time",
+          "x-go-field-name": "StartTime",
           "x-go-name": "Date",
           "x-go-package": "github.com/morlay/gin-swagger/example/test2"
         },
@@ -232,6 +247,7 @@
             "ONE",
             "TWO"
           ],
+          "x-go-field-name": "State",
           "x-go-name": "State",
           "x-go-package": "github.com/morlay/gin-swagger/example/test2"
         }
@@ -245,10 +261,12 @@
       ],
       "properties": {
         "name": {
-          "type": "string"
+          "type": "string",
+          "x-go-field-name": "Name"
         },
         "username": {
-          "type": "string"
+          "type": "string",
+          "x-go-field-name": "UserName"
         }
       }
     },
@@ -267,15 +285,18 @@
             "x-go-name": "ItemData",
             "x-go-package": "github.com/morlay/gin-swagger/example/test2",
             "$ref": "#/definitions/ItemData"
-          }
+          },
+          "x-go-field-name": "Data"
         },
         "name": {
           "type": "string",
-          "format": "uint64"
+          "format": "uint64",
+          "x-go-field-name": "Name"
         },
         "startTime": {
           "type": "string",
           "format": "date-time",
+          "x-go-field-name": "StartTime",
           "x-go-name": "Date",
           "x-go-package": "github.com/morlay/gin-swagger/example/test2"
         },
@@ -294,6 +315,7 @@
             "ONE",
             "TWO"
           ],
+          "x-go-field-name": "State",
           "x-go-name": "State",
           "x-go-package": "github.com/morlay/gin-swagger/example/test2"
         }
@@ -314,6 +336,7 @@
           ],
           "properties": {
             "errorMap": {
+              "x-go-field-name": "ErrorMap",
               "x-go-name": "ErrorMap",
               "x-go-package": "github.com/morlay/gin-swagger/example/test",
               "$ref": "#/definitions/ErrorMap"

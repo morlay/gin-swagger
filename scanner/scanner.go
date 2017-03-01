@@ -215,6 +215,7 @@ func (scanner *Scanner) defineSchemaBy(tpe types.Type) spec.Schema {
 					}
 				}
 
+				propSchema.AddExtension("x-go-field-name", field.Name())
 				structSchema.SetProperty(name, propSchema)
 			}
 
@@ -336,6 +337,7 @@ func (scanner *Scanner) bindParamBy(t types.Type, operation *spec.Operation) {
 					}
 				}
 
+				param.AddExtension("x-go-field-name", field.Name())
 				param.WithDescription(scanner.getNodeDoc(astField))
 				operation.AddParam(&param)
 			}
