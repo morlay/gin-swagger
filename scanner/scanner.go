@@ -103,8 +103,7 @@ func (scanner *Scanner) getBasicSchemaFromType(t types.Type) spec.Schema {
 		astType := scanner.Program.WhereDecl(namedType)
 		newSchema = scanner.getBasicSchemaFromType(namedType.Underlying())
 
-		newSchema.AddExtension("x-go-name", getExportedNameOfPackage(namedType.String()))
-		newSchema.AddExtension("x-go-package", namedType.Obj().Pkg().Path())
+		newSchema.AddExtension("x-go-named", namedType.String())
 
 		var fmtName string
 		var doc string
@@ -149,8 +148,6 @@ func (scanner *Scanner) defineSchemaBy(tpe types.Type) spec.Schema {
 		if len(schema.Type) == 0 {
 			name := getExportedNameOfPackage(namedType.String())
 			schema = scanner.Swagger.AddDefinition(name, scanner.defineSchemaBy(namedType.Underlying()))
-			schema.AddExtension("x-go-name", name)
-			schema.AddExtension("x-go-package", namedType.Obj().Pkg().Path())
 		}
 	case *types.Pointer:
 		schema = scanner.defineSchemaBy(tpe.(*types.Pointer).Elem())
@@ -208,6 +205,7 @@ func (scanner *Scanner) defineSchemaBy(tpe types.Type) spec.Schema {
 
 				if hasValidate {
 					propSchema.WithDefault(defaultValue)
+					propSchema.AddExtension("x-go-validate", validate)
 
 					if hasValidate {
 						commonValidations := swagger.GetCommonValidations(validate)
@@ -215,7 +213,7 @@ func (scanner *Scanner) defineSchemaBy(tpe types.Type) spec.Schema {
 					}
 				}
 
-				propSchema.AddExtension("x-go-field-name", field.Name())
+				propSchema.AddExtension("x-go-name", field.Name())
 				structSchema.SetProperty(name, propSchema)
 			}
 
@@ -262,6 +260,7 @@ func (scanner *Scanner) getNonBodyParameter(name string, location string, tags p
 		if hasValidate {
 			commonValidations := swagger.GetCommonValidations(validate)
 			swagger.BindSchemaWithCommonValidations(&schema, commonValidations)
+			schema.AddExtension("x-go-validate", validate)
 		}
 
 		swagger.BindItemsWithSchema(&items, schema)
@@ -274,6 +273,7 @@ func (scanner *Scanner) getNonBodyParameter(name string, location string, tags p
 		if hasValidate {
 			commonValidations := swagger.GetCommonValidations(validate)
 			swagger.BindSchemaWithCommonValidations(&schema, commonValidations)
+			schema.AddExtension("x-go-validate", validate)
 		}
 
 		swagger.BindParameterWithSchema(&param, schema)
@@ -337,7 +337,7 @@ func (scanner *Scanner) bindParamBy(t types.Type, operation *spec.Operation) {
 					}
 				}
 
-				param.AddExtension("x-go-field-name", field.Name())
+				param.AddExtension("x-go-name", field.Name())
 				param.WithDescription(scanner.getNodeDoc(astField))
 				operation.AddParam(&param)
 			}
