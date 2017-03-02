@@ -165,7 +165,7 @@ func (scanner *Scanner) defineSchemaBy(tpe types.Type) spec.Schema {
 		var schemas []spec.Schema
 
 		structSchema.Typed("object", "")
-		schema.WithDescription(scanner.getNodeDoc(structTypeAst))
+		structSchema.WithDescription(scanner.getNodeDoc(structTypeAst))
 
 		for i := 0; i < structType.NumFields(); i++ {
 			field := structType.Field(i)
@@ -393,28 +393,29 @@ func (scanner *Scanner) getOperation(handlerFuncDecl *ast.FuncDecl) (operation *
 
 	fmt.Printf("Get operation from `%s.%s`\n", pkg.Name(), handlerFuncDecl.Name.String())
 
-	// get parameters from type of var `req` or `request`;
 	for _, name := range scope.Names() {
+		tpe := scope.Lookup(name).Type()
+		// get parameters from type of var `req` or `request`;
 		if name == "req" || name == "request" {
-			req := scope.Lookup(name)
-			scanner.bindParamBy(req.Type().Underlying(), operation)
+			scanner.bindParamBy(tpe.Underlying(), operation)
 		}
-	}
 
-	// get response from method gin.Context
-	for _, stmt := range handlerFuncDecl.Body.List {
-		if exprStmt, ok := stmt.(*ast.ExprStmt); ok {
-			if callExpr, ok := exprStmt.X.(*ast.CallExpr); ok {
-				if selectorExpr, ok := callExpr.Fun.(*ast.SelectorExpr); ok {
-					if pointer, ok := scanner.Program.TypeOf(selectorExpr.X).(*types.Pointer); ok {
-						if scanner.typeOfGinContext(pointer) {
-							scanner.addResponse(callExpr, scanner.getNodeDoc(exprStmt), operation)
+		// get response from method gin.Context
+		if pointer, ok := tpe.(*types.Pointer); ok {
+			if scanner.typeOfGinContext(pointer) {
+				for _, pkgInfo := range scanner.Program.AllPackages {
+					program.PickSelectionBy(pkgInfo.Info, func(selectorExpr *ast.SelectorExpr, selection *types.Selection) bool {
+						if selection.Recv() == tpe {
+							if callExpr := program.FindCallExprByFunc(pkgInfo.Info, selectorExpr); callExpr != nil {
+								scanner.addResponse(callExpr, scanner.getNodeDoc(callExpr), operation)
+							}
 						}
-					}
+						return false
+					})
 				}
-
 			}
 		}
+
 	}
 
 	var isParameterHasBodySchema = false

@@ -179,6 +179,7 @@
   },
   "definitions": {
     "Common": {
+      "description": "Common",
       "type": "object",
       "required": [
         "total"
@@ -249,6 +250,7 @@
       }
     },
     "ReqBody": {
+      "description": "ReqBody",
       "type": "object",
       "required": [
         "name",
@@ -266,6 +268,7 @@
       }
     },
     "Some": {
+      "description": "Some",
       "type": "object",
       "required": [
         "state",
@@ -293,6 +296,7 @@
           "x-go-named": "github.com/morlay/gin-swagger/example/test2.Date"
         },
         "state": {
+          "description": "Test",
           "type": "integer",
           "format": "int64",
           "default": "",
@@ -314,12 +318,12 @@
       }
     },
     "SomeTest": {
-      "description": "SomeTest",
       "allOf": [
         {
           "$ref": "#/definitions/Common"
         },
         {
+          "description": "SomeTest",
           "type": "object",
           "required": [
             "errorMap"

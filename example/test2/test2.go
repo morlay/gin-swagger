@@ -53,8 +53,9 @@ type ItemData struct {
 
 // Some
 type (
-	// test
+	// struct
 	Some struct {
+		// Test
 		State     State      `json:"state" validate:"@string{TWO}"`
 		Name      uint64     `json:"name,string"`
 		Data      []ItemData `json:"data"`
@@ -73,5 +74,7 @@ func Test2(c *gin.Context) {
 
 	res.Name = uint64(req.Size)
 
-	c.JSON(http.StatusOK, res) // 正常返回
+	if true {
+		c.JSON(http.StatusOK, res) // 正常返回
+	}
 }

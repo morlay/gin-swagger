@@ -190,13 +190,36 @@ func (program *Program) GetEnumOptionsByType(node ast.Node) (list []Option) {
 	return
 }
 
+func (program *Program) AstDeclOf(targetNode ast.Node) (ast.Decl, bool) {
+	file := program.FileOf(targetNode)
+	nodePos := targetNode.Pos()
+
+	for _, decl := range file.Decls {
+		if nodePos > decl.Pos() && nodePos < decl.End() {
+			return decl, true
+		}
+	}
+
+	return nil, false
+}
+
 func (program *Program) CommentGroupFor(targetNode ast.Node) (commentList []*ast.CommentGroup) {
 	file := program.FileOf(targetNode)
 
+	commentMap := ast.NewCommentMap(program.Fset, file, file.Comments)
+
 	switch targetNode.(type) {
+	case *ast.CallExpr:
+		for node, commentGroup := range commentMap {
+			if exprStmt, ok := node.(*ast.ExprStmt); ok {
+				if exprStmt.X == targetNode.(*ast.CallExpr) {
+					commentList = append(commentList, commentGroup...)
+				}
+			}
+		}
 	case *ast.StructType:
-		for _, decl := range file.Decls {
-			if genDecl, ok := decl.(*ast.GenDecl); ok {
+		for node := range commentMap {
+			if genDecl, ok := node.(*ast.GenDecl); ok {
 				for _, spc := range genDecl.Specs {
 					if typeSpec, ok := spc.(*ast.TypeSpec); ok {
 						if typeSpec.Type == targetNode {
@@ -209,13 +232,14 @@ func (program *Program) CommentGroupFor(targetNode ast.Node) (commentList []*ast
 					}
 
 				}
+
 			}
 		}
 	case *ast.Ident:
 		ident := targetNode.(*ast.Ident)
 		if ident.Obj != nil {
-			for _, decl := range file.Decls {
-				if genDecl, ok := decl.(*ast.GenDecl); ok {
+			for node := range commentMap {
+				if genDecl, ok := node.(*ast.GenDecl); ok {
 					for _, spc := range genDecl.Specs {
 						if typeSpec, ok := spc.(*ast.TypeSpec); ok {
 							if typeSpec.Name.Name == ident.Name {
@@ -232,9 +256,7 @@ func (program *Program) CommentGroupFor(targetNode ast.Node) (commentList []*ast
 			}
 		}
 	default:
-		commentMap := ast.NewCommentMap(program.Fset, file, file.Comments)
 		commentList = commentMap[targetNode]
 	}
-
 	return
 }
