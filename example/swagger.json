@@ -139,8 +139,7 @@
             "enum": [
               "ONE"
             ],
-            "type": "integer",
-            "format": "int64",
+            "type": "string",
             "x-enum-labels": [
               "one",
               "two"
@@ -230,8 +229,7 @@
           "x-go-named": "github.com/morlay/gin-swagger/example/test2.Date"
         },
         "state": {
-          "type": "integer",
-          "format": "int64",
+          "type": "string",
           "enum": [
             "ONE",
             "TWO"
@@ -297,8 +295,7 @@
         },
         "state": {
           "description": "Test",
-          "type": "integer",
-          "format": "int64",
+          "type": "string",
           "default": "",
           "enum": [
             "TWO"

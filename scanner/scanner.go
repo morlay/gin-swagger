@@ -11,6 +11,7 @@ import (
 	"regexp"
 	"strconv"
 	"strings"
+	"reflect"
 )
 
 type ScannerOpts struct {
@@ -121,6 +122,9 @@ func (scanner *Scanner) getBasicSchemaFromType(t types.Type) spec.Schema {
 
 		if enums, enumLabels, doc = scanner.getEnums(doc, astType); len(enums) > 0 {
 			newSchema.WithEnum(enums...)
+			if typeName, _, ok := swagger.GetSchemaTypeFromBasicType(reflect.TypeOf(enums[0]).Name()); ok {
+				newSchema.Typed(typeName, "")
+			}
 			newSchema.AddExtension("x-enum-values", enums)
 			newSchema.AddExtension("x-enum-labels", enumLabels)
 			newSchema.WithDescription(doc)
@@ -447,7 +451,7 @@ func (scanner *Scanner) collectOperationByCallExpr(callExpr *ast.CallExpr, prefi
 
 	if isGinMethod(method) {
 		args := callExpr.Args
-		lastArg := args[len(args)-1]
+		lastArg := args[len(args) - 1]
 
 		var id string
 		var path string
