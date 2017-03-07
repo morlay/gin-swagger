@@ -2,16 +2,18 @@ package scanner
 
 import (
 	"fmt"
-	"github.com/go-openapi/spec"
-	"github.com/morlay/gin-swagger/program"
-	"github.com/morlay/gin-swagger/swagger"
 	"go/ast"
 	"go/types"
-	"gopkg.in/gin-gonic/gin.v1"
+	"path"
+	"reflect"
 	"regexp"
 	"strconv"
 	"strings"
-	"reflect"
+
+	"github.com/go-openapi/spec"
+	"github.com/morlay/gin-swagger/program"
+	"github.com/morlay/gin-swagger/swagger"
+	"gopkg.in/gin-gonic/gin.v1"
 )
 
 type ScannerOpts struct {
@@ -451,13 +453,14 @@ func (scanner *Scanner) collectOperationByCallExpr(callExpr *ast.CallExpr, prefi
 
 	if isGinMethod(method) {
 		args := callExpr.Args
-		lastArg := args[len(args) - 1]
+		lastArg := args[len(args)-1]
 
 		var id string
-		var path string
+		var swaggerPath string
 		var operation *spec.Operation
 
-		path = convertGinPathToSwaggerPath(prefix + getRouterPathByCallExpr(callExpr))
+		ginPath := path.Join(prefix, getRouterPathByCallExpr(callExpr))
+		swaggerPath = convertGinPathToSwaggerPath(ginPath)
 
 		var operationIdent *ast.Ident
 
@@ -478,7 +481,7 @@ func (scanner *Scanner) collectOperationByCallExpr(callExpr *ast.CallExpr, prefi
 
 			r := regexp.MustCompile("/\\{([^/\\}]+)\\}")
 
-			fixedPath := r.ReplaceAllStringFunc(path, func(str string) string {
+			fixedPath := r.ReplaceAllStringFunc(swaggerPath, func(str string) string {
 				name := r.FindAllStringSubmatch(str, -1)[0][1]
 
 				var isParameterDefined = false
@@ -493,7 +496,7 @@ func (scanner *Scanner) collectOperationByCallExpr(callExpr *ast.CallExpr, prefi
 					return str
 				}
 
-				fmt.Printf("%s without defining param `%s`, and use 0 instead;\n", path, name)
+				fmt.Printf("%s without defining param `%s`, and use 0 instead;\n", swaggerPath, name)
 
 				return "/0"
 			})
