@@ -11,6 +11,7 @@ import (
 	"strings"
 
 	"github.com/go-openapi/spec"
+	"github.com/logrusorgru/aurora"
 	"github.com/morlay/gin-swagger/program"
 	"github.com/morlay/gin-swagger/swagger"
 	"gopkg.in/gin-gonic/gin.v1"
@@ -153,7 +154,12 @@ func (scanner *Scanner) defineSchemaBy(tpe types.Type) spec.Schema {
 
 		if len(schema.Type) == 0 {
 			name := getExportedNameOfPackage(namedType.String())
-			schema = scanner.Swagger.AddDefinition(name, scanner.defineSchemaBy(namedType.Underlying()))
+			fmt.Printf(aurora.Sprintf("\t Picking defination from %s\n", aurora.Brown(namedType)))
+			if s, ok := scanner.Swagger.AddDefinition(name, scanner.defineSchemaBy(namedType.Underlying())); ok {
+				schema = *s
+			} else {
+				fmt.Printf(aurora.Sprintf(aurora.Red("\t\t `%s` already picked from `%s`\n"), name, namedType))
+			}
 		}
 	case *types.Pointer:
 		schema = scanner.defineSchemaBy(tpe.(*types.Pointer).Elem())
@@ -353,7 +359,7 @@ func (scanner *Scanner) bindParamBy(t types.Type, operation *spec.Operation) {
 	}
 }
 
-func (scanner *Scanner) getStatusCodeFromExpr(expr ast.Expr) (float64, error) {
+func (scanner *Scanner) getStatusCodeFromExpr(expr ast.Expr) (int64, error) {
 	return strconv.ParseInt(scanner.Program.ValueOf(expr).String(), 10, 64)
 }
 
@@ -366,7 +372,7 @@ func (scanner *Scanner) addResponse(ginContextCallExpr *ast.CallExpr, desc strin
 	switch program.GetCallExprFunName(ginContextCallExpr) {
 	// c.JSON(code int, obj interface{});
 	case "JSON":
-		statusCode, _ := scanner.getStatusCodeFromExpr(args[0]);
+		statusCode, _ := scanner.getStatusCodeFromExpr(args[0])
 		tpe := scanner.Program.TypeOf(args[1])
 
 		if !strings.Contains(tpe.String(), "untyped nil") {
@@ -378,12 +384,12 @@ func (scanner *Scanner) addResponse(ginContextCallExpr *ast.CallExpr, desc strin
 		operation.WithProduces(gin.MIMEJSON)
 	// c.HTML(code int, );
 	case "HTML":
-		statusCode, _ := scanner.getStatusCodeFromExpr(args[0]);
+		statusCode, _ := scanner.getStatusCodeFromExpr(args[0])
 		operation.RespondsWith(int(statusCode), response)
 		operation.WithProduces(gin.MIMEHTML)
 	// c.String(http.StatusOK, format, values)
 	case "String":
-		statusCode, _ := scanner.getStatusCodeFromExpr(args[0]);
+		statusCode, _ := scanner.getStatusCodeFromExpr(args[0])
 		schema := spec.Schema{}
 		schema.Typed("string", "")
 		response.WithSchema(&schema)
@@ -392,7 +398,7 @@ func (scanner *Scanner) addResponse(ginContextCallExpr *ast.CallExpr, desc strin
 	// c.Data(code init, )
 	// c.Redirect(code init, )
 	case "Render", "Data", "Redirect":
-		statusCode, _ := scanner.getStatusCodeFromExpr(args[0]);
+		statusCode, _ := scanner.getStatusCodeFromExpr(args[0])
 		operation.RespondsWith(int(statusCode), response)
 	}
 }
@@ -408,13 +414,21 @@ func (scanner *Scanner) getOperation(handlerFuncDecl *ast.FuncDecl) (operation *
 	operation.WithDescription(desc)
 	operation.WithTags(pkg.Name())
 
-	fmt.Printf("Get operation from `%s.%s`\n", pkg.Name(), handlerFuncDecl.Name.String())
+	methodName := aurora.Sprintf(aurora.Blue("%s.%s"), pkg.Path(), handlerFuncDecl.Name.String())
+
+	fmt.Printf("Picking operation from %s\n", methodName)
 
 	for _, name := range scope.Names() {
 		tpe := scope.Lookup(name).Type()
 		// get parameters from type of var `req` or `request`;
 		if name == "req" || name == "request" {
-			scanner.bindParamBy(tpe.Underlying(), operation)
+			if structTpe, ok := tpe.Underlying().(*types.Struct); ok {
+				astStruct := scanner.Program.WhereDecl(tpe)
+				fmt.Printf("\t Picking parameters from %s\n", aurora.Sprintf(aurora.Green("%s"), astStruct))
+				scanner.bindParamBy(structTpe, operation)
+			} else {
+				panic(fmt.Errorf(aurora.Sprintf(aurora.Red("request in %s should be a struct\n"), methodName)))
+			}
 		}
 
 		// get response from method gin.Context
@@ -464,7 +478,7 @@ func (scanner *Scanner) collectOperationByCallExpr(callExpr *ast.CallExpr, prefi
 
 	if isGinMethod(method) {
 		args := callExpr.Args
-		lastArg := args[len(args) - 1]
+		lastArg := args[len(args)-1]
 
 		var id string
 		var swaggerPath string
@@ -507,7 +521,7 @@ func (scanner *Scanner) collectOperationByCallExpr(callExpr *ast.CallExpr, prefi
 					return str
 				}
 
-				fmt.Printf("%s without defining param `%s`, and use 0 instead;\n", swaggerPath, name)
+				fmt.Printf(aurora.Sprintf(aurora.Red("`%s` without defining param `%s`, and use 0 instead;\n"), swaggerPath, name))
 
 				return "/0"
 			})

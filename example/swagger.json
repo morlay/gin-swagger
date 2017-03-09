@@ -49,6 +49,26 @@
             "required": true
           },
           {
+            "enum": [
+              "TWO"
+            ],
+            "type": "string",
+            "x-enum-labels": [
+              "one",
+              "two"
+            ],
+            "x-enum-values": [
+              "ONE",
+              "TWO"
+            ],
+            "x-go-name": "State",
+            "x-go-named": "github.com/morlay/gin-swagger/example/test2.State",
+            "x-go-validate": "@string{TWO}",
+            "name": "state",
+            "in": "query",
+            "required": true
+          },
+          {
             "type": "object",
             "x-go-name": "Body",
             "name": "body",
@@ -323,12 +343,31 @@
           "description": "SomeTest",
           "type": "object",
           "required": [
+            "state",
             "errorMap"
           ],
           "properties": {
             "errorMap": {
               "x-go-name": "ErrorMap",
               "$ref": "#/definitions/ErrorMap"
+            },
+            "state": {
+              "type": "string",
+              "default": "",
+              "enum": [
+                "TWO"
+              ],
+              "x-enum-labels": [
+                "one",
+                "two"
+              ],
+              "x-enum-values": [
+                "ONE",
+                "TWO"
+              ],
+              "x-go-name": "State",
+              "x-go-named": "github.com/morlay/gin-swagger/example/test2.State",
+              "x-go-validate": "@string{TWO}"
             }
           }
         }

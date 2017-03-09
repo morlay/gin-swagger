@@ -5,8 +5,12 @@ import (
 	"go/constant"
 	"go/parser"
 	"go/types"
-	"golang.org/x/tools/go/loader"
 	"strings"
+
+	"fmt"
+
+	"github.com/logrusorgru/aurora"
+	"golang.org/x/tools/go/loader"
 )
 
 type Program struct {
@@ -88,20 +92,23 @@ func (program *Program) DefOf(id *ast.Ident) types.Object {
 }
 
 func (program *Program) WhereDecl(targetTpe types.Type) ast.Expr {
-	for _, pkgInfo := range program.AllPackages {
-		for e, t := range pkgInfo.Types {
-			if t.Type == targetTpe {
-				switch e.(type) {
-				case *ast.StructType:
+
+	switch targetTpe.(type) {
+	case *types.Named:
+		namedType := targetTpe.(*types.Named)
+		return program.IdentOf(namedType.Obj())
+	case *types.Struct:
+		for _, pkgInfo := range program.AllPackages {
+			for e, t := range pkgInfo.Types {
+				if t.Type == targetTpe {
 					return e
-				case *ast.Ident:
-					return program.IdentOf(program.DefOf(e.(*ast.Ident)))
-				case *ast.SelectorExpr:
-					return program.IdentOf(program.DefOf(e.(*ast.SelectorExpr).Sel))
 				}
 			}
 		}
+	default:
+		fmt.Println(aurora.Sprintf(aurora.Red("%v"), targetTpe))
 	}
+
 	return nil
 }
 

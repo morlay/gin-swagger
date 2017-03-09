@@ -6,7 +6,7 @@ import (
 	"time"
 )
 
-// swagger:enum State
+// swagger:enum
 type (
 	State int
 )
@@ -70,7 +70,9 @@ type (
 func Test2(c *gin.Context) {
 	var req = SomeReq{}
 
-	var res = Some{}
+	var res = Some{
+		State: STATE__ONE,
+	}
 
 	res.Name = uint64(req.Size)
 

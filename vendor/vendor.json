@@ -64,6 +64,12 @@
 			"revisionTime": "2016-10-12T20:53:35Z"
 		},
 		{
+			"checksumSHA1": "je0xBtM96GQebMKfmSVzdthg3Rs=",
+			"path": "github.com/logrusorgru/aurora",
+			"revision": "962a6974312dde57d1f6f5738b4f83e1af9f38a4",
+			"revisionTime": "2016-12-16T17:00:44Z"
+		},
+		{
 			"checksumSHA1": "urY45++NYCue4nh4k8OjUFnIGfU=",
 			"path": "github.com/mailru/easyjson/buffer",
 			"revision": "99e922cf9de1bc0ab38310c277cff32c2147e747",
@@ -92,6 +98,12 @@
 			"path": "github.com/mattn/go-isatty",
 			"revision": "30a891c33c7cde7b02a981314b4228ec99380cca",
 			"revisionTime": "2016-11-23T14:36:37Z"
+		},
+		{
+			"checksumSHA1": "qFK224hj55cvRce9Y9cK0ADwkOM=",
+			"path": "github.com/morlay/gin-swagger",
+			"revision": "951ab9b6111cea8251ebe9a9c8d09e1fb28abe65",
+			"revisionTime": "2017-03-09T02:40:08Z"
 		},
 		{
 			"checksumSHA1": "zKKp5SZ3d3ycKe4EKMNT0BqAWBw=",

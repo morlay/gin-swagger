@@ -1,7 +1,6 @@
 package swagger
 
 import (
-	"fmt"
 	"github.com/go-openapi/spec"
 	"strings"
 )
@@ -60,12 +59,11 @@ func (swagger *Swagger) AddOperation(method string, path string, op *spec.Operat
 	paths.Paths[path] = pathObj
 }
 
-func (swagger *Swagger) AddDefinition(name string, schema spec.Schema) spec.Schema {
+func (swagger *Swagger) AddDefinition(name string, schema spec.Schema) (*spec.Schema, bool) {
+	s := spec.RefProperty("#/definitions/" + name)
 	if _, ok := swagger.Definitions[name]; !ok {
-		fmt.Printf("added defination %s\n", name)
 		swagger.Definitions[name] = schema
-	} else {
-		fmt.Errorf("duplicated definition %s", name)
+		return s, true
 	}
-	return *spec.RefProperty("#/definitions/" + name)
+	return s, false
 }
