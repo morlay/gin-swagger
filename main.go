@@ -3,11 +3,12 @@ package main
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/morlay/gin-swagger/scanner"
-	"github.com/morlay/gin-swagger/swagger"
 	"os"
 	"os/exec"
 	"strings"
+
+	"github.com/morlay/gin-swagger/scanner"
+	"github.com/morlay/gin-swagger/swagger"
 )
 
 func getPackageName() string {
