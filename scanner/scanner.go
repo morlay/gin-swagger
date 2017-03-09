@@ -14,7 +14,6 @@ import (
 	"github.com/morlay/gin-swagger/program"
 	"github.com/morlay/gin-swagger/swagger"
 	"gopkg.in/gin-gonic/gin.v1"
-	"net/http"
 )
 
 type ScannerOpts struct {
@@ -354,6 +353,10 @@ func (scanner *Scanner) bindParamBy(t types.Type, operation *spec.Operation) {
 	}
 }
 
+func (scanner *Scanner) getStatusCodeFromExpr(expr ast.Expr) (float64, error) {
+	return strconv.ParseInt(scanner.Program.ValueOf(expr).String(), 10, 64)
+}
+
 func (scanner *Scanner) addResponse(ginContextCallExpr *ast.CallExpr, desc string, operation *spec.Operation) {
 	response := spec.NewResponse()
 	args := ginContextCallExpr.Args
@@ -363,7 +366,7 @@ func (scanner *Scanner) addResponse(ginContextCallExpr *ast.CallExpr, desc strin
 	switch program.GetCallExprFunName(ginContextCallExpr) {
 	// c.JSON(code int, obj interface{});
 	case "JSON":
-		statusCode, _ := strconv.ParseInt(scanner.Program.ValueOf(args[0]).String(), 10, 64)
+		statusCode, _ := scanner.getStatusCodeFromExpr(args[0]);
 		tpe := scanner.Program.TypeOf(args[1])
 
 		if !strings.Contains(tpe.String(), "untyped nil") {
@@ -375,12 +378,12 @@ func (scanner *Scanner) addResponse(ginContextCallExpr *ast.CallExpr, desc strin
 		operation.WithProduces(gin.MIMEJSON)
 	// c.HTML(code int, );
 	case "HTML":
-		statusCode, _ := strconv.ParseInt(scanner.Program.ValueOf(args[0]).String(), 10, 64)
+		statusCode, _ := scanner.getStatusCodeFromExpr(args[0]);
 		operation.RespondsWith(int(statusCode), response)
 		operation.WithProduces(gin.MIMEHTML)
 	// c.String(http.StatusOK, format, values)
 	case "String":
-		statusCode, _ := strconv.ParseInt(scanner.Program.ValueOf(args[0]).String(), 10, 64)
+		statusCode, _ := scanner.getStatusCodeFromExpr(args[0]);
 		schema := spec.Schema{}
 		schema.Typed("string", "")
 		response.WithSchema(&schema)
@@ -389,7 +392,7 @@ func (scanner *Scanner) addResponse(ginContextCallExpr *ast.CallExpr, desc strin
 	// c.Data(code init, )
 	// c.Redirect(code init, )
 	case "Render", "Data", "Redirect":
-		statusCode, _ := strconv.ParseInt(scanner.Program.ValueOf(args[0]).String(), 10, 64)
+		statusCode, _ := scanner.getStatusCodeFromExpr(args[0]);
 		operation.RespondsWith(int(statusCode), response)
 	}
 }
@@ -461,7 +464,7 @@ func (scanner *Scanner) collectOperationByCallExpr(callExpr *ast.CallExpr, prefi
 
 	if isGinMethod(method) {
 		args := callExpr.Args
-		lastArg := args[len(args)-1]
+		lastArg := args[len(args) - 1]
 
 		var id string
 		var swaggerPath string

@@ -34,7 +34,7 @@ func parseCommentToSummaryDesc(str string) (string, string) {
 
 func getExportedNameOfPackage(path string) string {
 	var parts = strings.Split(path, ".")
-	return parts[len(parts)-1]
+	return parts[len(parts) - 1]
 }
 
 func getRouterPathByCallExpr(callExpr *ast.CallExpr) string {
