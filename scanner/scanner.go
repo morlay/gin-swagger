@@ -14,6 +14,7 @@ import (
 	"github.com/morlay/gin-swagger/program"
 	"github.com/morlay/gin-swagger/swagger"
 	"gopkg.in/gin-gonic/gin.v1"
+	"net/http"
 )
 
 type ScannerOpts struct {
@@ -377,6 +378,13 @@ func (scanner *Scanner) addResponse(ginContextCallExpr *ast.CallExpr, desc strin
 		statusCode, _ := strconv.ParseInt(scanner.Program.ValueOf(args[0]).String(), 10, 64)
 		operation.RespondsWith(int(statusCode), response)
 		operation.WithProduces(gin.MIMEHTML)
+	// c.String(http.StatusOK, format, values)
+	case "String":
+		statusCode, _ := strconv.ParseInt(scanner.Program.ValueOf(args[0]).String(), 10, 64)
+		schema := spec.Schema{}
+		schema.Typed("string", "")
+		response.WithSchema(&schema)
+		operation.RespondsWith(int(statusCode), response)
 	// c.Render(code init, )
 	// c.Data(code init, )
 	// c.Redirect(code init, )
