@@ -70,13 +70,10 @@ type (
 func Test2(c *gin.Context) {
 	var req = SomeReq{}
 
-	var res = Some{
-		State: STATE__ONE,
-	}
-
-	res.Name = uint64(req.Size)
-
 	if true {
-		c.JSON(http.StatusOK, res) // 正常返回
+		c.JSON(http.StatusOK, Some{
+			State: STATE__ONE,
+			Name:  uint64(req.Size),
+		}) // 正常返回
 	}
 }

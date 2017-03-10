@@ -88,6 +88,26 @@
         }
       }
     },
+    "/test": {
+      "post": {
+        "description": "Others\nheheheh",
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "test3"
+        ],
+        "summary": "Summary",
+        "operationId": "Test3",
+        "responses": {
+          "200": {
+            "schema": {
+              "$ref": "#/definitions/Some"
+            }
+          }
+        }
+      }
+    },
     "/user/test/{name}/0": {
       "get": {
         "description": "Others\nheheheh",

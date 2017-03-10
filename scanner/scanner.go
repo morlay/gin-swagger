@@ -155,11 +155,11 @@ func (scanner *Scanner) defineSchemaBy(tpe types.Type) spec.Schema {
 		if len(schema.Type) == 0 {
 			name := getExportedNameOfPackage(namedType.String())
 			fmt.Printf(aurora.Sprintf("\t Picking defination from %s\n", aurora.Brown(namedType)))
-			if s, ok := scanner.Swagger.AddDefinition(name, scanner.defineSchemaBy(namedType.Underlying())); ok {
-				schema = *s
-			} else {
+			s, ok := scanner.Swagger.AddDefinition(name, scanner.defineSchemaBy(namedType.Underlying()))
+			if !ok {
 				fmt.Printf(aurora.Sprintf(aurora.Red("\t\t `%s` already picked from `%s`\n"), name, namedType))
 			}
+			schema = *s
 		}
 	case *types.Pointer:
 		schema = scanner.defineSchemaBy(tpe.(*types.Pointer).Elem())

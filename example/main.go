@@ -5,6 +5,7 @@ package main
 import (
 	"github.com/morlay/gin-swagger/example/test"
 	"github.com/morlay/gin-swagger/example/test2"
+	"github.com/morlay/gin-swagger/example/test3"
 	"gopkg.in/gin-gonic/gin.v1"
 )
 
@@ -15,6 +16,7 @@ func main() {
 	router.Use(gin.Recovery())
 
 	router.POST("/", test.Test)
+	router.POST("/test", test3.Test3)
 
 	userRoute := router.Group("/user")
 	userRouteWith := userRoute.Group("/test")
