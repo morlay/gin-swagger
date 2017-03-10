@@ -350,7 +350,7 @@
           ],
           "x-go-name": "State",
           "x-go-named": "github.com/morlay/gin-swagger/example/test2.State",
-          "x-go-validate": "@string{TWO}"
+          "x-go-validate": "@string{,TWO}"
         }
       }
     },

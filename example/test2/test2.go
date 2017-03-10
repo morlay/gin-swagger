@@ -56,7 +56,7 @@ type (
 	// struct
 	Some struct {
 		// Test
-		State     State      `json:"state" validate:"@string{TWO}"`
+		State     State      `json:"state" validate:"@string{,TWO}"`
 		Name      uint64     `json:"name,string"`
 		Data      []ItemData `json:"data"`
 		StartTime Date       `json:"startTime"`

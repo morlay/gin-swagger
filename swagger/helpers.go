@@ -174,14 +174,14 @@ func BindSchemaWithCommonValidations(schema *spec.Schema, commonValidations spec
 			case "string":
 				if EnumContainsValue(schema.Enum, enumValueOrIndex) {
 					enums = append(enums, enumValueOrIndex)
-				} else {
+				} else if enumValueOrIndex != "" {
 					panic(fmt.Errorf("%s is not value of %s", enumValueOrIndex, schema.Enum))
 				}
 			default:
 				if idx, ok := enumValueOrIndex.(int); ok {
 					if schema.Enum[idx] != nil {
 						enums = append(enums, schema.Enum[idx])
-					} else {
+					} else if idx != 0 {
 						panic(fmt.Errorf("%s is out-range of  %s", enumValueOrIndex, schema.Enum))
 					}
 				}
