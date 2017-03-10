@@ -7,10 +7,9 @@ import (
 	"go/types"
 	"strings"
 
-	"fmt"
-
 	"github.com/logrusorgru/aurora"
 	"golang.org/x/tools/go/loader"
+	"log"
 )
 
 type Program struct {
@@ -106,7 +105,7 @@ func (program *Program) WhereDecl(targetTpe types.Type) ast.Expr {
 			}
 		}
 	default:
-		fmt.Println(aurora.Sprintf(aurora.Red("%v"), targetTpe))
+		log.Println(aurora.Sprintf(aurora.Red("%v"), targetTpe))
 	}
 
 	return nil

@@ -5,15 +5,13 @@ import (
 )
 
 // swagger:enum
-type (
-	State int
-)
+type State int
 
 const (
-	STATE_UNKNOWN = iota
-	STATE__ONE    // one
-	STATE__TWO    // two
-	STATE__THREE  // two
+	STATE_UNKNOWN State = iota
+	STATE__ONE          // one
+	STATE__TWO          // two
+	STATE__THREE        // two
 )
 
 var (
@@ -29,7 +27,6 @@ var (
 
 func RevertToValueKey(kvMap map[State]string) map[string]State {
 	vkMap := map[string]State{}
-
 	for key, value := range kvMap {
 		vkMap[value] = key
 	}

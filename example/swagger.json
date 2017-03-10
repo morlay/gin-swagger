@@ -55,11 +55,13 @@
             "type": "string",
             "x-enum-labels": [
               "one",
+              "two",
               "two"
             ],
             "x-enum-values": [
               "ONE",
-              "TWO"
+              "TWO",
+              "THREE"
             ],
             "x-go-name": "State",
             "x-go-named": "github.com/morlay/gin-swagger/example/test2.State",
@@ -89,7 +91,7 @@
       }
     },
     "/test": {
-      "post": {
+      "get": {
         "description": "Others\nheheheh",
         "produces": [
           "application/json"
@@ -182,11 +184,13 @@
             "type": "string",
             "x-enum-labels": [
               "one",
+              "two",
               "two"
             ],
             "x-enum-values": [
               "ONE",
-              "TWO"
+              "TWO",
+              "THREE"
             ],
             "x-go-name": "State",
             "x-go-named": "github.com/morlay/gin-swagger/example/test2.State",
@@ -272,15 +276,18 @@
           "type": "string",
           "enum": [
             "ONE",
-            "TWO"
+            "TWO",
+            "THREE"
           ],
           "x-enum-labels": [
             "one",
+            "two",
             "two"
           ],
           "x-enum-values": [
             "ONE",
-            "TWO"
+            "TWO",
+            "THREE"
           ],
           "x-go-name": "State",
           "x-go-named": "github.com/morlay/gin-swagger/example/test2.State"
@@ -342,11 +349,13 @@
           ],
           "x-enum-labels": [
             "one",
+            "two",
             "two"
           ],
           "x-enum-values": [
             "ONE",
-            "TWO"
+            "TWO",
+            "THREE"
           ],
           "x-go-name": "State",
           "x-go-named": "github.com/morlay/gin-swagger/example/test2.State",
@@ -379,11 +388,13 @@
               ],
               "x-enum-labels": [
                 "one",
+                "two",
                 "two"
               ],
               "x-enum-values": [
                 "ONE",
-                "TWO"
+                "TWO",
+                "THREE"
               ],
               "x-go-name": "State",
               "x-go-named": "github.com/morlay/gin-swagger/example/test2.State",

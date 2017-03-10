@@ -1,12 +1,13 @@
 package swagger
 
 import (
-	"fmt"
-	"github.com/go-openapi/spec"
 	"reflect"
 	"regexp"
 	"strconv"
 	"strings"
+
+	"fmt"
+	"github.com/go-openapi/spec"
 )
 
 var (

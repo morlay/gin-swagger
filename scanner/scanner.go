@@ -1,15 +1,16 @@
 package scanner
 
 import (
-	"fmt"
 	"go/ast"
 	"go/types"
+	"log"
 	"path"
 	"reflect"
 	"regexp"
 	"strconv"
 	"strings"
 
+	"fmt"
 	"github.com/go-openapi/spec"
 	"github.com/logrusorgru/aurora"
 	"github.com/morlay/gin-swagger/program"
@@ -154,10 +155,10 @@ func (scanner *Scanner) defineSchemaBy(tpe types.Type) spec.Schema {
 
 		if len(schema.Type) == 0 {
 			name := getExportedNameOfPackage(namedType.String())
-			fmt.Printf(aurora.Sprintf("\t Picking defination from %s\n", aurora.Brown(namedType)))
+			log.Printf(aurora.Sprintf("\t Picking defination from %s\n", aurora.Brown(namedType)))
 			s, ok := scanner.Swagger.AddDefinition(name, scanner.defineSchemaBy(namedType.Underlying()))
 			if !ok {
-				fmt.Printf(aurora.Sprintf(aurora.Red("\t\t `%s` already picked from `%s`\n"), name, namedType))
+				log.Printf(aurora.Sprintf(aurora.Red("\t\t `%s` already picked from `%s`\n"), name, namedType))
 			}
 			schema = *s
 		}
@@ -355,7 +356,7 @@ func (scanner *Scanner) bindParamBy(t types.Type, operation *spec.Operation) {
 			}
 		}
 	} else {
-		fmt.Errorf("%s", "Param must be an struct")
+		panic(fmt.Errorf("%s", "Param must be an struct"))
 	}
 }
 
@@ -417,7 +418,7 @@ func (scanner *Scanner) getOperation(handlerFuncDecl *ast.FuncDecl) (operation *
 
 	methodName := aurora.Sprintf(aurora.Blue("%s.%s"), pkg.Path(), handlerFuncDecl.Name.String())
 
-	fmt.Printf("Picking operation from %s\n", methodName)
+	log.Printf("Picking operation from %s\n", methodName)
 
 	for _, name := range scope.Names() {
 		tpe := scope.Lookup(name).Type()
@@ -425,7 +426,7 @@ func (scanner *Scanner) getOperation(handlerFuncDecl *ast.FuncDecl) (operation *
 		if name == "req" || name == "request" {
 			if structTpe, ok := tpe.Underlying().(*types.Struct); ok {
 				astStruct := scanner.Program.WhereDecl(tpe)
-				fmt.Printf("\t Picking parameters from %s\n", aurora.Sprintf(aurora.Green("%s"), astStruct))
+				log.Printf("\t Picking parameters from %s\n", aurora.Sprintf(aurora.Green("%s"), astStruct))
 				scanner.bindParamBy(structTpe, operation)
 			} else {
 				panic(fmt.Errorf(aurora.Sprintf(aurora.Red("request in %s should be a struct\n"), methodName)))
@@ -522,7 +523,7 @@ func (scanner *Scanner) collectOperationByCallExpr(callExpr *ast.CallExpr, prefi
 					return str
 				}
 
-				fmt.Printf(aurora.Sprintf(aurora.Red("`%s` without defining param `%s`, and use 0 instead;\n"), swaggerPath, name))
+				log.Printf(aurora.Sprintf(aurora.Red("`%s` without defining param `%s`, and use 0 instead;\n"), swaggerPath, name))
 
 				return "/0"
 			})
