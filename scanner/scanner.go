@@ -383,7 +383,8 @@ func (scanner *Scanner) addResponse(ginContextCallExpr *ast.CallExpr, desc strin
 		operation.RespondsWith(int(statusCode), response)
 		operation.WithProduces(gin.MIMEJSON)
 	// c.HTML(code int, );
-	case "HTML":
+	// c.HTMLString(http.StatusOK, format, values)
+	case "HTML", "HTMLString":
 		statusCode, _ := scanner.getStatusCodeFromExpr(args[0])
 		operation.RespondsWith(int(statusCode), response)
 		operation.WithProduces(gin.MIMEHTML)
