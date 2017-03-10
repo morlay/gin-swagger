@@ -6,17 +6,6 @@ import (
 	"time"
 )
 
-// swagger:enum
-type (
-	State int
-)
-
-const (
-	STATE_UNKNOWN = iota
-	STATE__ONE    // one
-	STATE__TWO    // two
-)
-
 // swagger:strfmt date-time
 type Date time.Time
 

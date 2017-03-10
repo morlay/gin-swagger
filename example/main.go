@@ -16,7 +16,7 @@ func main() {
 	router.Use(gin.Recovery())
 
 	router.POST("/", test.Test)
-	router.POST("/test", test3.Test3)
+	router.GET("/test", test3.Test3)
 
 	userRoute := router.Group("/user")
 	userRouteWith := userRoute.Group("/test")
