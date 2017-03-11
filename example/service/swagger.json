@@ -43,7 +43,7 @@
             "type": "string",
             "format": "date-time",
             "x-go-name": "StartTime",
-            "x-go-named": "github.com/morlay/gin-swagger/example/test2.Date",
+            "x-go-named": "github.com/morlay/gin-swagger/example/service/test2.Date",
             "name": "startTime",
             "in": "query",
             "required": true
@@ -64,7 +64,7 @@
               "THREE"
             ],
             "x-go-name": "State",
-            "x-go-named": "github.com/morlay/gin-swagger/example/test2.State",
+            "x-go-named": "github.com/morlay/gin-swagger/example/service/test2.State",
             "x-go-validate": "@string{TWO}",
             "name": "state",
             "in": "query",
@@ -193,7 +193,7 @@
               "THREE"
             ],
             "x-go-name": "State",
-            "x-go-named": "github.com/morlay/gin-swagger/example/test2.State",
+            "x-go-named": "github.com/morlay/gin-swagger/example/service/test2.State",
             "x-go-validate": "@string{ONE}",
             "name": "state",
             "in": "query",
@@ -203,7 +203,7 @@
             "type": "string",
             "format": "date-time",
             "x-go-name": "StartTime",
-            "x-go-named": "github.com/morlay/gin-swagger/example/test2.Date",
+            "x-go-named": "github.com/morlay/gin-swagger/example/service/test2.Date",
             "name": "startTime",
             "in": "query",
             "required": true
@@ -270,7 +270,7 @@
           "type": "string",
           "format": "date-time",
           "x-go-name": "StartTime",
-          "x-go-named": "github.com/morlay/gin-swagger/example/test2.Date"
+          "x-go-named": "github.com/morlay/gin-swagger/example/service/test2.Date"
         },
         "state": {
           "type": "string",
@@ -290,7 +290,7 @@
             "THREE"
           ],
           "x-go-name": "State",
-          "x-go-named": "github.com/morlay/gin-swagger/example/test2.State"
+          "x-go-named": "github.com/morlay/gin-swagger/example/service/test2.State"
         }
       }
     },
@@ -338,7 +338,7 @@
           "type": "string",
           "format": "date-time",
           "x-go-name": "StartTime",
-          "x-go-named": "github.com/morlay/gin-swagger/example/test2.Date"
+          "x-go-named": "github.com/morlay/gin-swagger/example/service/test2.Date"
         },
         "state": {
           "description": "Test",
@@ -358,7 +358,7 @@
             "THREE"
           ],
           "x-go-name": "State",
-          "x-go-named": "github.com/morlay/gin-swagger/example/test2.State",
+          "x-go-named": "github.com/morlay/gin-swagger/example/service/test2.State",
           "x-go-validate": "@string{,TWO}"
         }
       }
@@ -397,7 +397,7 @@
                 "THREE"
               ],
               "x-go-name": "State",
-              "x-go-named": "github.com/morlay/gin-swagger/example/test2.State",
+              "x-go-named": "github.com/morlay/gin-swagger/example/service/test2.State",
               "x-go-validate": "@string{TWO}"
             }
           }

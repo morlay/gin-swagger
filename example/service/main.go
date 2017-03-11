@@ -3,9 +3,9 @@
 package main
 
 import (
-	"github.com/morlay/gin-swagger/example/test"
-	"github.com/morlay/gin-swagger/example/test2"
-	"github.com/morlay/gin-swagger/example/test3"
+	"github.com/morlay/gin-swagger/example/service/test"
+	"github.com/morlay/gin-swagger/example/service/test2"
+	"github.com/morlay/gin-swagger/example/service/test3"
 	"gopkg.in/gin-gonic/gin.v1"
 )
 

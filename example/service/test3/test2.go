@@ -1,7 +1,7 @@
 package test3
 
 import (
-	"github.com/morlay/gin-swagger/example/test2"
+	"github.com/morlay/gin-swagger/example/service/test2"
 	"gopkg.in/gin-gonic/gin.v1"
 	"net/http"
 )
