@@ -1,6 +1,7 @@
 package scanner
 
 import (
+	"fmt"
 	"go/ast"
 	"go/types"
 	"log"
@@ -10,21 +11,17 @@ import (
 	"strconv"
 	"strings"
 
-	"fmt"
 	"github.com/go-openapi/spec"
 	"github.com/logrusorgru/aurora"
-	"github.com/morlay/gin-swagger/helpers"
+	"gopkg.in/gin-gonic/gin.v1"
+
+	"github.com/morlay/gin-swagger/codegen"
 	"github.com/morlay/gin-swagger/program"
 	"github.com/morlay/gin-swagger/swagger"
-	"gopkg.in/gin-gonic/gin.v1"
 )
 
-type ScannerOpts struct {
-	PackagePath string
-}
-
-func NewScanner(opts *ScannerOpts) *Scanner {
-	prog := program.NewProgram(opts.PackagePath)
+func NewScanner(packagePath string) *Scanner {
+	prog := program.NewProgram(packagePath)
 	swag := swagger.NewSwagger()
 	return &Scanner{
 		Swagger: swag,
@@ -562,5 +559,5 @@ func (scanner *Scanner) Scan() {
 
 func (scanner *Scanner) Output(path string) {
 	scanner.Scan()
-	helpers.WriteJSONFile(path, scanner.Swagger)
+	codegen.WriteJSONFile(path, scanner.Swagger)
 }

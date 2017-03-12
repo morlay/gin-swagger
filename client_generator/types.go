@@ -4,12 +4,11 @@ import (
 	"fmt"
 	"github.com/go-openapi/spec"
 	"github.com/morlay/gin-swagger/codegen"
-	"github.com/morlay/gin-swagger/helpers"
 )
 
 func getFieldsFromSchema(schema spec.Schema) (fields []string, deps []string) {
 	for name, propSchema := range schema.Properties {
-		fieldName := helpers.ToUpperCamelCase(name)
+		fieldName := codegen.ToUpperCamelCase(name)
 
 		if propSchema.Extensions["x-go-name"] != nil {
 			fieldName = fmt.Sprint(propSchema.Extensions["x-go-name"])
@@ -152,7 +151,7 @@ func ToTypes(pkgName string, swagger spec.Swagger) string {
 		deps = append(deps, subDeps...)
 	}
 
-	p.Input(codegen.DeclImports(deps)).NewLine()
+	p.Input(codegen.DeclImports(deps...)).NewLine()
 	p.Input(codegen.JoinWithLineBreak(types...))
 
 	return p.String()

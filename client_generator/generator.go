@@ -5,7 +5,6 @@ import (
 
 	"github.com/go-openapi/spec"
 	"github.com/morlay/gin-swagger/codegen"
-	"github.com/morlay/gin-swagger/helpers"
 )
 
 func NewClientGenerator(name string, baseClient string) *ClientGenerator {
@@ -28,7 +27,7 @@ func (c *ClientGenerator) LoadSwagger(swagger spec.Swagger) {
 func (c *ClientGenerator) LoadSwaggerFromFile(path string) {
 	c.Swagger = spec.Swagger{}
 
-	swaggerString := helpers.OpenFile(path)
+	swaggerString := codegen.OpenFile(path)
 	err := json.Unmarshal([]byte(swaggerString), &c.Swagger)
 	if err != nil {
 		panic(err)
@@ -36,7 +35,7 @@ func (c *ClientGenerator) LoadSwaggerFromFile(path string) {
 }
 
 func (c *ClientGenerator) Output() {
-	pkgName := helpers.ToLowerSnakeCase("Client-" + c.Name)
-	helpers.WriteGoFile(codegen.JoinWithSlash(pkgName, "generated_types.go"), ToTypes(pkgName, c.Swagger))
-	helpers.WriteGoFile(codegen.JoinWithSlash(pkgName, "generated_client.go"), ToClient(c.BaseClient, pkgName, c.Swagger))
+	pkgName := codegen.ToLowerSnakeCase("Client-" + c.Name)
+	codegen.WriteGoFile(codegen.JoinWithSlash(pkgName, "generated_types.go"), ToTypes(pkgName, c.Swagger))
+	codegen.WriteGoFile(codegen.JoinWithSlash(pkgName, "generated_client.go"), ToClient(c.BaseClient, pkgName, c.Swagger))
 }

@@ -6,11 +6,6 @@ import (
 	"net/http"
 )
 
-// swagger:enum
-type (
-	State int
-)
-
 // Summary
 //
 // Others

@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"github.com/go-openapi/spec"
 	"github.com/morlay/gin-swagger/codegen"
-	"github.com/morlay/gin-swagger/helpers"
 	"gopkg.in/gin-gonic/gin.v1"
 	"strings"
 )
@@ -123,7 +122,7 @@ func (c *ClientInfo) Render() string {
 
 	return codegen.JoinWithLineBreak(
 		codegen.DeclPackage(c.PkgName),
-		codegen.DeclImports(deps),
+		codegen.DeclImports(deps...),
 		c.RenderDecl(),
 		ops,
 	)
@@ -156,7 +155,7 @@ func (op *OperationInfo) RenderReqDecl() string {
 		var fields []string
 
 		for _, parameter := range op.Parameters {
-			fieldName := helpers.ToUpperCamelCase(parameter.Name)
+			fieldName := codegen.ToUpperCamelCase(parameter.Name)
 
 			if parameter.Extensions["x-go-name"] != nil {
 				fieldName = parameter.Extensions["x-go-name"].(string)
@@ -245,7 +244,7 @@ func ToClient(baseClient string, pkgName string, swagger spec.Swagger) string {
 	clientInfo := ClientInfo{
 		BaseClient: baseClient,
 		PkgName:    pkgName,
-		Name:       helpers.ToUpperCamelCase(pkgName),
+		Name:       codegen.ToUpperCamelCase(pkgName),
 	}
 
 	for path, pathItem := range swagger.Paths.Paths {

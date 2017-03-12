@@ -19,7 +19,7 @@ func getRefName(str string) string {
 
 func getPackageNameFromPath(str string) string {
 	parts := strings.Split(str, ".")
-	packagePaths := strings.Split(strings.Join(parts[0:len(parts)-1], "."), "/vendor/")
+	packagePaths := strings.Split(strings.Join(parts[0:len(parts)-1], "."), "vendor/")
 
 	if len(packagePaths) > 2 {
 		panic(fmt.Errorf("package name is not available `%s`", str))

@@ -9,6 +9,7 @@ import (
 
 	"github.com/logrusorgru/aurora"
 	"github.com/morlay/gin-swagger/client_generator"
+	"github.com/morlay/gin-swagger/enum_generator"
 	"github.com/morlay/gin-swagger/scanner"
 )
 
@@ -29,6 +30,9 @@ func main() {
 	}
 
 	switch flags.Arg(0) {
+	case "enum":
+		eg := enum_generator.NewEnumGenerator(getPackageName())
+		eg.Output()
 	case "client":
 		input := flag.String("input", "swagger.json", "swagger json file path")
 		clientName := flag.String("name", "service", "client name")
@@ -38,9 +42,7 @@ func main() {
 		cg.LoadSwaggerFromFile(*input)
 		cg.Output()
 	default:
-		sc := scanner.NewScanner(&scanner.ScannerOpts{
-			PackagePath: getPackageName(),
-		})
+		sc := scanner.NewScanner(getPackageName())
 		sc.Output("swagger.json")
 	}
 }

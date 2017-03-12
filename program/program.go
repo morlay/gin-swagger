@@ -8,6 +8,7 @@ import (
 	"strings"
 
 	"github.com/logrusorgru/aurora"
+	"github.com/morlay/gin-swagger/codegen"
 	"golang.org/x/tools/go/loader"
 	"log"
 )
@@ -176,7 +177,7 @@ func (program *Program) GetEnumOptionsByType(node ast.Node) (list []Option) {
 							}
 						default:
 							var name = valueSpec.Names[0].Name
-							if strings.HasPrefix(name, UpperSnakeCase(ident.String())) {
+							if strings.HasPrefix(name, codegen.ToUpperSnakeCase(ident.String())) {
 								var values = strings.SplitN(name, "__", 2)
 								if len(values) == 2 {
 									list = append(list, Option{

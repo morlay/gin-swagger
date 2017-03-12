@@ -1,4 +1,4 @@
-package helpers
+package codegen
 
 import (
 	"github.com/stretchr/testify/assert"

@@ -6,7 +6,6 @@ import (
 	"go/types"
 	"strconv"
 	"strings"
-	"unicode"
 )
 
 func GetBasicLitValue(basicLit *ast.BasicLit) interface{} {
@@ -80,27 +79,6 @@ func GetTextFromCommentGroup(commentGroup []*ast.CommentGroup) string {
 	return strings.Trim(text, "\n")
 }
 
-func UpperSnakeCase(s string) string {
-	in := []rune(s)
-	isLower := func(idx int) bool {
-		return idx >= 0 && idx < len(in) && unicode.IsLower(in[idx])
-	}
-
-	out := make([]rune, 0, len(in)+len(in)/2)
-
-	for i, r := range in {
-		if unicode.IsUpper(r) {
-			r = unicode.ToLower(r)
-			if i > 0 && in[i-1] != '_' && (isLower(i-1) || isLower(i+1)) {
-				out = append(out, '_')
-			}
-		}
-		out = append(out, r)
-	}
-
-	return strings.ToUpper(string(out))
-}
-
 func indirect(t types.Type) types.Type {
 	switch t.(type) {
 	case *types.Pointer:
@@ -110,4 +88,12 @@ func indirect(t types.Type) types.Type {
 	default:
 		return t
 	}
+}
+
+func IsVendorPackage(path string) bool {
+	return len(strings.Split(path, "vendor/")) > 1
+}
+
+func IsSubPackageOf(basePath string, path string) bool {
+	return strings.Index(path, basePath) == 0
 }

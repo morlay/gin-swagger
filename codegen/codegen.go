@@ -10,8 +10,20 @@ func DeclType(name string, tpe string) string {
 	return NewPrinter().Input(JoinWithSpace("type", name, tpe)).NewLine().String()
 }
 
+func DeclVar(name string, value string) string {
+	return NewPrinter().Input(JoinWithSpace("var", name, "=", value)).NewLine().String()
+}
+
 func DeclMap(keyType string, valueType string) string {
 	return "map" + WithSquareBrackets(keyType) + valueType
+}
+
+func DeclReturn(value string) string {
+	return "return " + value
+}
+
+func DeclCase(value string) string {
+	return "case " + value + ":"
 }
 
 func DeclSlice(itemType string) string {
@@ -54,7 +66,7 @@ func DeclStruct(fields []string) string {
 		String()
 }
 
-func DeclImports(deps []string) string {
+func DeclImports(deps ...string) string {
 	if len(deps) > 0 {
 		return "import " + WithRoundBrackets(
 			JoinWithLineBreak(

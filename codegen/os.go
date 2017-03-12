@@ -1,4 +1,4 @@
-package helpers
+package codegen
 
 import (
 	"encoding/json"
@@ -7,6 +7,7 @@ import (
 	"log"
 	"os"
 	"os/exec"
+	"path"
 	"path/filepath"
 )
 
@@ -29,14 +30,14 @@ func OpenFile(path string) string {
 	return string(data)
 }
 
-func WriteFile(path string, content string) {
-	dir := filepath.Dir(path)
+func WriteFile(filename string, content string) {
+	dir := filepath.Dir(filename)
 
 	if dir != "" {
 		os.MkdirAll(dir, os.ModePerm)
 	}
 
-	f, err := os.Create(path)
+	f, err := os.Create(filename)
 	if err != nil {
 		panic(err)
 	}
@@ -48,7 +49,9 @@ func WriteFile(path string, content string) {
 	}
 	f.Sync()
 
-	log.Printf(aurora.Sprintf(aurora.Green("Generated file %s(%d KiB, %d B)"), aurora.Blue(path), n3/1024, n3))
+	pwd, _ := os.Getwd()
+
+	log.Printf(aurora.Sprintf(aurora.Green("Generated file to %s(%d KiB, %d B)"), aurora.Blue(path.Join(pwd, filename)), n3/1024, n3))
 }
 
 func WriteGoFile(path string, content string) {
