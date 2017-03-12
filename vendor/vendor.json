@@ -100,12 +100,6 @@
 			"revisionTime": "2016-11-23T14:36:37Z"
 		},
 		{
-			"checksumSHA1": "qFK224hj55cvRce9Y9cK0ADwkOM=",
-			"path": "github.com/morlay/gin-swagger",
-			"revision": "951ab9b6111cea8251ebe9a9c8d09e1fb28abe65",
-			"revisionTime": "2017-03-09T02:40:08Z"
-		},
-		{
 			"checksumSHA1": "zKKp5SZ3d3ycKe4EKMNT0BqAWBw=",
 			"origin": "github.com/stretchr/testify/vendor/github.com/pmezard/go-difflib/difflib",
 			"path": "github.com/pmezard/go-difflib/difflib",
@@ -171,6 +165,36 @@
 			"path": "golang.org/x/tools/go/loader",
 			"revision": "f7f4b0b08a3ec1e3560fffa2d769052b12b5b1d2",
 			"revisionTime": "2017-02-16T21:19:20Z"
+		},
+		{
+			"checksumSHA1": "aEqK29YjOyDVSWgD2S4VQh80rmw=",
+			"path": "golib/gin",
+			"revision": "2175df5212c1ce6d69f0f82d9b92a6fe092d545d",
+			"revisionTime": "2017-01-17T02:26:23Z"
+		},
+		{
+			"checksumSHA1": "t2ZdpwaLQ4CCAH/Ktq8qL4WuSOs=",
+			"path": "golib/gin/binding",
+			"revision": "2175df5212c1ce6d69f0f82d9b92a6fe092d545d",
+			"revisionTime": "2017-01-17T02:26:23Z"
+		},
+		{
+			"checksumSHA1": "SHnDM55Y2jkVxPCel1RkToepAaI=",
+			"path": "golib/gin/render",
+			"revision": "2175df5212c1ce6d69f0f82d9b92a6fe092d545d",
+			"revisionTime": "2017-01-17T02:26:23Z"
+		},
+		{
+			"checksumSHA1": "psYsJwXc0UnFcjeqWAarB2zsDcY=",
+			"path": "golib/go-logging",
+			"revision": "1f49c90f488ec30a66ebcfb1b8c66caf41b3f865",
+			"revisionTime": "2017-01-24T02:13:38Z"
+		},
+		{
+			"checksumSHA1": "kij3fr/3Jp2uyOlSt9lDcj5bdUU=",
+			"path": "golib/httprouter",
+			"revision": "eb789edacb2f517eeb007bc748839df82e25ad40",
+			"revisionTime": "2016-10-26T01:53:38Z"
 		},
 		{
 			"checksumSHA1": "hT+7DPyl8tQ96kUXW3Sr5o0Pcj0=",

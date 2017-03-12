@@ -13,6 +13,7 @@ import (
 	"fmt"
 	"github.com/go-openapi/spec"
 	"github.com/logrusorgru/aurora"
+	"github.com/morlay/gin-swagger/helpers"
 	"github.com/morlay/gin-swagger/program"
 	"github.com/morlay/gin-swagger/swagger"
 	"gopkg.in/gin-gonic/gin.v1"
@@ -557,4 +558,9 @@ func (scanner *Scanner) Scan() {
 			})
 		}
 	}
+}
+
+func (scanner *Scanner) Output(path string) {
+	scanner.Scan()
+	helpers.WriteJSONFile(path, scanner.Swagger)
 }

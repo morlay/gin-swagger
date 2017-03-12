@@ -1,17 +1,15 @@
 package main
 
 import (
-	"encoding/json"
+	"flag"
+	"log"
 	"os"
 	"os/exec"
 	"strings"
 
-	"flag"
-	"fmt"
 	"github.com/logrusorgru/aurora"
+	"github.com/morlay/gin-swagger/client_generator"
 	"github.com/morlay/gin-swagger/scanner"
-	"github.com/morlay/gin-swagger/swagger"
-	"log"
 )
 
 func getPackageName() string {
@@ -19,43 +17,30 @@ func getPackageName() string {
 	return strings.TrimSpace(string(output))
 }
 
-func WriteToJSON(swagger *swagger.Swagger, path string) {
-	f, err := os.Create(path)
-	if err != nil {
-		panic(err)
-	}
-
-	b, err := json.MarshalIndent(swagger, "", "  ")
-	if err != nil {
-		panic(err)
-	}
-
-	n3, err := f.WriteString(string(b))
-	if err != nil {
-		panic(err)
-	}
-
-	f.Sync()
-
-	log.Printf("Generated swagger.json to %s with %d bytes\n", path, n3)
-}
-
-func Usage() {
-	fmt.Fprintf(os.Stderr, "Usage of %s:\n", os.Args[0])
-	fmt.Fprintf(os.Stderr, "\tgin-swagger\n")
-	flag.PrintDefaults()
-}
-
 func main() {
-	log.SetFlags(0)
 	log.SetPrefix(aurora.Sprintf("[%s]  ", aurora.Cyan("gin-swagger")))
 
-	flag.Usage = Usage
+	flags := flag.NewFlagSet("gin-swagger", flag.ContinueOnError)
 
-	sc := scanner.NewScanner(&scanner.ScannerOpts{
-		PackagePath: getPackageName(),
-	})
+	err := flags.Parse(os.Args[1:])
 
-	sc.Scan()
-	WriteToJSON(sc.Swagger, "swagger.json")
+	if err != nil {
+		panic(err)
+	}
+
+	switch flags.Arg(0) {
+	case "client":
+		input := flag.String("input", "swagger.json", "swagger json file path")
+		clientName := flag.String("name", "service", "client name")
+		baseClient := flag.String("base", "github.com/morlay/gin-swagger/example/client", "client name")
+
+		cg := client_generator.NewClientGenerator(*clientName, *baseClient)
+		cg.LoadSwaggerFromFile(*input)
+		cg.Output()
+	default:
+		sc := scanner.NewScanner(&scanner.ScannerOpts{
+			PackagePath: getPackageName(),
+		})
+		sc.Output("swagger.json")
+	}
 }
