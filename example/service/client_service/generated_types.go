@@ -4,14 +4,6 @@ import (
 	"github.com/morlay/gin-swagger/example/service/test2"
 )
 
-type SomeTest struct {
-	Common
-	//
-	ErrorMap ErrorMap `json:"errorMap"`
-	//
-	State test2.State `json:"state,string" validate:"@string{TWO}"`
-}
-
 type Common struct {
 	// 总数
 	Total int8 `json:"total"`
@@ -27,7 +19,7 @@ type ItemData struct {
 	//
 	StartTime test2.Date `json:"startTime,string"`
 	//
-	State test2.State `json:"state,string"`
+	State test2.State `json:"state"`
 }
 
 type ReqBody struct {
@@ -38,12 +30,20 @@ type ReqBody struct {
 }
 
 type Some struct {
-	//
-	StartTime test2.Date `json:"startTime,string"`
 	// Test
-	State test2.State `json:"state,string" validate:"@string{,TWO}"`
+	State test2.State `json:"state" validate:"@string{,TWO}"`
 	//
 	Data []ItemData `json:"data"`
 	//
 	Name uint64 `json:"name,string"`
+	//
+	StartTime test2.Date `json:"startTime,string"`
+}
+
+type SomeTest struct {
+	Common
+	//
+	State test2.State `json:"state" validate:"@string{TWO}"`
+	//
+	ErrorMap ErrorMap `json:"errorMap"`
 }

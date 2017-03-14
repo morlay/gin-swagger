@@ -21,7 +21,7 @@ func getFieldsFromSchema(schema spec.Schema) (fields []string, deps []string) {
 
 		var jsonTag = name
 
-		if propSchema.Type.Contains("string") && goType != "string" {
+		if propSchema.Enum == nil && propSchema.Type.Contains("string") && goType != "string" {
 			jsonTag = codegen.JoinWithComma(jsonTag, "string")
 		}
 
