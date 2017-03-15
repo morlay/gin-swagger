@@ -100,7 +100,7 @@ func (c *ClientInfo) RenderOperations() (string, []string) {
 		methods = append(methods, codegen.JoinWithLineBreak(
 			o.RenderReqDecl(),
 			o.RenderRespDecl(),
-			prefix+o.RenderOperationMethod(),
+			prefix + o.RenderOperationMethod(),
 		))
 
 		deps = append(deps, o.GetDeps()...)
@@ -204,7 +204,7 @@ func (op *OperationInfo) RenderReqDecl() string {
 			))
 		}
 
-		return codegen.DeclType(op.ID+"Request", codegen.DeclStruct(fields))
+		return codegen.DeclType(op.ID + "Request", codegen.DeclStruct(fields))
 	}
 
 	return ""
@@ -215,11 +215,9 @@ func (op *OperationInfo) RenderRespDecl() string {
 
 	schema.Typed("object", "")
 
-	if !op.RespBody.Type.Contains("null") {
-		schema.SetProperty("body", op.RespBody)
-	}
+	schema.SetProperty("body", op.RespBody)
 
-	goType, subDeps := ToGoType(op.ID+"Response", schema)
+	goType, subDeps := ToGoType(op.ID + "Response", schema)
 
 	op.addDeps(subDeps...)
 
