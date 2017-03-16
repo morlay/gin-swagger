@@ -44,7 +44,7 @@ func (v State) MarshalJSON() ([]byte, error) {
 }
 
 func (v *State) UnmarshalJSON(data []byte) (err error) {
-	s := strings.Trim(string(data), "\"")
+	s := strings.Trim(strings.ToUpper(string(data)), "\"")
 	*v, err = ParseStateFromString(s)
 	return
 }

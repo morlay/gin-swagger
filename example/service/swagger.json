@@ -178,6 +178,14 @@
             "required": true
           },
           {
+            "type": "boolean",
+            "x-go-name": "Is",
+            "x-go-named": "github.com/morlay/gin-swagger/example/service/test2.Bool",
+            "name": "is",
+            "in": "path",
+            "required": true
+          },
+          {
             "enum": [
               "ONE"
             ],

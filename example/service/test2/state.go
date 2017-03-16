@@ -9,3 +9,13 @@ const (
 	STATE__TWO          // two
 	STATE__THREE        // two
 )
+
+
+// swagger:enum
+type Bool int
+
+const (
+	BOOL_UNKNOWN Bool = iota
+	BOOL__TRUE          // true
+	BOOL__FALSE         // false
+)

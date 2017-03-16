@@ -174,7 +174,7 @@ func (v {{ .Name }}) MarshalJSON() ([]byte, error) {
 }
 
 func (v *{{ .Name }}) UnmarshalJSON(data []byte) (err error) {
-	s := strings.Trim(string(data), "\"")
+	s := strings.Trim(strings.ToUpper(string(data)), "\"")
 	*v, err = Parse{{ .Name }}FromString(s)
 	return
 }`)(enum)

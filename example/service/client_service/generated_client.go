@@ -20,6 +20,16 @@ type ClientService struct {
 	client.Client
 }
 
+type Test3Response struct {
+	//
+	Body Some `json:"body"`
+}
+
+func (c ClientService) Test3() (resp Test3Response, err error) {
+	err = c.DoRequest("Test3", "GET", "/test", nil, &resp)
+	return
+}
+
 type Test2Request struct {
 	// 分页大小
 	Size int8 `json:"size" in:"query" default:"10" validate:"@int8[-1,20)"`
@@ -31,6 +41,8 @@ type Test2Request struct {
 	Id int8 `json:"id" in:"query"`
 	//
 	Name string `json:"name" in:"path"`
+	//
+	Is test2.Bool `json:"is" in:"path"`
 	//
 	State test2.State `json:"state,string" in:"query" validate:"@string{ONE}"`
 	//
@@ -67,15 +79,5 @@ type TestResponse struct {
 
 func (c ClientService) Test(req TestRequest) (resp TestResponse, err error) {
 	err = c.DoRequest("Test", "POST", "/", req, &resp)
-	return
-}
-
-type Test3Response struct {
-	//
-	Body Some `json:"body"`
-}
-
-func (c ClientService) Test3() (resp Test3Response, err error) {
-	err = c.DoRequest("Test3", "GET", "/test", nil, &resp)
 	return
 }
