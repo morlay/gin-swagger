@@ -123,8 +123,8 @@ func (scanner *Scanner) getBasicSchemaFromType(t types.Type) spec.Schema {
 		var enumLabels []string
 
 		if enums, enumLabels, doc = scanner.getEnums(doc, astType); len(enums) > 0 {
-			if (len(enums) == 2 && strings.ToUpper(enums[0].(string)) == "TRUE" && strings.ToUpper(enums[1].(string)) == "FALSE") {
-				newSchema.Typed("boolean", "");
+			if len(enums) == 2 && strings.ToUpper(enums[0].(string)) == "TRUE" && strings.ToUpper(enums[1].(string)) == "FALSE" {
+				newSchema.Typed("boolean", "")
 			} else {
 				newSchema.WithEnum(enums...)
 				if typeName, _, ok := swagger.GetSchemaTypeFromBasicType(reflect.TypeOf(enums[0]).Name()); ok {
@@ -482,7 +482,7 @@ func (scanner *Scanner) collectOperationByCallExpr(callExpr *ast.CallExpr, prefi
 
 	if isGinMethod(method) {
 		args := callExpr.Args
-		lastArg := args[len(args) - 1]
+		lastArg := args[len(args)-1]
 
 		var id string
 		var swaggerPath string

@@ -4,10 +4,20 @@ import (
 	"fmt"
 	"github.com/go-openapi/spec"
 	"github.com/morlay/gin-swagger/codegen"
+	"sort"
 )
 
 func getFieldsFromSchema(schema spec.Schema) (fields []string, deps []string) {
-	for name, propSchema := range schema.Properties {
+	var propNames = []string{}
+
+	for name := range schema.Properties {
+		propNames = append(propNames, name)
+	}
+
+	sort.Strings(propNames)
+
+	for _, name := range propNames {
+		propSchema := schema.Properties[name]
 		fieldName := codegen.ToUpperCamelCase(name)
 
 		if propSchema.Extensions["x-go-name"] != nil {
@@ -144,9 +154,16 @@ func ToTypes(pkgName string, swagger spec.Swagger) string {
 
 	var types = []string{}
 	var deps = []string{}
+	var definitionNames = []string{}
 
-	for name, schema := range swagger.Definitions {
-		goType, subDeps := ToGoType(name, schema)
+	for name := range swagger.Definitions {
+		definitionNames = append(definitionNames, name)
+	}
+
+	sort.Strings(definitionNames)
+
+	for _, name := range definitionNames {
+		goType, subDeps := ToGoType(name, swagger.Definitions[name])
 		types = append(types, goType)
 		deps = append(deps, subDeps...)
 	}

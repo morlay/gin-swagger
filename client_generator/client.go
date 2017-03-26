@@ -5,6 +5,7 @@ import (
 	"github.com/go-openapi/spec"
 	"github.com/morlay/gin-swagger/codegen"
 	"gopkg.in/gin-gonic/gin.v1"
+	"sort"
 	"strings"
 )
 
@@ -13,6 +14,20 @@ type ClientInfo struct {
 	PkgName    string
 	Name       string
 	Operations []OperationInfo
+}
+
+type OperationByID []OperationInfo
+
+func (a OperationByID) Len() int {
+	return len(a)
+}
+
+func (a OperationByID) Swap(i, j int) {
+	a[i], a[j] = a[j], a[i]
+}
+
+func (a OperationByID) Less(i, j int) bool {
+	return a[i].ID < a[j].ID
 }
 
 func (c *ClientInfo) RenderDecl() string {
@@ -96,11 +111,13 @@ func (c *ClientInfo) RenderOperations() (string, []string) {
 	methods := []string{}
 	deps := []string{}
 
+	sort.Sort(OperationByID(c.Operations))
+
 	for _, o := range c.Operations {
 		methods = append(methods, codegen.JoinWithLineBreak(
 			o.RenderReqDecl(),
 			o.RenderRespDecl(),
-			prefix + o.RenderOperationMethod(),
+			prefix+o.RenderOperationMethod(),
 		))
 
 		deps = append(deps, o.GetDeps()...)
@@ -204,7 +221,7 @@ func (op *OperationInfo) RenderReqDecl() string {
 			))
 		}
 
-		return codegen.DeclType(op.ID + "Request", codegen.DeclStruct(fields))
+		return codegen.DeclType(op.ID+"Request", codegen.DeclStruct(fields))
 	}
 
 	return ""
@@ -217,7 +234,7 @@ func (op *OperationInfo) RenderRespDecl() string {
 
 	schema.SetProperty("body", op.RespBody)
 
-	goType, subDeps := ToGoType(op.ID + "Response", schema)
+	goType, subDeps := ToGoType(op.ID+"Response", schema)
 
 	op.addDeps(subDeps...)
 
