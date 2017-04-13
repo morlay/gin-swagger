@@ -186,7 +186,7 @@ func (scanner *Scanner) defineSchemaBy(tpe types.Type) spec.Schema {
 			field := structType.Field(i)
 			fieldAst := structTypeAst.Fields.List[i]
 			structFieldType := field.Type()
-			structFieldTags := program.StructTag(structType.Tag(i))
+			structFieldTags := reflect.StructTag(structType.Tag(i))
 
 			if field.Anonymous() {
 				schemas = append(schemas, scanner.defineSchemaBy(structFieldType))
@@ -250,7 +250,7 @@ func (scanner *Scanner) getBodyParameter(t types.Type) spec.Parameter {
 	return *spec.BodyParam("body", &schema)
 }
 
-func (scanner *Scanner) getNonBodyParameter(name string, location string, tags program.StructTag, t types.Type) spec.Parameter {
+func (scanner *Scanner) getNonBodyParameter(name string, location string, tags reflect.StructTag, t types.Type) spec.Parameter {
 	param := spec.Parameter{}
 
 	defaultValue, hasDefault := tags.Lookup("default")
@@ -314,7 +314,7 @@ func (scanner *Scanner) bindParamBy(t types.Type, operation *spec.Operation) {
 		for i := 0; i < st.NumFields(); i++ {
 			var field = st.Field(i)
 			var astField = structType.Fields.List[i]
-			var structFieldTags = program.StructTag(st.Tag(i))
+			var structFieldTags = reflect.StructTag(st.Tag(i))
 			var fieldType = field.Type()
 			var fieldName = field.Name()
 
