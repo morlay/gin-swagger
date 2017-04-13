@@ -7,7 +7,7 @@ const (
 	STATE_UNKNOWN State = iota
 	STATE__ONE          // one
 	STATE__TWO          // two
-	STATE__THREE        // two
+	STATE__THREE        // three
 )
 
 // swagger:enum
