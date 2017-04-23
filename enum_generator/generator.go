@@ -1,12 +1,13 @@
 package enum_generator
 
 import (
-	"github.com/morlay/gin-swagger/codegen"
-	"github.com/morlay/gin-swagger/program"
-	"github.com/morlay/gin-swagger/swagger"
 	"go/types"
 	"path/filepath"
 	"strings"
+
+	"github.com/morlay/gin-swagger/codegen"
+	"github.com/morlay/gin-swagger/program"
+	"github.com/morlay/gin-swagger/swagger"
 )
 
 func NewEnumGenerator(packagePath string) *EnumGenerator {
@@ -88,10 +89,27 @@ func (g *EnumGenerator) Scan() {
 	}
 }
 
-func (g *EnumGenerator) Output() {
+// HasElem  especially, if src is empty, still return true
+func HasElem(src []string, x string) bool {
+	if len(src) == 0 {
+		return true
+	}
+	for _, i := range src {
+		if i == x {
+			return true
+		}
+	}
+	return false
+}
+
+func (g *EnumGenerator) Output(src ...string) {
 	g.Scan()
 
 	for _, enum := range g.Enums {
+		if HasElem(src, enum.Name) == false {
+			continue
+		}
+
 		relPath, _ := filepath.Rel(g.PackagePath, enum.Pathname)
 
 		name := strings.Replace(codegen.ToLowerSnakeCase(enum.Name), "_", " ", -1)

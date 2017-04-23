@@ -32,7 +32,7 @@ func main() {
 	switch flags.Arg(0) {
 	case "enum":
 		eg := enum_generator.NewEnumGenerator(getPackageName())
-		eg.Output()
+		eg.Output(flags.Args()[1:]...)
 	case "client":
 		input := flag.String("input", "swagger.json", "swagger json file path")
 		clientName := flag.String("name", "service", "client name")
