@@ -8,6 +8,8 @@ const (
 	STATE__ONE          // one
 	STATE__TWO          // two
 	STATE__THREE        // three
+
+	STATE__FOUR State = iota + 100 // four
 )
 
 // swagger:enum

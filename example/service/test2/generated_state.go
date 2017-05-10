@@ -17,6 +17,8 @@ func (v State) String() string {
 		return "TWO"
 	case STATE__THREE:
 		return "THREE"
+	case STATE__FOUR:
+		return "FOUR"
 	}
 	return "UNKNOWN"
 }
@@ -31,6 +33,8 @@ func ParseStateFromString(s string) (State, error) {
 		return STATE__TWO, nil
 	case "THREE":
 		return STATE__THREE, nil
+	case "FOUR":
+		return STATE__FOUR, nil
 	}
 	return STATE_UNKNOWN, InvalidState
 }

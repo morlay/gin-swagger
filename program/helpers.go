@@ -3,6 +3,7 @@ package program
 import (
 	"fmt"
 	"go/ast"
+	"go/constant"
 	"go/types"
 	"strconv"
 	"strings"
@@ -22,6 +23,21 @@ func GetBasicLitValue(basicLit *ast.BasicLit) interface{} {
 		return strings.Trim(basicLit.Value, "\"")
 	}
 	return nil
+}
+
+func GetConstValue(value constant.Value) (uint64, error) {
+	if value.Kind() != constant.Int {
+		return 0, fmt.Errorf("can't happen: constant is not an integer")
+	}
+	i64, isInt := constant.Int64Val(value)
+	u64, isUint := constant.Uint64Val(value)
+	if !isInt && !isUint {
+		return 0, fmt.Errorf("internal error: value of %s is not an integer", value.String())
+	}
+	if !isInt {
+		u64 = uint64(i64)
+	}
+	return u64, nil
 }
 
 func GetIdentDecl(ident *ast.Ident) interface{} {

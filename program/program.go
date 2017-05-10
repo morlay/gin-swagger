@@ -51,6 +51,7 @@ func (program *Program) ValueOf(e ast.Expr) constant.Value {
 			return t.Value
 		}
 	}
+
 	return nil
 }
 
@@ -147,6 +148,7 @@ func (program *Program) PackageOf(node ast.Node) *types.Package {
 }
 
 type Option struct {
+	V     interface{} `json:"v"`
 	Value interface{} `json:"value"`
 	Label string      `json:"label"`
 }
@@ -164,30 +166,30 @@ func (program *Program) GetEnumOptionsByType(node ast.Node) (list []Option) {
 
 			if genDecl.Tok.String() == "const" {
 				for _, spec := range genDecl.Specs {
-					if valueSpec, ok := spec.(*ast.ValueSpec); ok {
-						switch valueSpec.Type.(type) {
-						case *ast.Ident:
-							if valueSpec.Type.(*ast.Ident).Name == ident.Name {
-								if basicLit, ok := valueSpec.Values[0].(*ast.BasicLit); ok {
-									list = append(list, Option{
-										Value: GetBasicLitValue(basicLit),
-										Label: strings.TrimSpace(valueSpec.Comment.Text()),
-									})
-								}
-							}
-						default:
-							var name = valueSpec.Names[0].Name
-							if strings.HasPrefix(name, codegen.ToUpperSnakeCase(ident.String())) {
-								var values = strings.SplitN(name, "__", 2)
-								if len(values) == 2 {
-									list = append(list, Option{
-										Value: values[1],
-										Label: strings.TrimSpace(valueSpec.Comment.Text()),
-									})
-								}
-							}
-						}
+					switch spec.(type) {
+					case *ast.ValueSpec:
+						valueSpec, _ := spec.(*ast.ValueSpec)
+						var name = valueSpec.Names[0].Name
+						obj := program.ObjectOf(valueSpec.Names[0])
+						constValue, _ := obj.(*types.Const)
+						value, _ := GetConstValue(constValue.Val())
 
+						if strings.HasPrefix(name, codegen.ToUpperSnakeCase(ident.String())) {
+							var values = strings.SplitN(name, "__", 2)
+							if len(values) == 2 {
+								list = append(list, Option{
+									V:     value,
+									Value: values[1],
+									Label: strings.TrimSpace(valueSpec.Comment.Text()),
+								})
+							}
+						} else if obj.Type() == program.TypeOf(ident) {
+							list = append(list, Option{
+								V:     value,
+								Value: value,
+								Label: strings.TrimSpace(valueSpec.Comment.Text()),
+							})
+						}
 					}
 
 				}

@@ -56,12 +56,20 @@
             "x-enum-labels": [
               "one",
               "two",
-              "two"
+              "three",
+              "four"
+            ],
+            "x-enum-vals": [
+              1,
+              2,
+              3,
+              104
             ],
             "x-enum-values": [
               "ONE",
               "TWO",
-              "THREE"
+              "THREE",
+              "FOUR"
             ],
             "x-go-name": "State",
             "x-go-named": "github.com/morlay/gin-swagger/example/service/test2.State",
@@ -193,12 +201,20 @@
             "x-enum-labels": [
               "one",
               "two",
-              "two"
+              "three",
+              "four"
+            ],
+            "x-enum-vals": [
+              1,
+              2,
+              3,
+              104
             ],
             "x-enum-values": [
               "ONE",
               "TWO",
-              "THREE"
+              "THREE",
+              "FOUR"
             ],
             "x-go-name": "State",
             "x-go-named": "github.com/morlay/gin-swagger/example/service/test2.State",
@@ -285,17 +301,26 @@
           "enum": [
             "ONE",
             "TWO",
-            "THREE"
+            "THREE",
+            "FOUR"
           ],
           "x-enum-labels": [
             "one",
             "two",
-            "two"
+            "three",
+            "four"
+          ],
+          "x-enum-vals": [
+            1,
+            2,
+            3,
+            104
           ],
           "x-enum-values": [
             "ONE",
             "TWO",
-            "THREE"
+            "THREE",
+            "FOUR"
           ],
           "x-go-name": "State",
           "x-go-named": "github.com/morlay/gin-swagger/example/service/test2.State"
@@ -358,12 +383,20 @@
           "x-enum-labels": [
             "one",
             "two",
-            "two"
+            "three",
+            "four"
+          ],
+          "x-enum-vals": [
+            1,
+            2,
+            3,
+            104
           ],
           "x-enum-values": [
             "ONE",
             "TWO",
-            "THREE"
+            "THREE",
+            "FOUR"
           ],
           "x-go-name": "State",
           "x-go-named": "github.com/morlay/gin-swagger/example/service/test2.State",
@@ -397,12 +430,20 @@
               "x-enum-labels": [
                 "one",
                 "two",
-                "two"
+                "three",
+                "four"
+              ],
+              "x-enum-vals": [
+                1,
+                2,
+                3,
+                104
               ],
               "x-enum-values": [
                 "ONE",
                 "TWO",
-                "THREE"
+                "THREE",
+                "FOUR"
               ],
               "x-go-name": "State",
               "x-go-named": "github.com/morlay/gin-swagger/example/service/test2.State",

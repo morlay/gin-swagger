@@ -84,7 +84,7 @@ func (scanner *Scanner) getStrFmt(doc string) (fmtName string, otherDoc string) 
 	return
 }
 
-func (scanner *Scanner) getEnums(doc string, node ast.Node) (enums []interface{}, enumLabels []string, otherDoc string) {
+func (scanner *Scanner) getEnums(doc string, node ast.Node) (enums []interface{}, enumLabels []string, enumVals []interface{}, otherDoc string) {
 	var hasEnum bool
 	otherDoc, hasEnum = swagger.ParseEnum(doc)
 	if hasEnum {
@@ -92,6 +92,7 @@ func (scanner *Scanner) getEnums(doc string, node ast.Node) (enums []interface{}
 		for _, option := range options {
 			enums = append(enums, option.Value)
 			enumLabels = append(enumLabels, option.Label)
+			enumVals = append(enumVals, option.V)
 		}
 	}
 	return
@@ -121,8 +122,9 @@ func (scanner *Scanner) getBasicSchemaFromType(t types.Type) spec.Schema {
 
 		var enums []interface{}
 		var enumLabels []string
+		var enumVals []interface{}
 
-		if enums, enumLabels, doc = scanner.getEnums(doc, astType); len(enums) > 0 {
+		if enums, enumLabels, enumVals, doc = scanner.getEnums(doc, astType); len(enums) > 0 {
 			if len(enums) == 2 && strings.ToUpper(enums[0].(string)) == "TRUE" && strings.ToUpper(enums[1].(string)) == "FALSE" {
 				newSchema.Typed("boolean", "")
 			} else {
@@ -132,6 +134,7 @@ func (scanner *Scanner) getBasicSchemaFromType(t types.Type) spec.Schema {
 				}
 				newSchema.AddExtension("x-enum-values", enums)
 				newSchema.AddExtension("x-enum-labels", enumLabels)
+				newSchema.AddExtension("x-enum-vals", enumVals)
 				newSchema.WithDescription(doc)
 			}
 		}
