@@ -346,7 +346,7 @@
       }
     },
     "Some": {
-      "description": "Some",
+      "description": "Some\nstruct",
       "type": "object",
       "required": [
         "state",

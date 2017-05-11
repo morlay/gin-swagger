@@ -4,13 +4,16 @@ import (
 	"go/ast"
 	"go/constant"
 	"go/parser"
+	"go/token"
 	"go/types"
+	"log"
+	"sort"
 	"strings"
 
 	"github.com/logrusorgru/aurora"
-	"github.com/morlay/gin-swagger/codegen"
 	"golang.org/x/tools/go/loader"
-	"log"
+
+	"github.com/morlay/gin-swagger/codegen"
 )
 
 type Program struct {
@@ -93,7 +96,6 @@ func (program *Program) DefOf(id *ast.Ident) types.Object {
 }
 
 func (program *Program) WhereDecl(targetTpe types.Type) ast.Expr {
-
 	switch targetTpe.(type) {
 	case *types.Named:
 		namedType := targetTpe.(*types.Named)
@@ -212,60 +214,70 @@ func (program *Program) AstDeclOf(targetNode ast.Node) (ast.Decl, bool) {
 	return nil, false
 }
 
-func (program *Program) CommentGroupFor(targetNode ast.Node) (commentList []*ast.CommentGroup) {
-	file := program.FileOf(targetNode)
+type ByCommentPos []*ast.CommentGroup
 
-	commentMap := ast.NewCommentMap(program.Fset, file, file.Comments)
+func (a ByCommentPos) Len() int {
+	return len(a)
+}
+func (a ByCommentPos) Swap(i, j int) {
+	a[i], a[j] = a[j], a[i]
+}
+func (a ByCommentPos) Less(i, j int) bool {
+	return a[i].Pos() < a[j].Pos()
+}
 
+func getCommentsFor(file ast.Node, targetNode ast.Node, commentMap ast.CommentMap) (commentList []*ast.CommentGroup) {
 	switch targetNode.(type) {
-	case *ast.CallExpr:
-		for node, commentGroup := range commentMap {
-			if exprStmt, ok := node.(*ast.ExprStmt); ok {
-				if exprStmt.X == targetNode.(*ast.CallExpr) {
-					commentList = append(commentList, commentGroup...)
-				}
-			}
-		}
-	case *ast.StructType:
-		for node := range commentMap {
+	// Spec should should merge with comments of its parent Decl
+	case ast.Spec:
+		for node, comments := range commentMap {
 			if genDecl, ok := node.(*ast.GenDecl); ok {
-				for _, spc := range genDecl.Specs {
-					if typeSpec, ok := spc.(*ast.TypeSpec); ok {
-						if typeSpec.Type == targetNode {
-							if len(genDecl.Specs) > 1 {
-								commentList = append(commentList, typeSpec.Doc)
-							} else {
-								commentList = append(commentList, genDecl.Doc)
-							}
-						}
+				for _, spec := range genDecl.Specs {
+					if targetNode == spec {
+						commentList = append(commentList, comments...)
 					}
-
 				}
-
 			}
 		}
-	case *ast.Ident:
-		ident := targetNode.(*ast.Ident)
-		if ident.Obj != nil {
-			for node := range commentMap {
-				if genDecl, ok := node.(*ast.GenDecl); ok {
-					for _, spc := range genDecl.Specs {
-						if typeSpec, ok := spc.(*ast.TypeSpec); ok {
-							if typeSpec.Name.Name == ident.Name {
-								if len(genDecl.Specs) > 1 {
-									commentList = append(commentList, typeSpec.Doc)
-								} else {
-									commentList = append(commentList, genDecl.Doc)
-								}
-							}
-						}
-
-					}
-				}
-			}
+		if comments, ok := commentMap[targetNode]; ok {
+			commentList = append(commentList, comments...)
+		}
+	// Node has comments
+	case *ast.File, *ast.Field, ast.Stmt, ast.Decl:
+		if comments, ok := commentMap[targetNode]; ok {
+			commentList = comments
 		}
 	default:
-		commentList = commentMap[targetNode]
+		var deltaPos token.Pos
+		var parentNode ast.Node
+
+		deltaPos = -1
+
+		ast.Inspect(file, func(node ast.Node) bool {
+			switch node.(type) {
+			case *ast.Field, ast.Decl, ast.Spec, ast.Stmt:
+				if targetNode.Pos() >= node.Pos() && targetNode.End() <= node.End() {
+					nextDelta := targetNode.Pos() - node.Pos()
+					if deltaPos == -1 || (nextDelta <= deltaPos) {
+						deltaPos = nextDelta
+						parentNode = node
+					}
+				}
+			}
+			return true
+		})
+
+		if parentNode != nil {
+			commentList = getCommentsFor(file, parentNode, commentMap)
+		}
 	}
+
+	sort.Sort(ByCommentPos(commentList))
 	return
+}
+
+func (program *Program) CommentGroupFor(targetNode ast.Node) []*ast.CommentGroup {
+	file := program.FileOf(targetNode)
+	commentMap := ast.NewCommentMap(program.Fset, file, file.Comments)
+	return getCommentsFor(file, targetNode, commentMap)
 }
