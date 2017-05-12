@@ -106,102 +106,6 @@
 			"revisionTime": "2016-11-23T14:36:37Z"
 		},
 		{
-			"checksumSHA1": "kjqIWSVgtlh/NpgpONXI1ujJLto=",
-			"path": "github.com/morlay/gin-swagger",
-			"revision": "5ede33b301b0226388e7d8bbe9dbd6e080cd2ec0",
-			"revisionTime": "2017-05-12T05:57:58Z"
-		},
-		{
-			"checksumSHA1": "dMKQ0jN9JyMmT1gJm5AnfQzPkQg=",
-			"path": "github.com/morlay/gin-swagger/cmd",
-			"revision": "5ede33b301b0226388e7d8bbe9dbd6e080cd2ec0",
-			"revisionTime": "2017-05-12T05:57:58Z"
-		},
-		{
-			"checksumSHA1": "1yoOj6dsUq0oxVvUCr2uOAGx7ZU=",
-			"path": "github.com/morlay/gin-swagger/codegen",
-			"revision": "5ede33b301b0226388e7d8bbe9dbd6e080cd2ec0",
-			"revisionTime": "2017-05-12T05:57:58Z"
-		},
-		{
-			"checksumSHA1": "3BoY823bRVw0mWPIZyS8gewPR8Y=",
-			"path": "github.com/morlay/gin-swagger/example",
-			"revision": "5ede33b301b0226388e7d8bbe9dbd6e080cd2ec0",
-			"revisionTime": "2017-05-12T05:57:58Z"
-		},
-		{
-			"checksumSHA1": "A5a8dMYC6RG78iFyWRF06r9XqxA=",
-			"path": "github.com/morlay/gin-swagger/example/client_service",
-			"revision": "5ede33b301b0226388e7d8bbe9dbd6e080cd2ec0",
-			"revisionTime": "2017-05-12T05:57:58Z"
-		},
-		{
-			"checksumSHA1": "s7TcBnNLBn0FAXe2sq3D+NrA2No=",
-			"path": "github.com/morlay/gin-swagger/example/globals",
-			"revision": "5ede33b301b0226388e7d8bbe9dbd6e080cd2ec0",
-			"revisionTime": "2017-05-12T05:57:58Z"
-		},
-		{
-			"checksumSHA1": "BDLbPX21znC8zcjrt1C9B5uzi2Y=",
-			"path": "github.com/morlay/gin-swagger/example/test",
-			"revision": "5ede33b301b0226388e7d8bbe9dbd6e080cd2ec0",
-			"revisionTime": "2017-05-12T05:57:58Z"
-		},
-		{
-			"checksumSHA1": "tzK8HLVRd1YSMUq0avYsRAAj9t0=",
-			"path": "github.com/morlay/gin-swagger/example/test2",
-			"revision": "5ede33b301b0226388e7d8bbe9dbd6e080cd2ec0",
-			"revisionTime": "2017-05-12T05:57:58Z"
-		},
-		{
-			"checksumSHA1": "WLDxeUdsVXcWDnv9lpDJBrrpjws=",
-			"path": "github.com/morlay/gin-swagger/example/test3",
-			"revision": "5ede33b301b0226388e7d8bbe9dbd6e080cd2ec0",
-			"revisionTime": "2017-05-12T05:57:58Z"
-		},
-		{
-			"checksumSHA1": "CxdUfv/99B8WEq5bA/2npXplMCc=",
-			"path": "github.com/morlay/gin-swagger/http_error_code",
-			"revision": "5ede33b301b0226388e7d8bbe9dbd6e080cd2ec0",
-			"revisionTime": "2017-05-12T05:57:58Z"
-		},
-		{
-			"checksumSHA1": "rm3EcFWCEQYMnD9NF7pyU37t52U=",
-			"path": "github.com/morlay/gin-swagger/http_error_code/httplib",
-			"revision": "5ede33b301b0226388e7d8bbe9dbd6e080cd2ec0",
-			"revisionTime": "2017-05-12T05:57:58Z"
-		},
-		{
-			"checksumSHA1": "czdmef+rlhbeFEjm7jNkS8t4Idw=",
-			"path": "github.com/morlay/gin-swagger/program",
-			"revision": "5ede33b301b0226388e7d8bbe9dbd6e080cd2ec0",
-			"revisionTime": "2017-05-12T05:57:58Z"
-		},
-		{
-			"checksumSHA1": "jx+HMGyzJGVcl8ENlAsPqC516zo=",
-			"path": "github.com/morlay/gin-swagger/program/fixtures/comments",
-			"revision": "5ede33b301b0226388e7d8bbe9dbd6e080cd2ec0",
-			"revisionTime": "2017-05-12T05:57:58Z"
-		},
-		{
-			"checksumSHA1": "mvrbYhZMAiCYGfDT95sBgXOvy7s=",
-			"path": "github.com/morlay/gin-swagger/swagger",
-			"revision": "5ede33b301b0226388e7d8bbe9dbd6e080cd2ec0",
-			"revisionTime": "2017-05-12T05:57:58Z"
-		},
-		{
-			"checksumSHA1": "XgowJUby5hjHR3G2asA09kRuMf8=",
-			"path": "github.com/morlay/gin-swagger/swagger/client",
-			"revision": "5ede33b301b0226388e7d8bbe9dbd6e080cd2ec0",
-			"revisionTime": "2017-05-12T05:57:58Z"
-		},
-		{
-			"checksumSHA1": "5ecPwb5OuhYwJA9rG32lteOlPUk=",
-			"path": "github.com/morlay/gin-swagger/swagger_to_client",
-			"revision": "5ede33b301b0226388e7d8bbe9dbd6e080cd2ec0",
-			"revisionTime": "2017-05-12T05:57:58Z"
-		},
-		{
 			"checksumSHA1": "zKKp5SZ3d3ycKe4EKMNT0BqAWBw=",
 			"origin": "github.com/stretchr/testify/vendor/github.com/pmezard/go-difflib/difflib",
 			"path": "github.com/pmezard/go-difflib/difflib",
@@ -279,36 +183,6 @@
 			"path": "golang.org/x/tools/go/loader",
 			"revision": "f7f4b0b08a3ec1e3560fffa2d769052b12b5b1d2",
 			"revisionTime": "2017-02-16T21:19:20Z"
-		},
-		{
-			"checksumSHA1": "aEqK29YjOyDVSWgD2S4VQh80rmw=",
-			"path": "golib/gin",
-			"revision": "2175df5212c1ce6d69f0f82d9b92a6fe092d545d",
-			"revisionTime": "2017-01-17T02:26:23Z"
-		},
-		{
-			"checksumSHA1": "t2ZdpwaLQ4CCAH/Ktq8qL4WuSOs=",
-			"path": "golib/gin/binding",
-			"revision": "2175df5212c1ce6d69f0f82d9b92a6fe092d545d",
-			"revisionTime": "2017-01-17T02:26:23Z"
-		},
-		{
-			"checksumSHA1": "SHnDM55Y2jkVxPCel1RkToepAaI=",
-			"path": "golib/gin/render",
-			"revision": "2175df5212c1ce6d69f0f82d9b92a6fe092d545d",
-			"revisionTime": "2017-01-17T02:26:23Z"
-		},
-		{
-			"checksumSHA1": "psYsJwXc0UnFcjeqWAarB2zsDcY=",
-			"path": "golib/go-logging",
-			"revision": "1f49c90f488ec30a66ebcfb1b8c66caf41b3f865",
-			"revisionTime": "2017-01-24T02:13:38Z"
-		},
-		{
-			"checksumSHA1": "kij3fr/3Jp2uyOlSt9lDcj5bdUU=",
-			"path": "golib/httprouter",
-			"revision": "eb789edacb2f517eeb007bc748839df82e25ad40",
-			"revisionTime": "2016-10-26T01:53:38Z"
 		},
 		{
 			"checksumSHA1": "hT+7DPyl8tQ96kUXW3Sr5o0Pcj0=",
