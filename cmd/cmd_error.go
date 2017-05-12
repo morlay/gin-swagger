@@ -20,7 +20,7 @@ var cmdError = &cobra.Command{
 }
 
 func init() {
-	cmdError.Flags().StringVarP(&cmdErrorFlagErrorType, "--error-type", "t", "github.com/morlay/gin-swagger/http_error_code/httplib.GeneralError", "error type")
+	cmdError.Flags().StringVarP(&cmdErrorFlagErrorType, "error-type", "t", "github.com/morlay/gin-swagger/http_error_code/httplib.GeneralError", "error type")
 
 	cmdRoot.AddCommand(cmdError)
 }
