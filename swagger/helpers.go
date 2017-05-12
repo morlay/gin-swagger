@@ -1,228 +1,61 @@
 package swagger
 
 import (
-	"reflect"
 	"regexp"
-	"strconv"
 	"strings"
 
-	"fmt"
-	"github.com/go-openapi/spec"
+	"go/ast"
+	"go/types"
+
+	"github.com/morlay/gin-swagger/program"
 )
 
-var (
-	rxEnum     = regexp.MustCompile(`swagger:enum`)
-	rxStrFmt   = regexp.MustCompile(`swagger:strfmt\s+(\S+)([\s\S]+)?$`)
-	rxValidate = regexp.MustCompile(`^@([^\[\(\{]+)([\[\(\{])([^\}^\]^\)]+)([\}\]\)])$`)
-)
-
-func ParseEnum(str string) (string, bool) {
-	if rxEnum.MatchString(str) {
-		return strings.TrimSpace(strings.Replace(str, "swagger:enum", "", -1)), true
+func isGinMethod(method string) bool {
+	var ginMethods = map[string]bool{
+		"GET":     true,
+		"POST":    true,
+		"PUT":     true,
+		"PATCH":   true,
+		"HEAD":    true,
+		"DELETE":  true,
+		"OPTIONS": true,
 	}
 
-	return str, false
+	return ginMethods[method]
 }
 
-func ParseStrfmt(str string) (string, string) {
-	matched := rxStrFmt.FindAllStringSubmatch(str, -1)
-	if len(matched) > 0 {
-		return strings.TrimSpace(matched[0][2]), matched[0][1]
-	}
-	return str, ""
+func getJSONNameAndFlags(tagValue string) (string, []string) {
+	values := strings.SplitN(tagValue, ",", -1)
+	return values[0], values[1:]
 }
 
-func exclusiveValues(str string) (string, bool) {
-	var values = strings.SplitN(str, "^", -1)
-	if len(values) == 2 {
-		return values[1], true
-	}
-	return values[0], false
+func parseCommentToSummaryDesc(str string) (string, string) {
+	lines := strings.SplitN(str, "\n", -1)
+	return lines[0], strings.TrimSpace(strings.Join(lines[1:], "\n"))
 }
 
-func GetCommonValidations(validateTag string) (commonValidations spec.CommonValidations) {
-	var matched = rxValidate.FindAllStringSubmatch(validateTag, -1)
-
-	// "@int[1,2]", "int", "[", "1,2", "]"
-	if len(matched) > 0 && len(matched[0]) == 5 {
-		tpe := matched[0][1]
-		startBracket := matched[0][2]
-		endBracket := matched[0][4]
-		values := strings.Split(matched[0][3], ",")
-
-		if startBracket != "{" && endBracket != "}" {
-			switch tpe {
-			case "byte", "int", "int8", "int16", "int32", "int64", "rune", "uint", "uint8", "uint16", "uint32", "uint64", "uintptr", "float32", "float64":
-				if len(values) > 0 {
-					if val, err := strconv.ParseFloat(values[0], 64); err == nil {
-						commonValidations.Minimum = &val
-						commonValidations.ExclusiveMinimum = (startBracket == "(")
-					}
-				}
-				if len(values) > 1 {
-					if val, err := strconv.ParseFloat(values[1], 64); err == nil {
-						commonValidations.Maximum = &val
-						commonValidations.ExclusiveMaximum = (endBracket == ")")
-					}
-				}
-			case "string":
-				if len(values) > 0 {
-					if val, err := strconv.ParseInt(values[0], 10, 64); err == nil {
-						commonValidations.MinLength = &val
-					}
-				}
-				if len(values) > 1 {
-					if val, err := strconv.ParseInt(values[1], 10, 64); err == nil {
-						commonValidations.MaxLength = &val
-					}
-				}
-			}
-		} else {
-			var enums = []interface{}{}
-
-			for _, value := range values {
-				if tpe != "string" {
-					if val, err := strconv.ParseInt(value, 10, 64); err == nil {
-						enums = append(enums, val)
-					}
-				} else {
-					enums = append(enums, value)
-				}
-			}
-
-			commonValidations.Enum = enums
-		}
-	}
-
-	return
+func getExportedNameOfPackage(path string) string {
+	var parts = strings.Split(path, ".")
+	return parts[len(parts) - 1]
 }
 
-func GetSchemaTypeFromBasicType(basicTypeName string) (string, string, bool) {
-	switch basicTypeName {
-	case "bool":
-		return "boolean", "", true
-	case "byte":
-		return "integer", "uint8", true
-	case "error":
-		return "string", "", true
-	case "float32":
-		return "number", "float", true
-	case "float64":
-		return "number", "double", true
-	case "int":
-		return "integer", "int64", true
-	case "int8":
-		return "integer", "int8", true
-	case "int16":
-		return "integer", "int16", true
-	case "int32":
-		return "integer", "int32", true
-	case "int64":
-		return "integer", "int64", true
-	case "rune":
-		return "integer", "int32", true
-	case "string":
-		return "string", "", true
-	case "uint":
-		return "integer", "uint64", true
-	case "uint16":
-		return "integer", "uint16", true
-	case "uint32":
-		return "integer", "uint32", true
-	case "uint64":
-		return "integer", "uint64", true
-	case "uint8":
-		return "integer", "uint8", true
-	case "uintptr":
-		return "integer", "uint64", true
+func getRouterPathByCallExpr(callExpr *ast.CallExpr) string {
+	return program.GetBasicLitValue(callExpr.Args[0].(*ast.BasicLit)).(string)
+}
+
+func indirect(t types.Type) types.Type {
+	switch t.(type) {
+	case *types.Pointer:
+		return indirect(t.(*types.Pointer).Elem())
+	case *types.Named:
+		return indirect(t.(*types.Named).Underlying())
 	default:
-		panic(fmt.Errorf("unsupported type %q", basicTypeName))
-	}
-	return "", "", false
-}
-
-func EnumContainsValue(enum []interface{}, value interface{}) bool {
-	var isContains = false
-
-	for _, enumValue := range enum {
-		if enumValue == value {
-			isContains = true
-		}
-	}
-
-	return isContains
-}
-
-func BindSchemaWithCommonValidations(schema *spec.Schema, commonValidations spec.CommonValidations) {
-	schema.Maximum = commonValidations.Maximum
-	schema.ExclusiveMaximum = commonValidations.ExclusiveMaximum
-	schema.Minimum = commonValidations.Minimum
-	schema.ExclusiveMinimum = commonValidations.ExclusiveMinimum
-	schema.MaxLength = commonValidations.MaxLength
-	schema.MinLength = commonValidations.MinLength
-	schema.Pattern = commonValidations.Pattern
-	schema.MaxItems = commonValidations.MaxItems
-	schema.MinItems = commonValidations.MinItems
-	schema.UniqueItems = commonValidations.UniqueItems
-	schema.MultipleOf = commonValidations.MultipleOf
-
-	// for partial enum
-	if len(schema.Enum) != 0 && len(commonValidations.Enum) != 0 {
-		var enums []interface{}
-
-		for _, enumValueOrIndex := range commonValidations.Enum {
-			switch reflect.TypeOf(enumValueOrIndex).Name() {
-			case "string":
-				if EnumContainsValue(schema.Enum, enumValueOrIndex) {
-					enums = append(enums, enumValueOrIndex)
-				} else if enumValueOrIndex != "" {
-					panic(fmt.Errorf("%s is not value of %s", enumValueOrIndex, schema.Enum))
-				}
-			default:
-				if idx, ok := enumValueOrIndex.(int); ok {
-					if schema.Enum[idx] != nil {
-						enums = append(enums, schema.Enum[idx])
-					} else if idx != 0 {
-						panic(fmt.Errorf("%s is out-range of  %s", enumValueOrIndex, schema.Enum))
-					}
-				}
-
-			}
-		}
-
-		schema.Enum = enums
+		return t
 	}
 }
 
-func BindCommonValidationsWithSchema(commonValidations *spec.CommonValidations, schema spec.Schema) {
-	commonValidations.Maximum = schema.Maximum
-	commonValidations.ExclusiveMaximum = schema.ExclusiveMaximum
-	commonValidations.Minimum = schema.Minimum
-	commonValidations.ExclusiveMinimum = schema.ExclusiveMinimum
-	commonValidations.MaxLength = schema.MaxLength
-	commonValidations.MinLength = schema.MinLength
-	commonValidations.Pattern = schema.Pattern
-	commonValidations.MaxItems = schema.MaxItems
-	commonValidations.MinItems = schema.MinItems
-	commonValidations.UniqueItems = schema.UniqueItems
-	commonValidations.MultipleOf = schema.MultipleOf
-	commonValidations.Enum = schema.Enum
-}
-
-func BindSimpleSchemaWithSchema(simpleSchema *spec.SimpleSchema, schema spec.Schema) {
-	simpleSchema.Type = schema.Type[0]
-	simpleSchema.Format = schema.Format
-	simpleSchema.Default = schema.Default
-}
-
-func BindParameterWithSchema(param *spec.Parameter, schema spec.Schema) {
-	param.VendorExtensible = schema.VendorExtensible
-	BindSimpleSchemaWithSchema(&param.SimpleSchema, schema)
-	BindCommonValidationsWithSchema(&param.CommonValidations, schema)
-}
-
-func BindItemsWithSchema(items *spec.Items, schema spec.Schema) {
-	items.VendorExtensible = schema.VendorExtensible
-	BindSimpleSchemaWithSchema(&items.SimpleSchema, schema)
-	BindCommonValidationsWithSchema(&items.CommonValidations, schema)
+func convertGinPathToSwaggerPath(str string) string {
+	r := regexp.MustCompile("/:([^/]+)")
+	result := r.ReplaceAllString(str, "/{$1}")
+	return result
 }

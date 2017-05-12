@@ -17,8 +17,9 @@ func PrintCommentText(name interface{}, comments []*ast.CommentGroup) {
 }
 
 func TestProgram_CommentGroupFor(t *testing.T) {
-	p := NewProgram(FIXTURES + "/comments")
-	pkgInfo := p.Program.Package(FIXTURES + "/comments")
+	pkgComments := FIXTURES + "/comments"
+	p := NewProgram(pkgComments)
+	pkgInfo := p.Program.Package(pkgComments)
 
 	for _, file := range pkgInfo.Files {
 		PrintCommentText(file.Name, p.CommentGroupFor(file))
@@ -71,4 +72,11 @@ func TestProgram_CommentGroupFor(t *testing.T) {
 		}
 	}
 
+}
+
+func indirectSelectorX(selectorExpr *ast.SelectorExpr) *ast.Ident {
+	if s, ok := selectorExpr.X.(*ast.SelectorExpr); ok {
+		return indirectSelectorX(s)
+	}
+	return selectorExpr.X.(*ast.Ident)
 }

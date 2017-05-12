@@ -18,7 +18,7 @@ type Common struct {
 // 分页类
 type Pager struct {
 	// 分页大小
-	Size int8 `json:"size" in:"query" default:"10" validate:"@int8[-1,20)"`
+	Size   int8 `json:"size" in:"query" default:"10" validate:"@int8[-1,20)"`
 	// 分页偏移
 	Offset int8 `json:"offset" in:"query" default:"0" validate:"@int8[-1,100]"`
 }
@@ -65,5 +65,7 @@ func Test2(c *gin.Context) {
 			State: STATE__ONE,
 			Name:  uint64(req.Size),
 		}) // 正常返回
+	} else {
+		//httplib.WriteHttpError(c, httplib.HTTP_ERROR__TEST)
 	}
 }

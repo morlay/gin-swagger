@@ -1,8 +1,9 @@
 #!/usr/bin/env sh
 
 go install
-cd ./example/service
+cd ./example
 
 gin-swagger enum
+#gin-swagger error
 gin-swagger
-gin-swagger client -input swagger.json -name service
+gin-swagger client --input swagger.json --name service

@@ -113,3 +113,19 @@ func IsVendorPackage(path string) bool {
 func IsSubPackageOf(basePath string, path string) bool {
 	return strings.Index(path, basePath) == 0
 }
+
+func IsTypeName(tpe types.Type, typeName string) bool {
+	pkgPaths := strings.Split(tpe.String(), ".")
+	return pkgPaths[len(pkgPaths) - 1] == typeName
+}
+
+func ParsePkgExpose(pkgExpose string) (string, string) {
+	pkgPaths := strings.Split(pkgExpose, ".")
+	imported := strings.Join(pkgPaths[:len(pkgPaths) - 1], ".")
+	paths := strings.Split(imported, "/")
+
+	return imported, strings.Join([]string{
+		paths[len(paths) - 1],
+		pkgPaths[len(pkgPaths) - 1],
+	}, ".")
+}

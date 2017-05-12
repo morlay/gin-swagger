@@ -1,12 +1,13 @@
-package client_generator
+package swagger_to_client
 
 import (
 	"fmt"
 	"github.com/go-openapi/spec"
-	"github.com/morlay/gin-swagger/codegen"
 	"gopkg.in/gin-gonic/gin.v1"
 	"sort"
 	"strings"
+
+	"github.com/morlay/gin-swagger/codegen"
 )
 
 type ClientInfo struct {

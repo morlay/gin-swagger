@@ -1,4 +1,4 @@
-package client_generator
+package swagger_to_client
 
 import (
 	"encoding/json"

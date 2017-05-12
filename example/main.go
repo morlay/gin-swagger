@@ -3,10 +3,12 @@
 package main
 
 import (
-	"github.com/morlay/gin-swagger/example/service/test"
-	"github.com/morlay/gin-swagger/example/service/test2"
-	"github.com/morlay/gin-swagger/example/service/test3"
+	"github.com/morlay/gin-swagger/example/test"
+	"github.com/morlay/gin-swagger/example/test2"
+	"github.com/morlay/gin-swagger/example/test3"
 	"gopkg.in/gin-gonic/gin.v1"
+	"fmt"
+	"github.com/morlay/gin-swagger/example/globals"
 )
 
 func main() {
@@ -23,6 +25,8 @@ func main() {
 	{
 		userRouteWith.GET("/:name/:action", test2.Test2)
 	}
+
+	fmt.Println(globals.HTTP_ERROR__TEST.Status())
 
 	router.Run(":8080")
 }

@@ -1,0 +1,235 @@
+{
+  "swagger": "2.0",
+  "paths": {
+    "/": {
+      "post": {
+        "consumes": [
+          "application/json"
+        ],
+        "tags": [
+          "test"
+        ],
+        "operationId": "Test",
+        "parameters": [
+          {
+            "maximum": 20,
+            "exclusiveMaximum": true,
+            "minimum": -1,
+            "type": "integer",
+            "format": "int8",
+            "default": "10",
+            "x-go-name": "Size",
+            "x-go-validate": "@int8[-1,20)",
+            "description": "分页大小",
+            "name": "size",
+            "in": "query"
+          },
+          {
+            "maximum": 100,
+            "minimum": -1,
+            "type": "integer",
+            "format": "int8",
+            "default": "0",
+            "x-go-name": "Offset",
+            "x-go-validate": "@int8[-1,100]",
+            "description": "分页偏移",
+            "name": "offset",
+            "in": "query"
+          },
+          {
+            "type": "string",
+            "format": "date-time",
+            "x-go-name": "StartTime",
+            "x-go-named": "github.com/morlay/gin-swagger/example/test2.Date",
+            "name": "startTime",
+            "in": "query",
+            "required": true
+          },
+          {
+            "enum": [
+              "TWO"
+            ],
+            "type": "string",
+            "x-enum-labels": [
+              "one",
+              "two",
+              "three",
+              "four"
+            ],
+            "x-enum-vals": [
+              1,
+              2,
+              3,
+              104
+            ],
+            "x-enum-values": [
+              "ONE",
+              "TWO",
+              "THREE",
+              "FOUR"
+            ],
+            "x-go-name": "State",
+            "x-go-named": "github.com/morlay/gin-swagger/example/test2.State",
+            "x-go-validate": "@string{TWO}",
+            "name": "state",
+            "in": "query",
+            "required": true
+          },
+          {
+            "type": "object",
+            "x-go-name": "Body",
+            "name": "body",
+            "in": "body",
+            "schema": {
+              "$ref": "#/definitions/ReqBody"
+            }
+          }
+        ]
+      }
+    },
+    "/test": {
+      "get": {
+        "description": "Others\nheheheh",
+        "tags": [
+          "test3"
+        ],
+        "summary": "Summary",
+        "operationId": "Test3"
+      }
+    },
+    "/user/test/{name}/0": {
+      "get": {
+        "description": "Others\nheheheh",
+        "tags": [
+          "test2"
+        ],
+        "summary": "Summary",
+        "operationId": "Test2",
+        "parameters": [
+          {
+            "maximum": 20,
+            "exclusiveMaximum": true,
+            "minimum": -1,
+            "type": "integer",
+            "format": "int8",
+            "default": "10",
+            "x-go-name": "Size",
+            "x-go-validate": "@int8[-1,20)",
+            "description": "分页大小",
+            "name": "size",
+            "in": "query"
+          },
+          {
+            "maximum": 100,
+            "minimum": -1,
+            "type": "integer",
+            "format": "int8",
+            "default": "0",
+            "x-go-name": "Offset",
+            "x-go-validate": "@int8[-1,100]",
+            "description": "分页偏移",
+            "name": "offset",
+            "in": "query"
+          },
+          {
+            "type": "array",
+            "items": {
+              "maximum": 100,
+              "minimum": -1,
+              "type": "integer",
+              "format": "int8"
+            },
+            "collectionFormat": "csv",
+            "x-go-name": "Ids",
+            "description": "ids",
+            "name": "ids",
+            "in": "query",
+            "required": true
+          },
+          {
+            "type": "integer",
+            "format": "int8",
+            "x-go-name": "Id",
+            "name": "id",
+            "in": "query",
+            "required": true
+          },
+          {
+            "type": "string",
+            "x-go-name": "Name",
+            "name": "name",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "boolean",
+            "x-go-name": "Is",
+            "x-go-named": "github.com/morlay/gin-swagger/example/test2.Bool",
+            "name": "is",
+            "in": "path",
+            "required": true
+          },
+          {
+            "enum": [
+              "ONE"
+            ],
+            "type": "string",
+            "x-enum-labels": [
+              "one",
+              "two",
+              "three",
+              "four"
+            ],
+            "x-enum-vals": [
+              1,
+              2,
+              3,
+              104
+            ],
+            "x-enum-values": [
+              "ONE",
+              "TWO",
+              "THREE",
+              "FOUR"
+            ],
+            "x-go-name": "State",
+            "x-go-named": "github.com/morlay/gin-swagger/example/test2.State",
+            "x-go-validate": "@string{ONE}",
+            "name": "state",
+            "in": "query",
+            "required": true
+          },
+          {
+            "type": "string",
+            "format": "date-time",
+            "x-go-name": "StartTime",
+            "x-go-named": "github.com/morlay/gin-swagger/example/test2.Date",
+            "name": "startTime",
+            "in": "query",
+            "required": true
+          }
+        ]
+      }
+    }
+  },
+  "definitions": {
+    "ReqBody": {
+      "description": "ReqBody",
+      "type": "object",
+      "required": [
+        "name",
+        "username"
+      ],
+      "properties": {
+        "name": {
+          "type": "string",
+          "x-go-name": "Name"
+        },
+        "username": {
+          "type": "string",
+          "x-go-name": "UserName"
+        }
+      }
+    }
+  }
+}

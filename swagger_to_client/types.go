@@ -1,10 +1,11 @@
-package client_generator
+package swagger_to_client
 
 import (
 	"fmt"
+	"sort"
+
 	"github.com/go-openapi/spec"
 	"github.com/morlay/gin-swagger/codegen"
-	"sort"
 )
 
 func getFieldsFromSchema(schema spec.Schema) (fields []string, deps []string) {

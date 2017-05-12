@@ -1,4 +1,4 @@
-package scanner
+package swagger
 
 import (
 	"fmt"
@@ -17,12 +17,11 @@ import (
 
 	"github.com/morlay/gin-swagger/codegen"
 	"github.com/morlay/gin-swagger/program"
-	"github.com/morlay/gin-swagger/swagger"
 )
 
 func NewScanner(packagePath string) *Scanner {
 	prog := program.NewProgram(packagePath)
-	swag := swagger.NewSwagger()
+	swag := NewSwagger()
 	return &Scanner{
 		Swagger: swag,
 		Program: prog,
@@ -31,7 +30,7 @@ func NewScanner(packagePath string) *Scanner {
 
 type Scanner struct {
 	GinPath string
-	Swagger *swagger.Swagger
+	Swagger *Swagger
 	Program *program.Program
 }
 
@@ -80,13 +79,13 @@ func (scanner *Scanner) getNodeDoc(node ast.Node) string {
 }
 
 func (scanner *Scanner) getStrFmt(doc string) (fmtName string, otherDoc string) {
-	otherDoc, fmtName = swagger.ParseStrfmt(doc)
+	otherDoc, fmtName = ParseStrfmt(doc)
 	return
 }
 
 func (scanner *Scanner) getEnums(doc string, node ast.Node) (enums []interface{}, enumLabels []string, enumVals []interface{}, otherDoc string) {
 	var hasEnum bool
-	otherDoc, hasEnum = swagger.ParseEnum(doc)
+	otherDoc, hasEnum = ParseEnum(doc)
 	if hasEnum {
 		options := scanner.Program.GetEnumOptionsByType(node)
 		for _, option := range options {
@@ -129,7 +128,7 @@ func (scanner *Scanner) getBasicSchemaFromType(t types.Type) spec.Schema {
 				newSchema.Typed("boolean", "")
 			} else {
 				newSchema.WithEnum(enums...)
-				if typeName, _, ok := swagger.GetSchemaTypeFromBasicType(reflect.TypeOf(enums[0]).Name()); ok {
+				if typeName, _, ok := GetSchemaTypeFromBasicType(reflect.TypeOf(enums[0]).Name()); ok {
 					newSchema.Typed(typeName, "")
 				}
 				newSchema.AddExtension("x-enum-values", enums)
@@ -141,7 +140,7 @@ func (scanner *Scanner) getBasicSchemaFromType(t types.Type) spec.Schema {
 
 		newSchema.WithDescription(doc)
 	case *types.Basic:
-		if typeName, format, ok := swagger.GetSchemaTypeFromBasicType(t.(*types.Basic).Name()); ok {
+		if typeName, format, ok := GetSchemaTypeFromBasicType(t.(*types.Basic).Name()); ok {
 			newSchema.Typed(typeName, format)
 		}
 	}
@@ -226,8 +225,8 @@ func (scanner *Scanner) defineSchemaBy(tpe types.Type) spec.Schema {
 					propSchema.AddExtension("x-go-validate", validate)
 
 					if hasValidate {
-						commonValidations := swagger.GetCommonValidations(validate)
-						swagger.BindSchemaWithCommonValidations(&propSchema, commonValidations)
+						commonValidations := GetCommonValidations(validate)
+						BindSchemaWithCommonValidations(&propSchema, commonValidations)
 					}
 				}
 
@@ -276,12 +275,12 @@ func (scanner *Scanner) getNonBodyParameter(name string, location string, tags r
 		}
 
 		if hasValidate {
-			commonValidations := swagger.GetCommonValidations(validate)
-			swagger.BindSchemaWithCommonValidations(&schema, commonValidations)
+			commonValidations := GetCommonValidations(validate)
+			BindSchemaWithCommonValidations(&schema, commonValidations)
 			schema.AddExtension("x-go-validate", validate)
 		}
 
-		swagger.BindItemsWithSchema(&items, schema)
+		BindItemsWithSchema(&items, schema)
 
 		// todo support other collection format
 		param.CollectionOf(&items, "csv")
@@ -289,12 +288,12 @@ func (scanner *Scanner) getNonBodyParameter(name string, location string, tags r
 		schema := scanner.getBasicSchemaFromType(t)
 
 		if hasValidate {
-			commonValidations := swagger.GetCommonValidations(validate)
-			swagger.BindSchemaWithCommonValidations(&schema, commonValidations)
+			commonValidations := GetCommonValidations(validate)
+			BindSchemaWithCommonValidations(&schema, commonValidations)
 			schema.AddExtension("x-go-validate", validate)
 		}
 
-		swagger.BindParameterWithSchema(&param, schema)
+		BindParameterWithSchema(&param, schema)
 
 	}
 
@@ -366,7 +365,13 @@ func (scanner *Scanner) bindParamBy(t types.Type, operation *spec.Operation) {
 }
 
 func (scanner *Scanner) getStatusCodeFromExpr(expr ast.Expr) (int64, error) {
-	return strconv.ParseInt(scanner.Program.ValueOf(expr).String(), 10, 64)
+	constantValue := scanner.Program.ValueOf(expr);
+
+	if (constantValue == nil) {
+		return 0, fmt.Errorf("%s is not a constant value", expr)
+	}
+
+	return strconv.ParseInt(constantValue.String(), 10, 64)
 }
 
 func (scanner *Scanner) addResponse(ginContextCallExpr *ast.CallExpr, desc string, operation *spec.Operation) {
@@ -375,38 +380,39 @@ func (scanner *Scanner) addResponse(ginContextCallExpr *ast.CallExpr, desc strin
 
 	response.WithDescription(desc)
 
-	switch program.GetCallExprFunName(ginContextCallExpr) {
-	// c.JSON(code int, obj interface{});
-	case "JSON":
-		statusCode, _ := scanner.getStatusCodeFromExpr(args[0])
-		tpe := scanner.Program.TypeOf(args[1])
+	statusCode, err := scanner.getStatusCodeFromExpr(args[0])
 
-		if !strings.Contains(tpe.String(), "untyped nil") {
-			schema := scanner.defineSchemaBy(tpe)
+	if (err != nil) {
+		switch program.GetCallExprFunName(ginContextCallExpr) {
+		// c.JSON(code int, obj interface{});
+		case "JSON":
+			if (len(args) > 1) {
+				tpe := scanner.Program.TypeOf(args[1])
+				if !strings.Contains(tpe.String(), "untyped nil") {
+					schema := scanner.defineSchemaBy(tpe)
+					response.WithSchema(&schema)
+				}
+
+				operation.RespondsWith(int(statusCode), response)
+				operation.WithProduces(gin.MIMEJSON)
+			}
+		// c.HTML(code int, );
+		// c.HTMLString(http.StatusOK, format, values)
+		case "HTML", "HTMLString":
+			operation.RespondsWith(int(statusCode), response)
+			operation.WithProduces(gin.MIMEHTML)
+		// c.String(http.StatusOK, format, values)
+		case "String":
+			schema := spec.Schema{}
+			schema.Typed("string", "")
 			response.WithSchema(&schema)
+			operation.RespondsWith(int(statusCode), response)
+		// c.Render(code init, )
+		// c.Data(code init, )
+		// c.Redirect(code init, )
+		case "Render", "Data", "Redirect":
+			operation.RespondsWith(int(statusCode), response)
 		}
-
-		operation.RespondsWith(int(statusCode), response)
-		operation.WithProduces(gin.MIMEJSON)
-	// c.HTML(code int, );
-	// c.HTMLString(http.StatusOK, format, values)
-	case "HTML", "HTMLString":
-		statusCode, _ := scanner.getStatusCodeFromExpr(args[0])
-		operation.RespondsWith(int(statusCode), response)
-		operation.WithProduces(gin.MIMEHTML)
-	// c.String(http.StatusOK, format, values)
-	case "String":
-		statusCode, _ := scanner.getStatusCodeFromExpr(args[0])
-		schema := spec.Schema{}
-		schema.Typed("string", "")
-		response.WithSchema(&schema)
-		operation.RespondsWith(int(statusCode), response)
-	// c.Render(code init, )
-	// c.Data(code init, )
-	// c.Redirect(code init, )
-	case "Render", "Data", "Redirect":
-		statusCode, _ := scanner.getStatusCodeFromExpr(args[0])
-		operation.RespondsWith(int(statusCode), response)
 	}
 }
 
@@ -485,7 +491,7 @@ func (scanner *Scanner) collectOperationByCallExpr(callExpr *ast.CallExpr, prefi
 
 	if isGinMethod(method) {
 		args := callExpr.Args
-		lastArg := args[len(args)-1]
+		lastArg := args[len(args) - 1]
 
 		var id string
 		var swaggerPath string
