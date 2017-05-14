@@ -6,26 +6,26 @@ type ErrorFieldModel struct {
 	// 如果 alias 是数组, 且第2个元素的a字段错误,则返回"name.alias[2].a"
 	Field string `json:"field"`
 	// 错误信息
-	Msg   string `json:"msg"`
+	Msg string `json:"msg"`
 	// 错误字段位置, body, query, header, path, formData
-	In    string `json:"in"`
+	In string `json:"in"`
 }
 
 type GeneralError struct {
 	// 详细描述
-	Code           int32 `json:"code"`
+	Code int32 `json:"code"`
 	// 错误信息
-	Msg            string `json:"msg"`
+	Msg string `json:"msg"`
 	// 错误代码
-	Desc           string `json:"desc"`
+	Desc string `json:"desc"`
 	// 是否能作为错误话术
 	CanBeErrorTalk bool `json:"canBeTalkError"`
 	// 出错字段
-	ErrorFields    []ErrorFieldModel `json:"errorFields"`
+	ErrorFields []ErrorFieldModel `json:"errorFields"`
 	// 错误溯源
-	Source         []string `json:"source"`
+	Source []string `json:"source"`
 	// Request Id
-	Id             string `json:"id"`
+	Id string `json:"id"`
 }
 
 func (g GeneralError) AddErrorField(field string, in string, msg string) GeneralError {

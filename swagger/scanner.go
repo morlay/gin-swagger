@@ -16,8 +16,8 @@ import (
 	"gopkg.in/gin-gonic/gin.v1"
 
 	"github.com/morlay/gin-swagger/codegen"
-	"github.com/morlay/gin-swagger/program"
 	"github.com/morlay/gin-swagger/http_error_code"
+	"github.com/morlay/gin-swagger/program"
 )
 
 func NewScanner(packagePath string) *Scanner {
@@ -30,58 +30,42 @@ func NewScanner(packagePath string) *Scanner {
 }
 
 type Scanner struct {
-	GinPath string
-	Swagger *Swagger
-	Program *program.Program
+	GinPath    string
+	Swagger    *Swagger
+	Program    *program.Program
+	httpErrors map[*types.Package]map[string]http_error_code.HttpErrorValue
 }
 
-func (scanner *Scanner) packageOfGin(packagePath string) bool {
-	return strings.Contains(packagePath, "gin")
-}
-
-func (scanner *Scanner) typeOfGinEngine(pointer *types.Pointer) bool {
-	packagePath := pointer.String()
-	return scanner.packageOfGin(packagePath) && getExportedNameOfPackage(packagePath) == "Engine"
-}
-
-func (scanner *Scanner) typeOfGinRouterGroup(pointer *types.Pointer) bool {
-	packagePath := pointer.String()
-	return scanner.packageOfGin(packagePath) && getExportedNameOfPackage(packagePath) == "RouterGroup"
-}
-
-func (scanner *Scanner) typeOfGinContext(pointer *types.Pointer) bool {
-	packagePath := pointer.String()
-	return scanner.packageOfGin(packagePath) && getExportedNameOfPackage(packagePath) == "Context"
-}
-
-func (scanner *Scanner) getRouterPrefixByIdent(id *ast.Ident) string {
+func (scanner *Scanner) getRouterPrefixByIdent(id *ast.Ident) (string, []ast.Expr) {
 	def := scanner.Program.ObjectOf(id)
 
 	var prefix = ""
+
+	args := []ast.Expr{}
 
 	if def != nil {
 		if assignStmt, ok := program.GetIdentDecl(id).(*ast.AssignStmt); ok {
 			callExpr := assignStmt.Rhs[0].(*ast.CallExpr)
 			if pointer, ok := def.Type().(*types.Pointer); ok {
-				if !scanner.typeOfGinEngine(pointer) {
+				if !typeOfGinEngine(pointer) {
 					if nextIdent, ok := callExpr.Fun.(*ast.SelectorExpr).X.(*ast.Ident); ok {
-						return scanner.getRouterPrefixByIdent(nextIdent) + getRouterPathByCallExpr(callExpr)
+						parentPrefix, parentArgs := scanner.getRouterPrefixByIdent(nextIdent)
+						args = append(args, parentArgs...)
+						if len(callExpr.Args) > 1 {
+							args = append(args, callExpr.Args[1:]...)
+						}
+						return parentPrefix + getRouterPathByCallExpr(callExpr), args
 					}
 				}
 			}
 		}
 	}
 
-	return prefix
+	return prefix, args
 }
 
 func (scanner *Scanner) getNodeDoc(node ast.Node) string {
 	return program.GetTextFromCommentGroup(scanner.Program.CommentGroupFor(node))
-}
-
-func (scanner *Scanner) getStrFmt(doc string) (fmtName string, otherDoc string) {
-	otherDoc, fmtName = ParseStrfmt(doc)
-	return
 }
 
 func (scanner *Scanner) getEnums(doc string, node ast.Node) (enums []interface{}, enumLabels []string, enumVals []interface{}, otherDoc string) {
@@ -114,7 +98,7 @@ func (scanner *Scanner) getBasicSchemaFromType(t types.Type) spec.Schema {
 
 		doc = scanner.getNodeDoc(astType)
 
-		if fmtName, doc = scanner.getStrFmt(doc); fmtName != "" {
+		if doc, fmtName = ParseStrfmt(doc); fmtName != "" {
 			newSchema.Typed("string", fmtName)
 			newSchema.WithDescription(doc)
 			return newSchema
@@ -163,7 +147,7 @@ func (scanner *Scanner) defineSchemaBy(tpe types.Type) spec.Schema {
 			log.Printf(aurora.Sprintf("\t Picking defination from %s\n", aurora.Brown(namedType)))
 			s, ok := scanner.Swagger.AddDefinition(name, scanner.defineSchemaBy(namedType.Underlying()))
 			if !ok {
-				log.Printf(aurora.Sprintf(aurora.Red("\t\t `%s` already picked from `%s`\n"), name, namedType))
+				log.Printf(aurora.Sprintf(aurora.Red("\t\t `%s` already picked from `%s`"), name, namedType))
 			}
 			schema = *s
 		}
@@ -310,7 +294,7 @@ func (scanner *Scanner) getNonBodyParameter(name string, location string, tags r
 	return param
 }
 
-func (scanner *Scanner) bindParamBy(t types.Type, operation *spec.Operation) {
+func (scanner *Scanner) writeParameter(operation *spec.Operation, t types.Type) {
 	if st, ok := t.(*types.Struct); ok {
 		var structType = scanner.Program.WhereDecl(st).(*ast.StructType)
 
@@ -322,7 +306,7 @@ func (scanner *Scanner) bindParamBy(t types.Type, operation *spec.Operation) {
 			var fieldName = field.Name()
 
 			if field.Anonymous() {
-				scanner.bindParamBy(indirect(fieldType), operation)
+				scanner.writeParameter(operation, program.Indirect(fieldType))
 			} else {
 				location := structFieldTags.Get("in")
 				name, flags := getJSONNameAndFlags(structFieldTags.Get("json"))
@@ -366,16 +350,16 @@ func (scanner *Scanner) bindParamBy(t types.Type, operation *spec.Operation) {
 }
 
 func (scanner *Scanner) getStatusCodeFromExpr(expr ast.Expr) (int64, error) {
-	constantValue := scanner.Program.ValueOf(expr);
+	constantValue := scanner.Program.ValueOf(expr)
 
-	if (constantValue == nil) {
+	if constantValue == nil {
 		return 0, fmt.Errorf("%s is not a constant value", expr)
 	}
 
 	return strconv.ParseInt(constantValue.String(), 10, 64)
 }
 
-func (scanner *Scanner) addResponse(ginContextCallExpr *ast.CallExpr, desc string, operation *spec.Operation) {
+func (scanner *Scanner) writeResponse(operation *spec.Operation, ginContextCallExpr *ast.CallExpr, desc string) {
 	response := spec.NewResponse()
 	args := ginContextCallExpr.Args
 
@@ -383,11 +367,11 @@ func (scanner *Scanner) addResponse(ginContextCallExpr *ast.CallExpr, desc strin
 
 	statusCode, err := scanner.getStatusCodeFromExpr(args[0])
 
-	if (err == nil) {
+	if err == nil {
 		switch program.GetCallExprFunName(ginContextCallExpr) {
 		// c.JSON(code int, obj interface{});
 		case "JSON":
-			if (len(args) == 2) {
+			if len(args) == 2 {
 				tpe := scanner.Program.TypeOf(args[1])
 				if !strings.Contains(tpe.String(), "untyped nil") {
 					schema := scanner.defineSchemaBy(tpe)
@@ -395,7 +379,7 @@ func (scanner *Scanner) addResponse(ginContextCallExpr *ast.CallExpr, desc strin
 				}
 
 				operation.RespondsWith(int(statusCode), response)
-				operation.WithProduces(gin.MIMEJSON)
+				operation.Produces = []string{gin.MIMEJSON}
 			}
 		// c.HTML(code int, );
 		// c.HTMLString(http.StatusOK, format, values)
@@ -417,14 +401,19 @@ func (scanner *Scanner) addResponse(ginContextCallExpr *ast.CallExpr, desc strin
 	}
 }
 
-func (scanner *Scanner) addResponseByHttpErrorValue(operation *spec.Operation, httpErrorValue http_error_code.HttpErrorValue, tpe types.Type) {
+func (scanner *Scanner) writeResponseByHttpErrorValue(operation *spec.Operation, httpErrorValue http_error_code.HttpErrorValue, tpe types.Type) {
 	statusCode := http_error_code.CodeToStatus(httpErrorValue.Code)
 
-	errorDesc := `HttpError(` + httpErrorValue.Name + `,` + httpErrorValue.Code + `,` + strconv.Quote(httpErrorValue.Msg) + `,` + strconv.Quote(httpErrorValue.Desc) + `,` + fmt.Sprintf("%s", httpErrorValue.CanBeErrTalk) + `);`
+	desc := ""
 
-	if (operation.Responses != nil && operation.Responses.StatusCodeResponses != nil ) {
-		desc := operation.Responses.StatusCodeResponses[statusCode].Description
-		errorDesc = strings.Join([]string{desc, errorDesc}, "\n")
+	if operation.Responses != nil && operation.Responses.StatusCodeResponses != nil {
+		desc = operation.Responses.StatusCodeResponses[statusCode].Description
+	}
+
+	errDesc := `HttpError(` + httpErrorValue.Name + `,` + httpErrorValue.Code + `,` + strconv.Quote(httpErrorValue.Msg) + `,` + strconv.Quote(httpErrorValue.Desc) + `,` + fmt.Sprint(httpErrorValue.CanBeErrTalk) + `);`
+
+	if strings.Index(desc, errDesc) == -1 {
+		desc = strings.Join([]string{desc, errDesc}, "\n")
 	}
 
 	resp := spec.NewResponse()
@@ -434,41 +423,53 @@ func (scanner *Scanner) addResponseByHttpErrorValue(operation *spec.Operation, h
 		resp.WithSchema(&schema)
 	}
 
-	resp.WithDescription(errorDesc)
+	resp.WithDescription(desc)
 
-	operation.WithProduces(gin.MIMEJSON)
-
+	operation.Produces = []string{gin.MIMEJSON}
 	operation.RespondsWith(statusCode, resp)
 }
 
-func (scanner *Scanner) getOperation(handlerFuncDecl *ast.FuncDecl) (operation *spec.Operation) {
-	operation = new(spec.Operation)
+func (scanner *Scanner) pickOperationInfo(operation *spec.Operation, scope *types.Scope, scanned map[*types.Scope]bool) {
+	scanned[scope] = true
 
-	pkgInfo := scanner.Program.PackageInfoOf(handlerFuncDecl)
-	scope := scanner.Program.ScopeOf(handlerFuncDecl)
-	summary, desc := parseCommentToSummaryDesc(handlerFuncDecl.Doc.Text())
+	funType := scanner.Program.WitchFunc(scope.Pos())
 
-	operation.WithSummary(summary)
-	operation.WithDescription(desc)
-	operation.WithTags(pkgInfo.Pkg.Name())
+	log.Printf("Picking operation from %s\n", aurora.Blue(funType.FullName()))
 
-	methodName := aurora.Sprintf(aurora.Blue("%s.%s"), pkgInfo.Pkg.Path(), handlerFuncDecl.Name.String())
+	for _, name := range scope.Names() {
+		tpe := scope.Lookup(name).Type()
+		// get parameters from type of var `req` or `request`;
+		if name == "req" || name == "request" {
+			if structTpe, ok := program.Indirect(tpe).(*types.Struct); ok {
+				astStruct := scanner.Program.WhereDecl(tpe)
+				log.Printf("\t Picking parameters from %s\n", aurora.Sprintf(aurora.Green("%s"), astStruct))
+				scanner.writeParameter(operation, structTpe)
+			} else {
+				panic(fmt.Errorf(aurora.Sprintf(aurora.Red("request in %s should be a struct\n"))))
+			}
+		}
+	}
 
-	log.Printf("Picking operation from %s\n", methodName)
-
-	// collection http error type
-	httpErrors := http_error_code.CollectErrors(scanner.Program)
-
-	// get from const typeof HttpErrorType
-	for id, obj := range pkgInfo.Uses {
-		if (scope.Contains(id.Pos())) {
-			if constObj, ok := obj.(*types.Const); ok {
-				if (program.IsTypeName(obj.Type(), http_error_code.HttpErrorVarName)) {
-					if httpErrorValue, ok := httpErrors[obj.Pkg()][constObj.Val().String()]; ok {
+	for id, obj := range scanner.Program.UsesInScope(scope) {
+		switch obj.(type) {
+		case *types.Func:
+			tpeFunc := obj.(*types.Func)
+			if isFuncOfGin(tpeFunc) {
+				if callExpr := scanner.Program.CallFuncById(id); callExpr != nil {
+					scanner.writeResponse(operation, callExpr, scanner.getNodeDoc(callExpr))
+				}
+			} else if isFuncWithGinContext(tpeFunc) && !scanned[tpeFunc.Scope()] {
+				scanner.pickOperationInfo(operation, tpeFunc.Scope(), scanned)
+			}
+		case *types.Const:
+			if len(scanner.httpErrors) > 0 {
+				constObj := obj.(*types.Const)
+				if program.IsTypeName(obj.Type(), http_error_code.HttpErrorVarName) {
+					if httpErrorValue, ok := scanner.httpErrors[obj.Pkg()][constObj.Val().String()]; ok {
 						methods := scanner.Program.MethodsOf(obj.Type())
 						for funcType, method := range methods {
-							if (funcType.Name() == "ToError") {
-								scanner.addResponseByHttpErrorValue(operation, httpErrorValue, method.Results().At(0).Type())
+							if funcType.Name() == "ToError" {
+								scanner.writeResponseByHttpErrorValue(operation, httpErrorValue, method.Results().At(0).Type())
 							}
 						}
 					}
@@ -476,38 +477,48 @@ func (scanner *Scanner) getOperation(handlerFuncDecl *ast.FuncDecl) (operation *
 			}
 		}
 	}
+}
 
-	for _, name := range scope.Names() {
-		tpe := scope.Lookup(name).Type()
-		// get parameters from type of var `req` or `request`;
-		if name == "req" || name == "request" {
-			if structTpe, ok := tpe.Underlying().(*types.Struct); ok {
-				astStruct := scanner.Program.WhereDecl(tpe)
-				log.Printf("\t Picking parameters from %s\n", aurora.Sprintf(aurora.Green("%s"), astStruct))
-				scanner.bindParamBy(structTpe, operation)
-			} else {
-				panic(fmt.Errorf(aurora.Sprintf(aurora.Red("request in %s should be a struct\n"), methodName)))
+func (scanner *Scanner) writeSummaryDesc(operation *spec.Operation, doc string) {
+	summary, desc := parseCommentToSummaryDesc(doc)
+	operation.WithSummary(summary)
+	operation.WithDescription(desc)
+}
+
+func (scanner *Scanner) writeOperation(operation *spec.Operation, handlerFuncDecl *ast.FuncDecl) {
+	scanned := map[*types.Scope]bool{}
+
+	scope := scanner.Program.ScopeOf(handlerFuncDecl)
+	scanner.pickOperationInfo(operation, scope, scanned)
+
+	scanner.writeSummaryDesc(operation, handlerFuncDecl.Doc.Text())
+}
+
+func (scanner *Scanner) patchPathWithZero(swaggerPath string, operation *spec.Operation) string {
+	r := regexp.MustCompile("/\\{([^/\\}]+)\\}")
+
+	return r.ReplaceAllStringFunc(swaggerPath, func(str string) string {
+		name := r.FindAllStringSubmatch(str, -1)[0][1]
+
+		var isParameterDefined = false
+
+		for _, parameter := range operation.Parameters {
+			if parameter.In == "path" && parameter.Name == name {
+				isParameterDefined = true
 			}
 		}
 
-		// get response from method gin.Context
-		if pointer, ok := tpe.(*types.Pointer); ok {
-			if scanner.typeOfGinContext(pointer) {
-				for _, pkgInfo := range scanner.Program.AllPackages {
-					program.PickSelectionBy(pkgInfo.Info, func(selectorExpr *ast.SelectorExpr, selection *types.Selection) bool {
-						if selection.Recv() == tpe {
-							if callExpr := program.FindCallExprByFunc(pkgInfo.Info, selectorExpr); callExpr != nil {
-								scanner.addResponse(callExpr, scanner.getNodeDoc(callExpr), operation)
-							}
-						}
-						return false
-					})
-				}
-			}
+		if isParameterDefined {
+			return str
 		}
 
-	}
+		log.Printf(aurora.Sprintf(aurora.Red("`%s` without defining param `%s`, and use 0 instead;\n"), swaggerPath, name))
 
+		return "/0"
+	})
+}
+
+func patchOperationConsumes(operation *spec.Operation) {
 	var isParameterHasBodySchema = false
 
 	for _, parameter := range operation.Parameters {
@@ -519,99 +530,75 @@ func (scanner *Scanner) getOperation(handlerFuncDecl *ast.FuncDecl) (operation *
 	if isParameterHasBodySchema {
 		operation.WithConsumes(gin.MIMEJSON)
 	}
-
-	return
 }
 
-func (scanner *Scanner) HasImportedGin(packages []*types.Package) bool {
-	for _, pkg := range packages {
-		if pkg.Name() == "gin" && scanner.packageOfGin(pkg.Path()) {
-			return true
-		}
-	}
-	return false
-}
+func (scanner *Scanner) collectOperation(method string, ginPath string, handlerExprs []ast.Expr) {
+	operation := new(spec.Operation)
+	swaggerPath := convertGinPathToSwaggerPath(ginPath)
 
-func (scanner *Scanner) collectOperationByCallExpr(callExpr *ast.CallExpr, prefix string) {
-	method := program.GetCallExprFunName(callExpr)
+	log.Printf("%s %s\n", aurora.Red(method), aurora.Blue(ginPath))
 
-	if isGinMethod(method) {
-		args := callExpr.Args
-		lastArg := args[len(args) - 1]
+	lastIdx := len(handlerExprs) - 1
 
-		var id string
-		var swaggerPath string
-		var operation *spec.Operation
-
-		ginPath := path.Join(prefix, getRouterPathByCallExpr(callExpr))
-		swaggerPath = convertGinPathToSwaggerPath(ginPath)
-
+	for idx, handlerExpr := range handlerExprs {
 		var operationIdent *ast.Ident
 
-		switch lastArg.(type) {
+		switch handlerExpr.(type) {
 		case *ast.Ident:
-			operationIdent = lastArg.(*ast.Ident)
+			operationIdent = handlerExpr.(*ast.Ident)
 		case *ast.SelectorExpr:
-			operationIdent = lastArg.(*ast.SelectorExpr).Sel
+			operationIdent = handlerExpr.(*ast.SelectorExpr).Sel
 		}
-
-		id = operationIdent.String()
 
 		ident := scanner.Program.IdentOf(scanner.Program.DefOf(operationIdent))
 
 		if funcDecl, ok := ident.Obj.Decl.(*ast.FuncDecl); ok {
-			operation = scanner.getOperation(funcDecl)
-			operation.WithID(id)
-
-			r := regexp.MustCompile("/\\{([^/\\}]+)\\}")
-
-			fixedPath := r.ReplaceAllStringFunc(swaggerPath, func(str string) string {
-				name := r.FindAllStringSubmatch(str, -1)[0][1]
-
-				var isParameterDefined = false
-
-				for _, parameter := range operation.Parameters {
-					if parameter.In == "path" && parameter.Name == name {
-						isParameterDefined = true
-					}
-				}
-
-				if isParameterDefined {
-					return str
-				}
-
-				log.Printf(aurora.Sprintf(aurora.Red("`%s` without defining param `%s`, and use 0 instead;\n"), swaggerPath, name))
-
-				return "/0"
-			})
-
-			scanner.Swagger.AddOperation(method, fixedPath, operation)
+			scanner.writeOperation(operation, funcDecl)
+			if idx == lastIdx {
+				pkgInfo := scanner.Program.PackageInfoOf(funcDecl)
+				operation.WithTags(pkgInfo.Pkg.Name())
+				operation.WithID(operationIdent.String())
+			}
 		}
 	}
+
+	patchOperationConsumes(operation)
+
+	scanner.Swagger.AddOperation(method, scanner.patchPathWithZero(swaggerPath, operation), operation)
+}
+
+func (scanner *Scanner) CollectHttpErrors() {
+	scanner.httpErrors = http_error_code.CollectErrors(scanner.Program)
 }
 
 func (scanner *Scanner) Scan() {
+	scanner.CollectHttpErrors()
+
 	for pkg, pkgInfo := range scanner.Program.AllPackages {
-		if scanner.HasImportedGin(pkg.Imports()) {
-			program.PickSelectionBy(pkgInfo.Info, func(selectorExpr *ast.SelectorExpr, selection *types.Selection) bool {
+		if hasImportedGin(pkg.Imports()) {
+			for selectorExpr, selection := range pkgInfo.Info.Selections {
 				if pointer, ok := selection.Recv().(*types.Pointer); ok {
-					if scanner.typeOfGinEngine(pointer) || scanner.typeOfGinRouterGroup(pointer) {
+					if typeOfGinEngine(pointer) || typeOfGinRouterGroup(pointer) {
 						if isGinMethod(selectorExpr.Sel.Name) {
 							if callExpr := program.FindCallExprByFunc(pkgInfo.Info, selectorExpr); callExpr != nil {
-								var prefix = ""
+								method := selectorExpr.Sel.Name
+								prefix := ""
+								args := []ast.Expr{}
 
-								if scanner.typeOfGinRouterGroup(pointer) {
-									prefix = scanner.getRouterPrefixByIdent(selectorExpr.X.(*ast.Ident))
+								if typeOfGinRouterGroup(pointer) {
+									prefix, args = scanner.getRouterPrefixByIdent(selectorExpr.X.(*ast.Ident))
 								}
 
-								scanner.collectOperationByCallExpr(callExpr, prefix)
+								ginPath := path.Join(prefix, getRouterPathByCallExpr(callExpr))
+
+								args = append(args, callExpr.Args[1:]...)
+
+								scanner.collectOperation(method, ginPath, args)
 							}
-							return false
 						}
 					}
 				}
-				return false
-			})
+			}
 		}
 	}
 }

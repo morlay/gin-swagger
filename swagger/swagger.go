@@ -1,12 +1,12 @@
 package swagger
 
 import (
-	"github.com/go-openapi/spec"
-	"strings"
 	"fmt"
+	"github.com/go-openapi/spec"
+	"reflect"
 	"regexp"
 	"strconv"
-	"reflect"
+	"strings"
 )
 
 func NewSwagger() *Swagger {
@@ -73,8 +73,8 @@ func (swagger *Swagger) AddDefinition(name string, schema spec.Schema) (*spec.Sc
 }
 
 var (
-	rxEnum = regexp.MustCompile(`swagger:enum`)
-	rxStrFmt = regexp.MustCompile(`swagger:strfmt\s+(\S+)([\s\S]+)?$`)
+	rxEnum     = regexp.MustCompile(`swagger:enum`)
+	rxStrFmt   = regexp.MustCompile(`swagger:strfmt\s+(\S+)([\s\S]+)?$`)
 	rxValidate = regexp.MustCompile(`^@([^\[\(\{]+)([\[\(\{])([^\}^\]^\)]+)([\}\]\)])$`)
 )
 

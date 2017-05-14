@@ -155,8 +155,8 @@ func (program *Program) MethodsOf(tpe types.Type) (methods map[*types.Func]*type
 		for _, def := range pkgInfo.Defs {
 			if funcType, ok := def.(*types.Func); ok {
 				if s, ok := funcType.Type().(*types.Signature); ok {
-					recv := s.Recv();
-					if (recv != nil && recv.Type() == tpe) {
+					recv := s.Recv()
+					if recv != nil && recv.Type() == tpe {
 						methods[funcType] = s
 					}
 				}
@@ -164,6 +164,31 @@ func (program *Program) MethodsOf(tpe types.Type) (methods map[*types.Func]*type
 		}
 	}
 	return
+}
+
+func (program *Program) WithPkgInfoContains(pos token.Pos) *loader.PackageInfo {
+	for _, pkgInfo := range program.AllPackages {
+		for _, scope := range pkgInfo.Scopes {
+			if scope.Contains(pos) {
+				return pkgInfo
+			}
+		}
+	}
+	return nil
+}
+
+func (program *Program) WitchFunc(pos token.Pos) *types.Func {
+	for _, pkgInfo := range program.AllPackages {
+		for _, obj := range pkgInfo.Defs {
+			if tpeFunc, ok := obj.(*types.Func); ok {
+				scope := tpeFunc.Scope()
+				if scope != nil && scope.Contains(pos) {
+					return tpeFunc
+				}
+			}
+		}
+	}
+	return nil
 }
 
 func (program *Program) PackageInfoOf(node ast.Node) *loader.PackageInfo {
@@ -175,6 +200,43 @@ func (program *Program) PackageInfoOf(node ast.Node) *loader.PackageInfo {
 		}
 	}
 	return nil
+}
+
+func (program *Program) CallFuncById(id *ast.Ident) *ast.CallExpr {
+	pkgInfo := program.WithPkgInfoContains(id.Pos())
+
+	for expr := range pkgInfo.Types {
+		if callExpr, ok := expr.(*ast.CallExpr); ok {
+			switch callExpr.Fun.(type) {
+			case *ast.Ident:
+				if callExpr.Fun == id {
+					return callExpr
+				}
+			case *ast.SelectorExpr:
+				selectorExpr := callExpr.Fun.(*ast.SelectorExpr)
+				if selectorExpr.Sel == id {
+					return callExpr
+				}
+			}
+		}
+	}
+
+	return nil
+}
+
+func (program *Program) UsesInScope(scope *types.Scope) map[*ast.Ident]types.Object {
+	uses := map[*ast.Ident]types.Object{}
+	pkgInfo := program.WithPkgInfoContains(scope.Pos())
+
+	if pkgInfo != nil {
+		for id, obj := range pkgInfo.Uses {
+			if scope.Contains(id.Pos()) {
+				uses[id] = obj
+			}
+		}
+	}
+
+	return uses
 }
 
 type Option struct {

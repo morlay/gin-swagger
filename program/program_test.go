@@ -3,18 +3,18 @@ package program
 import (
 	"fmt"
 	"go/ast"
+	"strings"
 	"testing"
 
 	"github.com/logrusorgru/aurora"
-	"strings"
 )
-
-const FIXTURES = "github.com/morlay/gin-swagger/program/fixtures"
 
 func PrintCommentText(name interface{}, comments []*ast.CommentGroup) {
 	str := strings.Replace(GetTextFromCommentGroup(comments), "\n", "//", -1)
 	fmt.Printf("%s: %s\n", name, aurora.Sprintf(aurora.Red(str)))
 }
+
+const FIXTURES = "github.com/morlay/gin-swagger/program/fixtures"
 
 func TestProgram_CommentGroupFor(t *testing.T) {
 	pkgComments := FIXTURES + "/comments"
@@ -71,7 +71,6 @@ func TestProgram_CommentGroupFor(t *testing.T) {
 
 		}
 	}
-
 }
 
 func indirectSelectorX(selectorExpr *ast.SelectorExpr) *ast.Ident {

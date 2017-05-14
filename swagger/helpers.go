@@ -4,10 +4,8 @@ import (
 	"regexp"
 	"strings"
 
-	"go/ast"
-	"go/types"
-
 	"github.com/morlay/gin-swagger/program"
+	"go/ast"
 )
 
 func isGinMethod(method string) bool {
@@ -36,22 +34,11 @@ func parseCommentToSummaryDesc(str string) (string, string) {
 
 func getExportedNameOfPackage(path string) string {
 	var parts = strings.Split(path, ".")
-	return parts[len(parts) - 1]
+	return parts[len(parts)-1]
 }
 
 func getRouterPathByCallExpr(callExpr *ast.CallExpr) string {
 	return program.GetBasicLitValue(callExpr.Args[0].(*ast.BasicLit)).(string)
-}
-
-func indirect(t types.Type) types.Type {
-	switch t.(type) {
-	case *types.Pointer:
-		return indirect(t.(*types.Pointer).Elem())
-	case *types.Named:
-		return indirect(t.(*types.Named).Underlying())
-	default:
-		return t
-	}
 }
 
 func convertGinPathToSwaggerPath(str string) string {

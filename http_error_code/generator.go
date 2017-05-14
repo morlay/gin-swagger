@@ -1,22 +1,23 @@
 package http_error_code
 
 import (
-	"go/types"
-	"path/filepath"
-	"strings"
-	"os"
-	"strconv"
 	"fmt"
+	"go/types"
+	"os"
+	"path/filepath"
+	"strconv"
+	"strings"
 
-	"github.com/morlay/gin-swagger/program"
 	"github.com/morlay/gin-swagger/codegen"
+	"github.com/morlay/gin-swagger/program"
+	"sort"
 )
 
 func NewErrorGenerator(packagePath string, errorType string) *ErrorGenerator {
 	prog := program.NewProgram(packagePath)
 
 	return &ErrorGenerator{
-		ErrorType: errorType,
+		ErrorType:   errorType,
 		PackagePath: packagePath,
 		Program:     prog,
 	}
@@ -32,6 +33,18 @@ type HttpErrorValue struct {
 	CanBeErrTalk bool
 }
 
+type ByHttpErrorValue []HttpErrorValue
+
+func (a ByHttpErrorValue) Len() int {
+	return len(a)
+}
+func (a ByHttpErrorValue) Swap(i, j int) {
+	a[i], a[j] = a[j], a[i]
+}
+func (a ByHttpErrorValue) Less(i, j int) bool {
+	return a[i].Name < a[j].Name
+}
+
 type ErrorGenerator struct {
 	ErrorType   string
 	PackagePath string
@@ -45,22 +58,22 @@ func CollectErrors(p *program.Program) map[*types.Package]map[string]HttpErrorVa
 	for _, pkgInfo := range p.AllPackages {
 		for ident, obj := range pkgInfo.Defs {
 			if constObj, ok := obj.(*types.Const); ok {
-				if (program.IsTypeName(obj.Type(), HttpErrorVarName)) {
+				if program.IsTypeName(obj.Type(), HttpErrorVarName) {
 					doc := program.GetTextFromCommentGroup(p.CommentGroupFor(ident))
-					name := constObj.Name();
-					code := constObj.Val().String();
+					name := constObj.Name()
+					code := constObj.Val().String()
 					msg, desc, canBeErrTalk := ParseHttpCodeDesc(doc)
-					pkg := constObj.Pkg();
+					pkg := constObj.Pkg()
 
-					if (httpErrors[pkg] == nil) {
+					if httpErrors[pkg] == nil {
 						httpErrors[pkg] = map[string]HttpErrorValue{}
 					}
 
 					httpErrors[pkg][code] = HttpErrorValue{
-						Name: name,
-						Code: code,
-						Msg: msg,
-						Desc: desc,
+						Name:         name,
+						Code:         code,
+						Msg:          msg,
+						Desc:         desc,
 						CanBeErrTalk: canBeErrTalk,
 					}
 				}
@@ -79,6 +92,14 @@ func (g *ErrorGenerator) Output() {
 
 	for pkg, httpErrorValues := range g.HttpErrors {
 		if program.IsSubPackageOf(g.PackagePath, pkg.Path()) {
+			sortedHttpErrorValues := []HttpErrorValue{}
+
+			for _, value := range httpErrorValues {
+				sortedHttpErrorValues = append(sortedHttpErrorValues, value)
+			}
+
+			sort.Sort(ByHttpErrorValue(sortedHttpErrorValues))
+
 			path, _ := filepath.Rel(cwd, filepath.Join(os.Getenv("GOPATH"), "src", pkg.Path()))
 
 			importedErrorType, errorType := program.ParsePkgExpose(g.ErrorType)
@@ -87,9 +108,9 @@ func (g *ErrorGenerator) Output() {
 				codegen.DeclPackage(pkg.Name()),
 				codegen.DeclImports("strconv", "fmt", importedErrorType),
 				ParseOthers(errorType),
-				ParseMsgParser(httpErrorValues),
-				ParseDescParser(httpErrorValues),
-				ParseErrorTalkParser(httpErrorValues),
+				ParseMsgParser(sortedHttpErrorValues),
+				ParseDescParser(sortedHttpErrorValues),
+				ParseErrorTalkParser(sortedHttpErrorValues),
 			}
 
 			codegen.WriteGoFile(
@@ -103,7 +124,7 @@ func (g *ErrorGenerator) Output() {
 	}
 }
 
-func ParseMsgParser(httpErrorValues map[string]HttpErrorValue) string {
+func ParseMsgParser(httpErrorValues []HttpErrorValue) string {
 	firstLine := `func (c ` + HttpErrorVarName + `) Msg() string {
 	switch (c) {`
 
@@ -121,7 +142,7 @@ func ParseMsgParser(httpErrorValues map[string]HttpErrorValue) string {
 	return strings.Join(lines, "\n")
 }
 
-func ParseDescParser(httpErrorValues map[string]HttpErrorValue) string {
+func ParseDescParser(httpErrorValues []HttpErrorValue) string {
 	lines := []string{`func (c ` + HttpErrorVarName + `) Desc() string {
 	switch (c) {`}
 
@@ -137,7 +158,7 @@ func ParseDescParser(httpErrorValues map[string]HttpErrorValue) string {
 	return strings.Join(lines, "\n")
 }
 
-func ParseErrorTalkParser(httpErrorValues map[string]HttpErrorValue) string {
+func ParseErrorTalkParser(httpErrorValues []HttpErrorValue) string {
 	lines := []string{`func (c ` + HttpErrorVarName + `) CanBeErrTalk() bool {
 	switch (c) {`}
 

@@ -7,7 +7,7 @@ import (
 )
 
 var (
-	cmdClientFlagInput string
+	cmdClientFlagInput      string
 	cmdClientFlagClientName string
 	cmdClientFlagBaseClient string
 )

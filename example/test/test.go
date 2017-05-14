@@ -2,6 +2,7 @@ package test
 
 import (
 	"fmt"
+	"github.com/morlay/gin-swagger/example/globals"
 	"github.com/morlay/gin-swagger/example/test2"
 	"gopkg.in/gin-gonic/gin.v1"
 	"net/http"
@@ -43,4 +44,15 @@ func Test(c *gin.Context) {
 
 	// 正常返回
 	c.JSON(http.StatusOK, res)
+}
+
+type AuthReq struct {
+	Authorization string `json:"authorization" in:"header"`
+}
+
+func AuthMiddleware(c *gin.Context) {
+	var req = AuthReq{}
+	if req.Authorization == "" {
+		c.JSON(globals.HTTP_ERROR_UNKNOWN.ToResp())
+	}
 }

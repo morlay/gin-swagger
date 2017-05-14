@@ -1,10 +1,10 @@
 package test2
 
 import (
+	"github.com/morlay/gin-swagger/example/globals"
 	"gopkg.in/gin-gonic/gin.v1"
 	"net/http"
 	"time"
-	"github.com/morlay/gin-swagger/example/globals"
 )
 
 // swagger:strfmt date-time
@@ -19,7 +19,7 @@ type Common struct {
 // 分页类
 type Pager struct {
 	// 分页大小
-	Size   int8 `json:"size" in:"query" default:"10" validate:"@int8[-1,20)"`
+	Size int8 `json:"size" in:"query" default:"10" validate:"@int8[-1,20)"`
 	// 分页偏移
 	Offset int8 `json:"offset" in:"query" default:"0" validate:"@int8[-1,100]"`
 }
@@ -62,12 +62,13 @@ func Test2(c *gin.Context) {
 	var req = SomeReq{}
 
 	if true {
+		// 正常返回
 		c.JSON(http.StatusOK, Some{
 			State: STATE__ONE,
 			Name:  uint64(req.Size),
-		}) // 正常返回
+		})
 	} else {
-		c.JSON(globals.HTTP_ERROR__TEST2.ToResp())
 		c.JSON(globals.HTTP_ERROR__TEST.ToResp())
+		globals.WriteErr(c)
 	}
 }

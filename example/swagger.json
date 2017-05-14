@@ -122,8 +122,6 @@
       "get": {
         "description": "Others\nheheheh",
         "produces": [
-          "application/json",
-          "application/json",
           "application/json"
         ],
         "tags": [
@@ -132,6 +130,13 @@
         "summary": "Summary",
         "operationId": "Test2",
         "parameters": [
+          {
+            "type": "string",
+            "x-go-name": "Authorization",
+            "name": "authorization",
+            "in": "header",
+            "required": true
+          },
           {
             "maximum": 20,
             "exclusiveMaximum": true,
@@ -243,7 +248,7 @@
             }
           },
           "400": {
-            "description": "HttpError(HTTP_ERROR__TEST2,400002002,\"Test2\",\"Description\",%!s(bool=true));\nHttpError(HTTP_ERROR__TEST,400002001,\"Summary\",\"\",%!s(bool=true));",
+            "description": "\nHttpError(HTTP_ERROR_UNKNOWN,400002000,\"未定义\",\"\",false);\nHttpError(HTTP_ERROR__TEST,400002001,\"Summary\",\"\",true);\nHttpError(HTTP_ERROR__TEST2,400002002,\"Test2\",\"Description\",true);",
             "schema": {
               "$ref": "#/definitions/GeneralError"
             }

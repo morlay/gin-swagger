@@ -1,15 +1,15 @@
 package http_error_code
 
 import (
-	"strings"
 	"strconv"
+	"strings"
 )
 
 func ParseHttpCodeDesc(str string) (msg string, desc string, canBeErrTalk bool) {
 	lines := strings.Split(str, "\n")
 	firstLine := strings.Split(lines[0], "@errTalk")
 
-	if (len(firstLine) > 1) {
+	if len(firstLine) > 1 {
 		canBeErrTalk = true
 		msg = strings.TrimSpace(firstLine[1])
 	} else {
@@ -17,8 +17,8 @@ func ParseHttpCodeDesc(str string) (msg string, desc string, canBeErrTalk bool) 
 		msg = strings.TrimSpace(firstLine[0])
 	}
 
-	if (len(lines) > 1) {
-		desc = strings.TrimSpace(strings.Join(lines[1:], "\n"));
+	if len(lines) > 1 {
+		desc = strings.TrimSpace(strings.Join(lines[1:], "\n"))
 	}
 
 	return

@@ -7,7 +7,33 @@ import (
 	"go/types"
 	"strconv"
 	"strings"
+
+	"golang.org/x/tools/go/loader"
 )
+
+func GetDefsInScope(pkgInfo *loader.PackageInfo, scope *types.Scope) map[*ast.Ident]types.Object {
+	defs := map[*ast.Ident]types.Object{}
+
+	for id, obj := range pkgInfo.Defs {
+		if scope.Contains(id.Pos()) {
+			defs[id] = obj
+		}
+	}
+
+	return defs
+}
+
+func GetUsesInScope(pkgInfo *loader.PackageInfo, scope *types.Scope) map[*ast.Ident]types.Object {
+	uses := map[*ast.Ident]types.Object{}
+
+	for id, obj := range pkgInfo.Uses {
+		if scope.Contains(id.Pos()) {
+			uses[id] = obj
+		}
+	}
+
+	return uses
+}
 
 func GetBasicLitValue(basicLit *ast.BasicLit) interface{} {
 	switch basicLit.Kind.String() {
@@ -73,18 +99,6 @@ func FindCallExprByFunc(info types.Info, funcExpr ast.Expr) *ast.CallExpr {
 	return nil
 }
 
-func PickSelectionBy(info types.Info, picker func(selectorExpr *ast.SelectorExpr, selection *types.Selection) bool) map[*ast.SelectorExpr]*types.Selection {
-	var selections = make(map[*ast.SelectorExpr]*types.Selection)
-
-	for selectorExpr, selection := range info.Selections {
-		if picker(selectorExpr, selection) {
-			selections[selectorExpr] = selection
-		}
-	}
-
-	return selections
-}
-
 func GetTextFromCommentGroup(commentGroup []*ast.CommentGroup) string {
 	var text = ""
 
@@ -95,12 +109,12 @@ func GetTextFromCommentGroup(commentGroup []*ast.CommentGroup) string {
 	return strings.Trim(text, "\n")
 }
 
-func indirect(t types.Type) types.Type {
+func Indirect(t types.Type) types.Type {
 	switch t.(type) {
 	case *types.Pointer:
-		return indirect(t.(*types.Pointer).Elem())
+		return Indirect(t.(*types.Pointer).Elem())
 	case *types.Named:
-		return indirect(t.(*types.Named).Underlying())
+		return Indirect(t.(*types.Named).Underlying())
 	default:
 		return t
 	}
@@ -116,16 +130,16 @@ func IsSubPackageOf(basePath string, path string) bool {
 
 func IsTypeName(tpe types.Type, typeName string) bool {
 	pkgPaths := strings.Split(tpe.String(), ".")
-	return pkgPaths[len(pkgPaths) - 1] == typeName
+	return pkgPaths[len(pkgPaths)-1] == typeName
 }
 
 func ParsePkgExpose(pkgExpose string) (string, string) {
 	pkgPaths := strings.Split(pkgExpose, ".")
-	imported := strings.Join(pkgPaths[:len(pkgPaths) - 1], ".")
+	imported := strings.Join(pkgPaths[:len(pkgPaths)-1], ".")
 	paths := strings.Split(imported, "/")
 
 	return imported, strings.Join([]string{
-		paths[len(paths) - 1],
-		pkgPaths[len(pkgPaths) - 1],
+		paths[len(paths)-1],
+		pkgPaths[len(pkgPaths)-1],
 	}, ".")
 }
