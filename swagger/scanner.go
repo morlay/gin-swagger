@@ -431,27 +431,6 @@ func ParseHttpError(doc string) (string, []string) {
 	return strings.TrimSpace(otherDoc), httpErrors
 }
 
-func appendHttpError(resp *spec.Response, newHttpError string) {
-
-	desc := resp.Description
-
-	otherDoc, httpErrors := ParseHttpError(desc)
-
-	hasDef := false
-	for _, httpError := range httpErrors {
-		if newHttpError == httpError {
-			hasDef = true
-		}
-	}
-	if !hasDef {
-		httpErrors = append(httpErrors, newHttpError)
-	}
-
-	sort.Strings(httpErrors)
-
-	resp.WithDescription(otherDoc + strings.Join(httpErrors, "\n"))
-}
-
 func (scanner *Scanner) writeResponseByHttpErrorValue(operation *spec.Operation, statusCode int, httpErrorCode string) {
 	resp := newOrMergeResponse(operation, statusCode)
 
@@ -460,58 +439,85 @@ func (scanner *Scanner) writeResponseByHttpErrorValue(operation *spec.Operation,
 		resp.WithSchema(&schema)
 		operation.Produces = []string{gin.MIMEJSON}
 	}
-	appendHttpError(resp, httpErrorCode)
+
+	desc := resp.Description
+
+	otherDoc, httpErrors := ParseHttpError(desc)
+
+	hasDef := false
+	for _, httpError := range httpErrors {
+		if httpErrorCode == httpError {
+			hasDef = true
+		}
+	}
+	if !hasDef {
+		httpErrors = append(httpErrors, httpErrorCode)
+	}
+
+	sort.Strings(httpErrors)
+
+	resp.WithDescription(otherDoc + strings.Join(httpErrors, "\n"))
+
 	operation.RespondsWith(statusCode, resp)
 }
 
 func (scanner *Scanner) pickOperationInfo(operation *spec.Operation, scope *types.Scope, scanned map[*types.Scope]bool) {
-	scanned[scope] = true
+	if scope != nil {
 
-	funType := scanner.Program.WitchFunc(scope.Pos())
+		scanned[scope] = true
 
-	log.Printf("Picking operation from %s\n", aurora.Blue(funType.FullName()))
+		funType := scanner.Program.WitchFunc(scope.Pos())
 
-	for _, name := range scope.Names() {
-		tpe := scope.Lookup(name).Type()
-		// get parameters from type of var `req` or `request`;
-		if name == "req" || name == "request" {
-			if structTpe, ok := program.Indirect(tpe).(*types.Struct); ok {
-				astStruct := scanner.Program.WhereDecl(tpe)
-				log.Printf("\t Picking parameters from %s\n", aurora.Sprintf(aurora.Green("%s"), astStruct))
-				scanner.writeParameter(operation, structTpe)
-			} else {
-				panic(fmt.Errorf(aurora.Sprintf(aurora.Red("request in %s should be a struct\n"))))
-			}
-		}
-	}
+		if funType != nil {
+			log.Printf("Picking operation from %s\n", aurora.Blue(funType.FullName()))
 
-	for id, obj := range scanner.Program.UsesInScope(scope) {
-		switch obj.(type) {
-		case *types.Func:
-			tpeFunc := obj.(*types.Func)
-			if isFuncOfGin(tpeFunc) {
-				if callExpr := scanner.Program.CallFuncById(id); callExpr != nil {
-					scanner.writeResponse(operation, callExpr, scanner.getNodeDoc(callExpr))
-				}
-			} else if !scanned[tpeFunc.Scope()] {
-				if isFuncWithGinContext(tpeFunc) {
-					scanner.pickOperationInfo(operation, tpeFunc.Scope(), scanned)
-				} else if _, ok := scanner.funcUsesHttpErrors[tpeFunc]; ok {
-					scanner.pickOperationInfo(operation, tpeFunc.Scope(), scanned)
-				} else if httpErrors, ok := scanner.funcMarkedHttpErrors[tpeFunc]; ok {
-					for _, httpError := range httpErrors {
-						matched := rxHttpError.FindAllStringSubmatch(httpError, -1)
-						statusCode := http_error_code.CodeToStatus(matched[0][1])
-						scanner.writeResponseByHttpErrorValue(operation, statusCode, httpError)
+			for _, name := range scope.Names() {
+				tpe := scope.Lookup(name).Type()
+				// get parameters from type of var `req` or `request`;
+				if name == "req" || name == "request" {
+					if structTpe, ok := program.Indirect(tpe).(*types.Struct); ok {
+						astStruct := scanner.Program.WhereDecl(tpe)
+						log.Printf("\t Picking parameters from %s\n", aurora.Sprintf(aurora.Green("%s"), astStruct))
+						scanner.writeParameter(operation, structTpe)
+					} else {
+						panic(fmt.Errorf(aurora.Sprintf(aurora.Red("request in %s should be a struct\n"))))
 					}
 				}
 			}
-		case *types.Const:
-			if len(scanner.httpErrors) > 0 {
-				constObj := obj.(*types.Const)
-				if program.IsTypeName(obj.Type(), http_error_code.HttpErrorVarName) {
-					if httpErrorValue, ok := scanner.httpErrors[obj.Pkg()][constObj.Val().String()]; ok {
-						scanner.writeResponseByHttpErrorValue(operation, httpErrorValue.ToStatus(), httpErrorValue.ToDesc())
+
+			for id, obj := range scanner.Program.UsesInScope(scope) {
+				switch obj.(type) {
+				case *types.Func:
+					tpeFunc := obj.(*types.Func)
+					if isFuncOfGin(tpeFunc) {
+						if callExpr := scanner.Program.CallFuncById(id); callExpr != nil {
+							scanner.writeResponse(operation, callExpr, scanner.getNodeDoc(callExpr))
+						}
+					} else if !scanned[tpeFunc.Scope()] {
+						if isFuncWithGinContext(tpeFunc) {
+							scanner.pickOperationInfo(operation, tpeFunc.Scope(), scanned)
+						} else if httpErrors, ok := scanner.funcMarkedHttpErrors[tpeFunc]; ok {
+							for _, httpError := range httpErrors {
+								matched := rxHttpError.FindAllStringSubmatch(httpError, -1)
+								statusCode := http_error_code.CodeToStatus(matched[0][1])
+								scanner.writeResponseByHttpErrorValue(operation, statusCode, httpError)
+							}
+						} else {
+							for pkgDefHttpError := range scanner.httpErrors {
+								if tpeFunc.Pkg() == pkgDefHttpError || program.PkgContains(tpeFunc.Pkg().Imports(), pkgDefHttpError) {
+									scanner.pickOperationInfo(operation, tpeFunc.Scope(), scanned)
+								}
+							}
+						}
+					}
+				case *types.Const:
+					if len(scanner.httpErrors) > 0 {
+						constObj := obj.(*types.Const)
+						if program.IsTypeName(obj.Type(), http_error_code.HttpErrorVarName) {
+							if httpErrorValue, ok := scanner.httpErrors[obj.Pkg()][constObj.Val().String()]; ok {
+								scanner.writeResponseByHttpErrorValue(operation, httpErrorValue.ToStatus(), httpErrorValue.ToDesc())
+							}
+						}
 					}
 				}
 			}
