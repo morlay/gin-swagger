@@ -5,7 +5,6 @@ import (
 	"go/ast"
 	"go/types"
 	"log"
-	"path"
 	"reflect"
 	"regexp"
 	"strconv"
@@ -18,6 +17,7 @@ import (
 	"github.com/morlay/gin-swagger/codegen"
 	"github.com/morlay/gin-swagger/http_error_code"
 	"github.com/morlay/gin-swagger/program"
+	"path"
 )
 
 func NewScanner(packagePath string) *Scanner {
@@ -30,10 +30,11 @@ func NewScanner(packagePath string) *Scanner {
 }
 
 type Scanner struct {
-	GinPath    string
-	Swagger    *Swagger
-	Program    *program.Program
-	httpErrors map[*types.Package]map[string]http_error_code.HttpErrorValue
+	GinPath            string
+	Swagger            *Swagger
+	Program            *program.Program
+	httpErrors         map[*types.Package]map[string]http_error_code.HttpErrorValue
+	funcUsesHttpErrors map[*types.Func]map[string]http_error_code.HttpErrorValue
 }
 
 func (scanner *Scanner) getRouterPrefixByIdent(id *ast.Ident) (string, []ast.Expr) {
@@ -359,15 +360,29 @@ func (scanner *Scanner) getStatusCodeFromExpr(expr ast.Expr) (int64, error) {
 	return strconv.ParseInt(constantValue.String(), 10, 64)
 }
 
+func newOrMergeRespose(operation *spec.Operation, statusCode int) *spec.Response {
+	var resp *spec.Response
+
+	if operation.Responses != nil && operation.Responses.StatusCodeResponses != nil {
+		r := operation.Responses.StatusCodeResponses[statusCode]
+		resp = &r
+	} else {
+		resp = spec.NewResponse()
+	}
+
+	return resp
+}
+
 func (scanner *Scanner) writeResponse(operation *spec.Operation, ginContextCallExpr *ast.CallExpr, desc string) {
-	response := spec.NewResponse()
 	args := ginContextCallExpr.Args
 
-	response.WithDescription(desc)
-
-	statusCode, err := scanner.getStatusCodeFromExpr(args[0])
+	statusCodeString, err := scanner.getStatusCodeFromExpr(args[0])
 
 	if err == nil {
+		statusCode := int(statusCodeString)
+		resp := newOrMergeRespose(operation, statusCode)
+		resp.WithDescription(resp.Description + desc)
+
 		switch program.GetCallExprFunName(ginContextCallExpr) {
 		// c.JSON(code int, obj interface{});
 		case "JSON":
@@ -375,40 +390,35 @@ func (scanner *Scanner) writeResponse(operation *spec.Operation, ginContextCallE
 				tpe := scanner.Program.TypeOf(args[1])
 				if !strings.Contains(tpe.String(), "untyped nil") {
 					schema := scanner.defineSchemaBy(tpe)
-					response.WithSchema(&schema)
+					resp.WithSchema(&schema)
 				}
-
-				operation.RespondsWith(int(statusCode), response)
 				operation.Produces = []string{gin.MIMEJSON}
 			}
 		// c.HTML(code int, );
 		// c.HTMLString(http.StatusOK, format, values)
 		case "HTML", "HTMLString":
-			operation.RespondsWith(int(statusCode), response)
-			operation.WithProduces(gin.MIMEHTML)
+			operation.Produces = []string{gin.MIMEHTML}
 		// c.String(http.StatusOK, format, values)
 		case "String":
 			schema := spec.Schema{}
 			schema.Typed("string", "")
-			response.WithSchema(&schema)
-			operation.RespondsWith(int(statusCode), response)
+			resp.WithSchema(&schema)
 		// c.Render(code init, )
 		// c.Data(code init, )
 		// c.Redirect(code init, )
 		case "Render", "Data", "Redirect":
-			operation.RespondsWith(int(statusCode), response)
 		}
+
+		operation.RespondsWith(int(statusCode), resp)
 	}
 }
 
 func (scanner *Scanner) writeResponseByHttpErrorValue(operation *spec.Operation, httpErrorValue http_error_code.HttpErrorValue, tpe types.Type) {
 	statusCode := http_error_code.CodeToStatus(httpErrorValue.Code)
 
-	desc := ""
+	resp := newOrMergeRespose(operation, statusCode)
 
-	if operation.Responses != nil && operation.Responses.StatusCodeResponses != nil {
-		desc = operation.Responses.StatusCodeResponses[statusCode].Description
-	}
+	desc := resp.Description
 
 	errDesc := `HttpError(` + httpErrorValue.Name + `,` + httpErrorValue.Code + `,` + strconv.Quote(httpErrorValue.Msg) + `,` + strconv.Quote(httpErrorValue.Desc) + `,` + fmt.Sprint(httpErrorValue.CanBeErrTalk) + `);`
 
@@ -416,16 +426,13 @@ func (scanner *Scanner) writeResponseByHttpErrorValue(operation *spec.Operation,
 		desc = strings.Join([]string{desc, errDesc}, "\n")
 	}
 
-	resp := spec.NewResponse()
-
 	if !strings.Contains(tpe.String(), "untyped nil") {
 		schema := scanner.defineSchemaBy(tpe)
 		resp.WithSchema(&schema)
 	}
 
-	resp.WithDescription(desc)
-
 	operation.Produces = []string{gin.MIMEJSON}
+	resp.WithDescription(desc)
 	operation.RespondsWith(statusCode, resp)
 }
 
@@ -458,8 +465,12 @@ func (scanner *Scanner) pickOperationInfo(operation *spec.Operation, scope *type
 				if callExpr := scanner.Program.CallFuncById(id); callExpr != nil {
 					scanner.writeResponse(operation, callExpr, scanner.getNodeDoc(callExpr))
 				}
-			} else if isFuncWithGinContext(tpeFunc) && !scanned[tpeFunc.Scope()] {
-				scanner.pickOperationInfo(operation, tpeFunc.Scope(), scanned)
+			} else if !scanned[tpeFunc.Scope()] {
+				if isFuncWithGinContext(tpeFunc) {
+					scanner.pickOperationInfo(operation, tpeFunc.Scope(), scanned)
+				} else if _, ok := scanner.funcUsesHttpErrors[tpeFunc]; ok {
+					scanner.pickOperationInfo(operation, tpeFunc.Scope(), scanned)
+				}
 			}
 		case *types.Const:
 			if len(scanner.httpErrors) > 0 {
@@ -569,6 +580,32 @@ func (scanner *Scanner) collectOperation(method string, ginPath string, handlerE
 
 func (scanner *Scanner) CollectHttpErrors() {
 	scanner.httpErrors = http_error_code.CollectErrors(scanner.Program)
+	scanner.funcUsesHttpErrors = map[*types.Func]map[string]http_error_code.HttpErrorValue{}
+
+	for pkgDefHttpError, httpErrorMap := range scanner.httpErrors {
+		for pkg, pkgInfo := range scanner.Program.AllPackages {
+			if pkg == pkgDefHttpError || program.PkgContains(pkg.Imports(), pkgDefHttpError) {
+				for _, obj := range pkgInfo.Defs {
+					if tpeFunc, ok := obj.(*types.Func); ok {
+						for _, obj := range pkgInfo.Uses {
+							if constObj, ok := obj.(*types.Const); ok {
+								if program.IsTypeName(obj.Type(), http_error_code.HttpErrorVarName) {
+									code := constObj.Val().String()
+									if httpErrorValue, ok := httpErrorMap[code]; ok {
+										if scanner.funcUsesHttpErrors[tpeFunc] == nil {
+											scanner.funcUsesHttpErrors[tpeFunc] = map[string]http_error_code.HttpErrorValue{}
+										}
+										scanner.funcUsesHttpErrors[tpeFunc][code] = httpErrorValue
+									}
+								}
+							}
+						}
+					}
+				}
+			}
+		}
+
+	}
 }
 
 func (scanner *Scanner) Scan() {

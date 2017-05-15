@@ -1,8 +1,11 @@
 package globals
 
 import (
-	"gopkg.in/gin-gonic/gin.v1"
 	"net/http"
+
+	"gopkg.in/gin-gonic/gin.v1"
+
+	"github.com/morlay/gin-swagger/http_error_code/httplib"
 )
 
 const (
@@ -22,6 +25,10 @@ const (
 	HTTP_ERROR__TEST2
 )
 
+func getError() *httplib.GeneralError {
+	return HTTP_ERROR__TEST2.ToError()
+}
+
 func WriteErr(c *gin.Context) {
-	c.JSON(HTTP_ERROR__TEST2.ToResp())
+	c.JSON(http.StatusBadRequest, getError())
 }

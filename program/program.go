@@ -20,6 +20,15 @@ type Program struct {
 	*loader.Program
 }
 
+func PkgContains(pkgs []*types.Package, targetPkg *types.Package) bool {
+	for _, pkg := range pkgs {
+		if pkg == targetPkg {
+			return true
+		}
+	}
+	return false
+}
+
 func NewProgram(packagePath string) *Program {
 	ldr := loader.Config{}
 
