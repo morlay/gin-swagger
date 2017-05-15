@@ -379,40 +379,42 @@ func newOrMergeResponse(operation *spec.Operation, statusCode int) *spec.Respons
 func (scanner *Scanner) writeResponse(operation *spec.Operation, ginContextCallExpr *ast.CallExpr, desc string) {
 	args := ginContextCallExpr.Args
 
-	statusCodeString, err := scanner.getStatusCodeFromExpr(args[0])
+	if len(args) > 0 {
+		statusCodeString, err := scanner.getStatusCodeFromExpr(args[0])
 
-	if err == nil {
-		statusCode := int(statusCodeString)
-		resp := newOrMergeResponse(operation, statusCode)
-		resp.WithDescription(resp.Description + desc)
+		if err == nil {
+			statusCode := int(statusCodeString)
+			resp := newOrMergeResponse(operation, statusCode)
+			resp.WithDescription(resp.Description + desc)
 
-		switch program.GetCallExprFunName(ginContextCallExpr) {
-		// c.JSON(code int, obj interface{});
-		case "JSON":
-			if len(args) == 2 {
-				tpe := scanner.Program.TypeOf(args[1])
-				if !strings.Contains(tpe.String(), "untyped nil") {
-					schema := scanner.defineSchemaBy(tpe)
-					resp.WithSchema(&schema)
+			switch program.GetCallExprFunName(ginContextCallExpr) {
+			// c.JSON(code int, obj interface{});
+			case "JSON":
+				if len(args) == 2 {
+					tpe := scanner.Program.TypeOf(args[1])
+					if !strings.Contains(tpe.String(), "untyped nil") {
+						schema := scanner.defineSchemaBy(tpe)
+						resp.WithSchema(&schema)
+					}
+					operation.Produces = []string{gin.MIMEJSON}
 				}
-				operation.Produces = []string{gin.MIMEJSON}
+			// c.HTML(code int, );
+			// c.HTMLString(http.StatusOK, format, values)
+			case "HTML", "HTMLString":
+				operation.Produces = []string{gin.MIMEHTML}
+			// c.String(http.StatusOK, format, values)
+			case "String":
+				schema := spec.Schema{}
+				schema.Typed("string", "")
+				resp.WithSchema(&schema)
+			// c.Render(code init, )
+			// c.Data(code init, )
+			// c.Redirect(code init, )
+			case "Render", "Data", "Redirect":
 			}
-		// c.HTML(code int, );
-		// c.HTMLString(http.StatusOK, format, values)
-		case "HTML", "HTMLString":
-			operation.Produces = []string{gin.MIMEHTML}
-		// c.String(http.StatusOK, format, values)
-		case "String":
-			schema := spec.Schema{}
-			schema.Typed("string", "")
-			resp.WithSchema(&schema)
-		// c.Render(code init, )
-		// c.Data(code init, )
-		// c.Redirect(code init, )
-		case "Render", "Data", "Redirect":
-		}
 
-		operation.RespondsWith(int(statusCode), resp)
+			operation.RespondsWith(int(statusCode), resp)
+		}
 	}
 }
 
@@ -570,6 +572,19 @@ func patchOperationConsumes(operation *spec.Operation) {
 	}
 }
 
+func resolveExprIdent(expr ast.Expr) *ast.Ident {
+	switch expr.(type) {
+	case *ast.Ident:
+		return expr.(*ast.Ident)
+	case *ast.SelectorExpr:
+		return expr.(*ast.SelectorExpr).Sel
+	case *ast.CallExpr:
+		return resolveExprIdent(expr.(*ast.CallExpr).Fun)
+	default:
+		return nil
+	}
+}
+
 func (scanner *Scanner) collectOperation(method string, ginPath string, handlerExprs []ast.Expr) {
 	operation := new(spec.Operation)
 	swaggerPath := convertGinPathToSwaggerPath(ginPath)
@@ -579,23 +594,19 @@ func (scanner *Scanner) collectOperation(method string, ginPath string, handlerE
 	lastIdx := len(handlerExprs) - 1
 
 	for idx, handlerExpr := range handlerExprs {
-		var operationIdent *ast.Ident
+		var handleIdent = resolveExprIdent(handlerExpr)
 
-		switch handlerExpr.(type) {
-		case *ast.Ident:
-			operationIdent = handlerExpr.(*ast.Ident)
-		case *ast.SelectorExpr:
-			operationIdent = handlerExpr.(*ast.SelectorExpr).Sel
-		}
+		if handleIdent != nil {
+			ident := scanner.Program.IdentOf(scanner.Program.DefOf(handleIdent))
 
-		ident := scanner.Program.IdentOf(scanner.Program.DefOf(operationIdent))
+			if funcDecl, ok := ident.Obj.Decl.(*ast.FuncDecl); ok {
+				scanner.writeOperation(operation, funcDecl)
 
-		if funcDecl, ok := ident.Obj.Decl.(*ast.FuncDecl); ok {
-			scanner.writeOperation(operation, funcDecl)
-			if idx == lastIdx {
-				pkgInfo := scanner.Program.PackageInfoOf(funcDecl)
-				operation.WithTags(pkgInfo.Pkg.Name())
-				operation.WithID(operationIdent.String())
+				if idx == lastIdx {
+					pkgInfo := scanner.Program.PackageInfoOf(funcDecl)
+					operation.WithTags(pkgInfo.Pkg.Name())
+					operation.WithID(handleIdent.String())
+				}
 			}
 		}
 	}

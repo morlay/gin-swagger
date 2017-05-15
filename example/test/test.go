@@ -63,3 +63,12 @@ func AuthMiddleware(c *gin.Context) {
 		c.JSON(globals.HTTP_ERROR_UNKNOWN.ToResp())
 	}
 }
+
+func Auth() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		var req = AuthReq{}
+		if req.Authorization == "" {
+			c.JSON(globals.HTTP_ERROR_UNKNOWN.ToResp())
+		}
+	}
+}

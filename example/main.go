@@ -17,7 +17,7 @@ func main() {
 	router.Use(gin.Recovery())
 
 	router.POST("/", test.Test)
-	router.GET("/test", test3.Test3)
+	router.GET("/test", test.Auth(), test3.Test3)
 
 	userRoute := router.Group("/user", test.AuthMiddleware)
 	userRouteWith := userRoute.Group("/test")
