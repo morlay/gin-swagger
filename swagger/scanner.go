@@ -5,8 +5,10 @@ import (
 	"go/ast"
 	"go/types"
 	"log"
+	"path"
 	"reflect"
 	"regexp"
+	"sort"
 	"strconv"
 	"strings"
 
@@ -17,7 +19,6 @@ import (
 	"github.com/morlay/gin-swagger/codegen"
 	"github.com/morlay/gin-swagger/http_error_code"
 	"github.com/morlay/gin-swagger/program"
-	"path"
 )
 
 func NewScanner(packagePath string) *Scanner {
@@ -30,11 +31,13 @@ func NewScanner(packagePath string) *Scanner {
 }
 
 type Scanner struct {
-	GinPath            string
-	Swagger            *Swagger
-	Program            *program.Program
-	httpErrors         map[*types.Package]map[string]http_error_code.HttpErrorValue
-	funcUsesHttpErrors map[*types.Func]map[string]http_error_code.HttpErrorValue
+	GinPath              string
+	Swagger              *Swagger
+	Program              *program.Program
+	httpErrors           map[*types.Package]map[string]http_error_code.HttpErrorValue
+	funcUsesHttpErrors   map[*types.Func]map[string]http_error_code.HttpErrorValue
+	funcMarkedHttpErrors map[*types.Func][]string
+	httpErrorType        types.Type
 }
 
 func (scanner *Scanner) getRouterPrefixByIdent(id *ast.Ident) (string, []ast.Expr) {
@@ -360,7 +363,7 @@ func (scanner *Scanner) getStatusCodeFromExpr(expr ast.Expr) (int64, error) {
 	return strconv.ParseInt(constantValue.String(), 10, 64)
 }
 
-func newOrMergeRespose(operation *spec.Operation, statusCode int) *spec.Response {
+func newOrMergeResponse(operation *spec.Operation, statusCode int) *spec.Response {
 	var resp *spec.Response
 
 	if operation.Responses != nil && operation.Responses.StatusCodeResponses != nil {
@@ -380,7 +383,7 @@ func (scanner *Scanner) writeResponse(operation *spec.Operation, ginContextCallE
 
 	if err == nil {
 		statusCode := int(statusCodeString)
-		resp := newOrMergeRespose(operation, statusCode)
+		resp := newOrMergeResponse(operation, statusCode)
 		resp.WithDescription(resp.Description + desc)
 
 		switch program.GetCallExprFunName(ginContextCallExpr) {
@@ -413,26 +416,49 @@ func (scanner *Scanner) writeResponse(operation *spec.Operation, ginContextCallE
 	}
 }
 
-func (scanner *Scanner) writeResponseByHttpErrorValue(operation *spec.Operation, httpErrorValue http_error_code.HttpErrorValue, tpe types.Type) {
-	statusCode := http_error_code.CodeToStatus(httpErrorValue.Code)
+var rxHttpError = regexp.MustCompile(`@httpError\(([0-9]+),(.+),"(.+)?","(.+)?",(false|true)\);`)
 
-	resp := newOrMergeRespose(operation, statusCode)
+func ParseHttpError(doc string) (string, []string) {
+	httpErrors := []string{}
+
+	otherDoc := rxHttpError.ReplaceAllStringFunc(doc, func(m string) string {
+		httpErrors = append(httpErrors, m)
+		return ""
+	})
+
+	return strings.TrimSpace(otherDoc), httpErrors
+}
+
+func appendHttpError(resp *spec.Response, newHttpError string) {
 
 	desc := resp.Description
 
-	errDesc := `HttpError(` + httpErrorValue.Name + `,` + httpErrorValue.Code + `,` + strconv.Quote(httpErrorValue.Msg) + `,` + strconv.Quote(httpErrorValue.Desc) + `,` + fmt.Sprint(httpErrorValue.CanBeErrTalk) + `);`
+	otherDoc, httpErrors := ParseHttpError(desc)
 
-	if strings.Index(desc, errDesc) == -1 {
-		desc = strings.Join([]string{desc, errDesc}, "\n")
+	hasDef := false
+	for _, httpError := range httpErrors {
+		if newHttpError == httpError {
+			hasDef = true
+		}
+	}
+	if !hasDef {
+		httpErrors = append(httpErrors, newHttpError)
 	}
 
-	if !strings.Contains(tpe.String(), "untyped nil") {
-		schema := scanner.defineSchemaBy(tpe)
+	sort.Strings(httpErrors)
+
+	resp.WithDescription(otherDoc + strings.Join(httpErrors, "\n"))
+}
+
+func (scanner *Scanner) writeResponseByHttpErrorValue(operation *spec.Operation, statusCode int, httpErrorCode string) {
+	resp := newOrMergeResponse(operation, statusCode)
+
+	if resp.Schema == nil && !strings.Contains(scanner.httpErrorType.String(), "untyped nil") {
+		schema := scanner.defineSchemaBy(scanner.httpErrorType)
 		resp.WithSchema(&schema)
+		operation.Produces = []string{gin.MIMEJSON}
 	}
-
-	operation.Produces = []string{gin.MIMEJSON}
-	resp.WithDescription(desc)
+	appendHttpError(resp, httpErrorCode)
 	operation.RespondsWith(statusCode, resp)
 }
 
@@ -470,6 +496,12 @@ func (scanner *Scanner) pickOperationInfo(operation *spec.Operation, scope *type
 					scanner.pickOperationInfo(operation, tpeFunc.Scope(), scanned)
 				} else if _, ok := scanner.funcUsesHttpErrors[tpeFunc]; ok {
 					scanner.pickOperationInfo(operation, tpeFunc.Scope(), scanned)
+				} else if httpErrors, ok := scanner.funcMarkedHttpErrors[tpeFunc]; ok {
+					for _, httpError := range httpErrors {
+						matched := rxHttpError.FindAllStringSubmatch(httpError, -1)
+						statusCode := http_error_code.CodeToStatus(matched[0][1])
+						scanner.writeResponseByHttpErrorValue(operation, statusCode, httpError)
+					}
 				}
 			}
 		case *types.Const:
@@ -477,12 +509,7 @@ func (scanner *Scanner) pickOperationInfo(operation *spec.Operation, scope *type
 				constObj := obj.(*types.Const)
 				if program.IsTypeName(obj.Type(), http_error_code.HttpErrorVarName) {
 					if httpErrorValue, ok := scanner.httpErrors[obj.Pkg()][constObj.Val().String()]; ok {
-						methods := scanner.Program.MethodsOf(obj.Type())
-						for funcType, method := range methods {
-							if funcType.Name() == "ToError" {
-								scanner.writeResponseByHttpErrorValue(operation, httpErrorValue, method.Results().At(0).Type())
-							}
-						}
+						scanner.writeResponseByHttpErrorValue(operation, httpErrorValue.ToStatus(), httpErrorValue.ToDesc())
 					}
 				}
 			}
@@ -581,21 +608,42 @@ func (scanner *Scanner) collectOperation(method string, ginPath string, handlerE
 func (scanner *Scanner) CollectHttpErrors() {
 	scanner.httpErrors = http_error_code.CollectErrors(scanner.Program)
 	scanner.funcUsesHttpErrors = map[*types.Func]map[string]http_error_code.HttpErrorValue{}
+	scanner.funcMarkedHttpErrors = map[*types.Func][]string{}
 
-	for pkgDefHttpError, httpErrorMap := range scanner.httpErrors {
-		for pkg, pkgInfo := range scanner.Program.AllPackages {
-			if pkg == pkgDefHttpError || program.PkgContains(pkg.Imports(), pkgDefHttpError) {
-				for _, obj := range pkgInfo.Defs {
-					if tpeFunc, ok := obj.(*types.Func); ok {
-						for _, obj := range pkgInfo.Uses {
-							if constObj, ok := obj.(*types.Const); ok {
-								if program.IsTypeName(obj.Type(), http_error_code.HttpErrorVarName) {
-									code := constObj.Val().String()
-									if httpErrorValue, ok := httpErrorMap[code]; ok {
-										if scanner.funcUsesHttpErrors[tpeFunc] == nil {
-											scanner.funcUsesHttpErrors[tpeFunc] = map[string]http_error_code.HttpErrorValue{}
+	for pkg, pkgInfo := range scanner.Program.AllPackages {
+		for id, obj := range pkgInfo.Defs {
+			if tpeFunc, ok := obj.(*types.Func); ok {
+				if id.Obj != nil {
+					if funcDecl, ok := id.Obj.Decl.(*ast.FuncDecl); ok {
+						_, httpErrors := ParseHttpError(funcDecl.Doc.Text())
+						if len(httpErrors) > 0 {
+							scanner.funcMarkedHttpErrors[tpeFunc] = httpErrors
+						}
+					}
+				}
+
+				for pkgDefHttpError, httpErrorMap := range scanner.httpErrors {
+					if pkg == pkgDefHttpError || program.PkgContains(pkg.Imports(), pkgDefHttpError) {
+						for id, obj := range pkgInfo.Uses {
+							if tpeFunc.Scope() != nil && tpeFunc.Scope().Contains(id.Pos()) {
+								if constObj, ok := obj.(*types.Const); ok {
+									if program.IsTypeName(obj.Type(), http_error_code.HttpErrorVarName) {
+										code := constObj.Val().String()
+										if httpErrorValue, ok := httpErrorMap[code]; ok {
+											if scanner.httpErrorType == nil {
+												methods := scanner.Program.MethodsOf(obj.Type())
+												for funcType, method := range methods {
+													if funcType.Name() == "ToError" {
+														scanner.httpErrorType = method.Results().At(0).Type()
+													}
+												}
+											}
+
+											if scanner.funcUsesHttpErrors[tpeFunc] == nil {
+												scanner.funcUsesHttpErrors[tpeFunc] = map[string]http_error_code.HttpErrorValue{}
+											}
+											scanner.funcUsesHttpErrors[tpeFunc][code] = httpErrorValue
 										}
-										scanner.funcUsesHttpErrors[tpeFunc][code] = httpErrorValue
 									}
 								}
 							}

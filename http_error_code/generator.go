@@ -33,6 +33,14 @@ type HttpErrorValue struct {
 	CanBeErrTalk bool
 }
 
+func (h *HttpErrorValue) ToStatus() int {
+	return CodeToStatus(h.Code)
+}
+
+func (h *HttpErrorValue) ToDesc() string {
+	return `@httpError(` + h.Code + `,` + h.Name + `,` + strconv.Quote(h.Msg) + `,` + strconv.Quote(h.Desc) + `,` + fmt.Sprint(h.CanBeErrTalk) + `);`
+}
+
 type ByHttpErrorValue []HttpErrorValue
 
 func (a ByHttpErrorValue) Len() int {

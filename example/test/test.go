@@ -33,6 +33,11 @@ type SomeReq struct {
 	Body      ReqBody
 }
 
+// @httpError(40000200,HTTP_ERROR_UNKNOWN,"未定义","",false);
+func someDoReq() {
+
+}
+
 func Test(c *gin.Context) {
 	req := SomeReq{}
 
@@ -41,6 +46,8 @@ func Test(c *gin.Context) {
 	var res = SomeTest{
 		State: test2.STATE__ONE,
 	}
+
+	someDoReq()
 
 	// 正常返回
 	c.JSON(http.StatusOK, res)

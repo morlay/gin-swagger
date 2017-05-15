@@ -38,6 +38,8 @@ type TestResponse struct {
 	Body SomeTest `json:"body"`
 }
 
+// @httpError(40000200,HTTP_ERROR_UNKNOWN,"未定义","",false);
+// 正常返回
 func (c ClientService) Test(req TestRequest) (resp TestResponse, err error) {
 	err = c.DoRequest("Test", "POST", "/", req, &resp)
 	return
@@ -69,6 +71,10 @@ type Test2Response struct {
 	Body Some `json:"body"`
 }
 
+// @httpError(400002000,HTTP_ERROR_UNKNOWN,"未定义","",false);
+// @httpError(400002001,HTTP_ERROR__TEST,"Summary","",true);
+// @httpError(400002002,HTTP_ERROR__TEST2,"Test2","Description",true);
+// 正常返回
 func (c ClientService) Test2(req Test2Request) (resp Test2Response, err error) {
 	err = c.DoRequest("Test2", "GET", "/user/test/:name/0", req, &resp)
 	return

@@ -6,13 +6,13 @@ import (
 	"go/parser"
 	"go/token"
 	"go/types"
-	"log"
 	"sort"
 	"strings"
 
-	"github.com/logrusorgru/aurora"
 	"golang.org/x/tools/go/loader"
+	"log"
 
+	"github.com/logrusorgru/aurora"
 	"github.com/morlay/gin-swagger/codegen"
 )
 
@@ -118,7 +118,7 @@ func (program *Program) WhereDecl(targetTpe types.Type) ast.Expr {
 			}
 		}
 	default:
-		log.Println(aurora.Sprintf(aurora.Red("%v"), targetTpe))
+		log.Println(aurora.Sprintf(aurora.Red("not found %v"), targetTpe))
 	}
 
 	return nil
@@ -275,21 +275,23 @@ func (program *Program) GetEnumOptionsByType(node ast.Node) (list []Option) {
 						constValue, _ := obj.(*types.Const)
 						value, _ := GetConstValue(constValue.Val())
 
-						if strings.HasPrefix(name, codegen.ToUpperSnakeCase(ident.String())) {
-							var values = strings.SplitN(name, "__", 2)
-							if len(values) == 2 {
+						if name != "_" {
+							if strings.HasPrefix(name, codegen.ToUpperSnakeCase(ident.String())) {
+								var values = strings.SplitN(name, "__", 2)
+								if len(values) == 2 {
+									list = append(list, Option{
+										V:     value,
+										Value: values[1],
+										Label: strings.TrimSpace(valueSpec.Comment.Text()),
+									})
+								}
+							} else if obj.Type() == program.TypeOf(ident) {
 								list = append(list, Option{
 									V:     value,
-									Value: values[1],
+									Value: value,
 									Label: strings.TrimSpace(valueSpec.Comment.Text()),
 								})
 							}
-						} else if obj.Type() == program.TypeOf(ident) {
-							list = append(list, Option{
-								V:     value,
-								Value: value,
-								Label: strings.TrimSpace(valueSpec.Comment.Text()),
-							})
 						}
 					}
 

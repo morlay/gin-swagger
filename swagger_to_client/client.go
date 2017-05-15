@@ -49,9 +49,11 @@ func (c *ClientInfo) RenderDecl() string {
 	`)(c)
 }
 
-func getDataResponse(operation *spec.Operation, responses map[string]spec.Response) (*spec.Schema, bool) {
+func getDataResponse(operation *spec.Operation, responses map[string]spec.Response) (*spec.Schema, string) {
+	desc := ""
+
 	if operation.Responses == nil || operation.Responses.StatusCodeResponses == nil {
-		return nil, false
+		return nil, desc
 	}
 
 	var hasStringProduce = false
@@ -60,9 +62,12 @@ func getDataResponse(operation *spec.Operation, responses map[string]spec.Respon
 		hasStringProduce = (produce == gin.MIMEHTML)
 	}
 
+	var schema *spec.Schema
+
 	for code, r := range operation.Responses.StatusCodeResponses {
+		desc += r.Description + "\n"
 		if code >= 200 && code < 300 {
-			var schema = &spec.Schema{}
+			schema = &spec.Schema{}
 
 			if hasStringProduce {
 				schema.Typed("string", "")
@@ -79,11 +84,9 @@ func getDataResponse(operation *spec.Operation, responses map[string]spec.Respon
 			if r.Schema != nil {
 				schema = r.Schema
 			}
-
-			return schema, true
 		}
 	}
-	return nil, false
+	return schema, desc
 }
 
 func (c *ClientInfo) AddOperation(method, path string, operation *spec.Operation, responses map[string]spec.Response) *ClientInfo {
@@ -91,13 +94,14 @@ func (c *ClientInfo) AddOperation(method, path string, operation *spec.Operation
 		c.Operations = []OperationInfo{}
 	}
 
-	if respSchema, hasDataResp := getDataResponse(operation, responses); hasDataResp {
+	if respSchema, desc := getDataResponse(operation, responses); respSchema != nil {
 		o := OperationInfo{
-			ID:         operation.ID,
-			Method:     strings.ToUpper(method),
-			Path:       convertSwaggerPathToGinPath(path),
-			Parameters: operation.Parameters,
-			RespBody:   *respSchema,
+			ID:          operation.ID,
+			Method:      strings.ToUpper(method),
+			Path:        convertSwaggerPathToGinPath(path),
+			Parameters:  operation.Parameters,
+			RespBody:    *respSchema,
+			Description: desc,
 		}
 
 		c.Operations = append(c.Operations, o)
@@ -115,11 +119,23 @@ func (c *ClientInfo) RenderOperations() (string, []string) {
 	sort.Sort(OperationByID(c.Operations))
 
 	for _, o := range c.Operations {
-		methods = append(methods, codegen.JoinWithLineBreak(
-			o.RenderReqDecl(),
-			o.RenderRespDecl(),
-			prefix+o.RenderOperationMethod(),
-		))
+		descList := []string{}
+
+		for _, desc := range strings.Split(o.Description, "\n") {
+			if desc != "" {
+				descList = append(descList, "// "+desc)
+			}
+		}
+
+		sort.Strings(descList)
+
+		methods = append(methods,
+			codegen.JoinWithLineBreak(
+				o.RenderReqDecl(),
+				o.RenderRespDecl(),
+				strings.Join(descList, "\n"),
+				prefix+o.RenderOperationMethod(),
+			))
 
 		deps = append(deps, o.GetDeps()...)
 	}
@@ -147,12 +163,13 @@ func (c *ClientInfo) Render() string {
 }
 
 type OperationInfo struct {
-	ID         string
-	Method     string
-	Path       string
-	Parameters []spec.Parameter
-	RespBody   spec.Schema
-	deps       []string
+	ID          string
+	Method      string
+	Path        string
+	Parameters  []spec.Parameter
+	RespBody    spec.Schema
+	Description string
+	deps        []string
 }
 
 func (op *OperationInfo) GetDeps() []string {
