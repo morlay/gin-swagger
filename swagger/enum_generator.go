@@ -1,6 +1,7 @@
 package swagger
 
 import (
+	"fmt"
 	"go/types"
 	"path/filepath"
 	"strings"
@@ -104,6 +105,31 @@ func HasElem(src []string, x string) bool {
 func (g *EnumGenerator) Output(src ...string) {
 	g.Scan()
 
+	if len(g.Enums) < 1 {
+		return
+	}
+	relPath, _ := filepath.Rel(g.PackagePath, g.Enums[0].Pathname)
+	initBlocks := []string{
+		codegen.DeclPackage(g.Enums[0].PackageName),
+		codegen.DeclType(
+			"EnumOption",
+			codegen.DeclStruct(
+				[]string{
+					codegen.DeclField("Option", "string", []string{codegen.DeclTag("json", "option")}, "选项"),
+					codegen.DeclField("Label", "string", []string{codegen.DeclTag("json", "label")}, "说明"),
+				},
+			),
+		),
+		codegen.DeclVar("EnumsMap", codegen.DeclMap("string", "[]EnumOption")+"{}"),
+		ParseAddEnumMapFunc(),
+		ParseGetEnumFunc(),
+		ParseInitEnumFunc(g.Enums),
+	}
+	codegen.WriteGoFile(
+		codegen.JoinWithSlash(relPath, "generated_enum_map.go"),
+		strings.Join(initBlocks, "\n\n"),
+	)
+
 	for _, enum := range g.Enums {
 		if HasElem(src, enum.Name) == false {
 			continue
@@ -195,4 +221,38 @@ func (v *{{ .Name }}) UnmarshalJSON(data []byte) (err error) {
 	*v, err = Parse{{ .Name }}FromString(s)
 	return
 }`)(enum)
+}
+
+func ParseAddEnumMapFunc() string {
+	return `
+func addEnumMap(enum string, option string, label string) {
+	if _, ok := EnumsMap[enum]; !ok {
+		EnumsMap[enum] = []EnumOption{}
+	}
+	EnumsMap[enum] = append(EnumsMap[enum], EnumOption{Option: option, Label: label})
+}`
+}
+
+func ParseGetEnumFunc() string {
+	return `
+func GetEnumValueList(enum string) (enumList []EnumOption, found bool) {
+	enumList, found = EnumsMap[enum]
+	return
+}
+`
+}
+
+func ParseInitEnumFunc(enums []Enum) string {
+	funcStr := `
+func init() {`
+	for _, enum := range enums {
+		for _, enumValue := range enum.Values {
+			funcStr += fmt.Sprintf(`
+	addEnumMap("%s", "%s", "%s")`, enum.Name, enumValue.Value, enumValue.Label)
+		}
+	}
+	funcStr += `
+}
+`
+	return funcStr
 }
