@@ -45,4 +45,5 @@ func TestToUpperSnakeCase(t *testing.T) {
 func TestToLowerSnakeCase(t *testing.T) {
 	assert.Equal(t, "snake_case", ToLowerSnakeCase("snakeCase"))
 	assert.Equal(t, "id_case", ToLowerSnakeCase("idCase"))
+	assert.Equal(t, "i7_case", ToLowerSnakeCase("i7Case"))
 }

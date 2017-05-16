@@ -145,7 +145,7 @@ func ToLowerCamelCase(s string) string {
 func ToUpperSnakeCase(s string) string {
 	return Rewords(s, func(result string, word string, idx int) string {
 		newWord := strings.ToUpper(word)
-		if idx == 0 {
+		if idx == 0 || (len(newWord) == 1 && unicode.IsDigit(rune(newWord[0]))) {
 			return result + newWord
 		}
 		return result + "_" + newWord
