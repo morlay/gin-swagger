@@ -76,12 +76,14 @@ func (g *EnumGenerator) Scan() {
 
 				if hasEnum {
 					options := g.Program.GetEnumOptionsByType(id)
-					g.addEnum(
-						def.Name(),
-						def.Type().Underlying().String(),
-						def.Pkg(),
-						options,
-					)
+					if (def.Name() != "Bool") {
+						g.addEnum(
+							def.Name(),
+							def.Type().Underlying().String(),
+							def.Pkg(),
+							options,
+						)
+					}
 				}
 			}
 		}
@@ -120,7 +122,7 @@ func (g *EnumGenerator) Output(src ...string) {
 				},
 			),
 		),
-		codegen.DeclVar("EnumsMap", codegen.DeclMap("string", "[]EnumOption")+"{}"),
+		codegen.DeclVar("EnumsMap", codegen.DeclMap("string", "[]EnumOption") + "{}"),
 		ParseAddEnumMapFunc(),
 		ParseGetEnumFunc(),
 		ParseInitEnumFunc(g.Enums),
@@ -142,14 +144,14 @@ func (g *EnumGenerator) Output(src ...string) {
 		blocks := []string{
 			codegen.DeclPackage(enum.PackageName),
 			codegen.DeclImports("errors", "strings"),
-			codegen.DeclVar("Invalid"+enum.Name, `errors.New("invalid `+name+`")`),
+			codegen.DeclVar("Invalid" + enum.Name, `errors.New("invalid ` + name + `")`),
 			ParseEnumStringify(enum),
 			ParseEnumParser(enum),
 			ParseEnumJSONMarshal(enum),
 		}
 
 		codegen.WriteGoFile(
-			codegen.JoinWithSlash(relPath, codegen.ToLowerSnakeCase("generated_"+enum.Name)+".go"),
+			codegen.JoinWithSlash(relPath, codegen.ToLowerSnakeCase("generated_" + enum.Name) + ".go"),
 			strings.Join(blocks, "\n\n"),
 		)
 	}
@@ -167,15 +169,15 @@ func ParseEnumParser(enum Enum) string {
 	prefix := codegen.ToUpperSnakeCase(enum.Name)
 
 	lines = append(lines, codegen.DeclCase(codegen.WithQuotes("")))
-	lines = append(lines, codegen.DeclReturn(codegen.JoinWithComma(prefix+"_UNKNOWN", "nil")))
+	lines = append(lines, codegen.DeclReturn(codegen.JoinWithComma(prefix + "_UNKNOWN", "nil")))
 
 	for _, option := range enum.Values {
 		lines = append(lines, codegen.DeclCase(codegen.WithQuotes(option.Value)))
-		lines = append(lines, codegen.DeclReturn(codegen.JoinWithComma(prefix+"__"+option.Value, "nil")))
+		lines = append(lines, codegen.DeclReturn(codegen.JoinWithComma(prefix + "__" + option.Value, "nil")))
 	}
 
 	lines = append(lines, "}")
-	lines = append(lines, codegen.DeclReturn(codegen.JoinWithComma(prefix+"_UNKNOWN", codegen.TemplateRender(`Invalid{{ .Name }}`)(enum))))
+	lines = append(lines, codegen.DeclReturn(codegen.JoinWithComma(prefix + "_UNKNOWN", codegen.TemplateRender(`Invalid{{ .Name }}`)(enum))))
 	lines = append(lines, "}")
 
 	return strings.Join(lines, "\n")
@@ -191,11 +193,11 @@ func ParseEnumStringify(enum Enum) string {
 
 	prefix := codegen.ToUpperSnakeCase(enum.Name)
 
-	lines = append(lines, codegen.DeclCase(prefix+"_UNKNOWN"))
+	lines = append(lines, codegen.DeclCase(prefix + "_UNKNOWN"))
 	lines = append(lines, codegen.DeclReturn(codegen.WithQuotes("")))
 
 	for _, option := range enum.Values {
-		lines = append(lines, codegen.DeclCase(prefix+"__"+option.Value))
+		lines = append(lines, codegen.DeclCase(prefix + "__" + option.Value))
 		lines = append(lines, codegen.DeclReturn(codegen.WithQuotes(option.Value)))
 	}
 

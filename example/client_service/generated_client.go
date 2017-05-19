@@ -85,6 +85,9 @@ type Test3Response struct {
 	Body Some `json:"body"`
 }
 
+// @httpError(400002000,HTTP_ERROR_UNKNOWN,"未定义","",false);
+// @httpError(400002001,HTTP_ERROR__TEST,"Summary","",true);
+// @httpError(400002002,HTTP_ERROR__TEST2,"Test2","Description",true);
 func (c ClientService) Test3() (resp Test3Response, err error) {
 	err = c.DoRequest("Test3", "GET", "/test", nil, &resp)
 	return
