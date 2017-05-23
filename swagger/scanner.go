@@ -489,23 +489,25 @@ func (scanner *Scanner) pickOperationInfo(operation *spec.Operation, scope *type
 				switch obj.(type) {
 				case *types.Func:
 					tpeFunc := obj.(*types.Func)
-					if isFuncOfGin(tpeFunc) {
-						if callExpr := scanner.Program.CallFuncById(id); callExpr != nil {
-							scanner.writeResponse(operation, callExpr, scanner.getNodeDoc(callExpr))
-						}
-					} else if !scanned[tpeFunc.Scope()] {
-						if isFuncWithGinContext(tpeFunc) {
-							scanner.pickOperationInfo(operation, tpeFunc.Scope(), scanned)
-						} else if httpErrors, ok := scanner.funcMarkedHttpErrors[tpeFunc]; ok {
-							for _, httpError := range httpErrors {
-								matched := rxHttpError.FindAllStringSubmatch(httpError, -1)
-								statusCode := http_error_code.CodeToStatus(matched[0][1])
-								scanner.writeResponseByHttpErrorValue(operation, statusCode, httpError)
+					if (tpeFunc.Pkg() != nil) {
+						if isFuncOfGin(tpeFunc) {
+							if callExpr := scanner.Program.CallFuncById(id); callExpr != nil {
+								scanner.writeResponse(operation, callExpr, scanner.getNodeDoc(callExpr))
 							}
-						} else {
-							for pkgDefHttpError := range scanner.httpErrors {
-								if tpeFunc.Pkg() == pkgDefHttpError || program.PkgContains(tpeFunc.Pkg().Imports(), pkgDefHttpError) {
-									scanner.pickOperationInfo(operation, tpeFunc.Scope(), scanned)
+						} else if !scanned[tpeFunc.Scope()] {
+							if isFuncWithGinContext(tpeFunc) {
+								scanner.pickOperationInfo(operation, tpeFunc.Scope(), scanned)
+							} else if httpErrors, ok := scanner.funcMarkedHttpErrors[tpeFunc]; ok {
+								for _, httpError := range httpErrors {
+									matched := rxHttpError.FindAllStringSubmatch(httpError, -1)
+									statusCode := http_error_code.CodeToStatus(matched[0][1])
+									scanner.writeResponseByHttpErrorValue(operation, statusCode, httpError)
+								}
+							} else {
+								for pkgDefHttpError := range scanner.httpErrors {
+									if tpeFunc.Pkg() == pkgDefHttpError || program.PkgContains(tpeFunc.Pkg().Imports(), pkgDefHttpError) {
+										scanner.pickOperationInfo(operation, tpeFunc.Scope(), scanned)
+									}
 								}
 							}
 						}
