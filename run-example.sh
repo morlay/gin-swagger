@@ -3,7 +3,7 @@
 go install
 cd ./example
 
-govendor generate +l
+#govendor generate +l
 
 gin-swagger
-gin-swagger client --input swagger.json --name service
+#gin-swagger client --input swagger.json --name service

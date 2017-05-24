@@ -463,8 +463,8 @@ func (scanner *Scanner) writeResponseByHttpErrorValue(operation *spec.Operation,
 
 func (scanner *Scanner) pickOperationInfo(operation *spec.Operation, scope *types.Scope, scanned map[*types.Scope]bool) {
 	if scope != nil {
-
 		scanned[scope] = true
+		isHttpErrorMethodScope := false
 
 		funType := scanner.Program.WitchFunc(scope.Pos())
 
@@ -473,6 +473,11 @@ func (scanner *Scanner) pickOperationInfo(operation *spec.Operation, scope *type
 
 			for _, name := range scope.Names() {
 				tpe := scope.Lookup(name).Type()
+
+				if !isHttpErrorMethodScope {
+					isHttpErrorMethodScope = program.IsTypeName(tpe, http_error_code.HttpErrorVarName)
+				}
+
 				// get parameters from type of var `req` or `request`;
 				if name == "req" || name == "request" {
 					if structTpe, ok := program.Indirect(tpe).(*types.Struct); ok {
@@ -489,7 +494,7 @@ func (scanner *Scanner) pickOperationInfo(operation *spec.Operation, scope *type
 				switch obj.(type) {
 				case *types.Func:
 					tpeFunc := obj.(*types.Func)
-					if (tpeFunc.Pkg() != nil) {
+					if tpeFunc.Pkg() != nil {
 						if isFuncOfGin(tpeFunc) {
 							if callExpr := scanner.Program.CallFuncById(id); callExpr != nil {
 								scanner.writeResponse(operation, callExpr, scanner.getNodeDoc(callExpr))
@@ -515,7 +520,8 @@ func (scanner *Scanner) pickOperationInfo(operation *spec.Operation, scope *type
 				case *types.Const:
 					if len(scanner.httpErrors) > 0 {
 						constObj := obj.(*types.Const)
-						if program.IsTypeName(obj.Type(), http_error_code.HttpErrorVarName) {
+
+						if !isHttpErrorMethodScope && program.IsTypeName(obj.Type(), http_error_code.HttpErrorVarName) {
 							if httpErrorValue, ok := scanner.httpErrors[obj.Pkg()][constObj.Val().String()]; ok {
 								scanner.writeResponseByHttpErrorValue(operation, httpErrorValue.ToStatus(), httpErrorValue.ToDesc())
 							}
@@ -629,6 +635,8 @@ func (scanner *Scanner) CollectHttpErrors() {
 	scanner.funcUsesHttpErrors = map[*types.Func]map[string]http_error_code.HttpErrorValue{}
 	scanner.funcMarkedHttpErrors = map[*types.Func][]string{}
 
+	httpErrorMethods := map[*types.Func]*types.Signature{}
+
 	for pkg, pkgInfo := range scanner.Program.AllPackages {
 		for id, obj := range pkgInfo.Defs {
 			if tpeFunc, ok := obj.(*types.Func); ok {
@@ -650,18 +658,20 @@ func (scanner *Scanner) CollectHttpErrors() {
 										code := constObj.Val().String()
 										if httpErrorValue, ok := httpErrorMap[code]; ok {
 											if scanner.httpErrorType == nil {
-												methods := scanner.Program.MethodsOf(obj.Type())
-												for funcType, method := range methods {
+												httpErrorMethods = scanner.Program.MethodsOf(obj.Type())
+												for funcType, method := range httpErrorMethods {
 													if funcType.Name() == "ToError" {
 														scanner.httpErrorType = method.Results().At(0).Type()
 													}
 												}
 											}
 
-											if scanner.funcUsesHttpErrors[tpeFunc] == nil {
-												scanner.funcUsesHttpErrors[tpeFunc] = map[string]http_error_code.HttpErrorValue{}
+											if httpErrorMethods[tpeFunc] == nil {
+												if scanner.funcUsesHttpErrors[tpeFunc] == nil {
+													scanner.funcUsesHttpErrors[tpeFunc] = map[string]http_error_code.HttpErrorValue{}
+												}
+												scanner.funcUsesHttpErrors[tpeFunc][code] = httpErrorValue
 											}
-											scanner.funcUsesHttpErrors[tpeFunc][code] = httpErrorValue
 										}
 									}
 								}

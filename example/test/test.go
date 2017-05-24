@@ -35,7 +35,6 @@ type SomeReq struct {
 
 // @httpError(40000200,HTTP_ERROR_UNKNOWN,"未定义","",false);
 func someDoReq() {
-
 }
 
 func Test(c *gin.Context) {
@@ -48,6 +47,7 @@ func Test(c *gin.Context) {
 	}
 
 	someDoReq()
+	globals.WriteErr(c)
 
 	// 正常返回
 	c.JSON(http.StatusOK, res)

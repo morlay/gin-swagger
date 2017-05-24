@@ -69,6 +69,5 @@ func Test2(c *gin.Context) {
 		})
 	} else {
 		c.JSON(globals.HTTP_ERROR__TEST.ToResp())
-		globals.WriteErr(c)
 	}
 }
