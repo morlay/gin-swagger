@@ -331,21 +331,23 @@ func (scanner *Scanner) writeParameter(operation *spec.Operation, t types.Type) 
 					}
 				}
 
-				var param spec.Parameter
+				if (location != "context") {
+					var param spec.Parameter
 
-				if location == "body" {
-					param = scanner.getBodyParameter(fieldType)
-				} else {
-					param = scanner.getNonBodyParameter(name, location, structFieldTags, fieldType)
-					if len(flags) > 0 {
-						// todo check other flags;
-						param.Typed("string", param.Format)
+					if location == "body" {
+						param = scanner.getBodyParameter(fieldType)
+					} else {
+						param = scanner.getNonBodyParameter(name, location, structFieldTags, fieldType)
+						if len(flags) > 0 {
+							// todo check other flags;
+							param.Typed("string", param.Format)
+						}
 					}
-				}
 
-				param.AddExtension("x-go-name", field.Name())
-				param.WithDescription(scanner.getNodeDoc(astField))
-				operation.AddParam(&param)
+					param.AddExtension("x-go-name", field.Name())
+					param.WithDescription(scanner.getNodeDoc(astField))
+					operation.AddParam(&param)
+				}
 			}
 		}
 	} else {
