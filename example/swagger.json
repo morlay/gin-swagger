@@ -150,6 +150,15 @@
         ],
         "summary": "Summary",
         "operationId": "Test3",
+        "parameters": [
+          {
+            "type": "string",
+            "x-go-name": "Authorization",
+            "name": "authorization",
+            "in": "header",
+            "required": true
+          }
+        ],
         "responses": {
           "200": {
             "schema": {

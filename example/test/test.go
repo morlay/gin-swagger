@@ -6,6 +6,7 @@ import (
 	"github.com/morlay/gin-swagger/example/test2"
 	"gopkg.in/gin-gonic/gin.v1"
 	"net/http"
+	"github.com/morlay/gin-swagger/example/from_request"
 )
 
 // ErrorMap
@@ -57,6 +58,12 @@ type AuthReq struct {
 	Authorization string `json:"authorization" in:"header"`
 }
 
+func (req AuthReq) Handle(c *gin.Context) {
+	if req.Authorization == "" {
+		c.JSON(globals.HTTP_ERROR_UNKNOWN.ToResp())
+	}
+}
+
 func AuthMiddleware(c *gin.Context) {
 	var req = AuthReq{}
 	if req.Authorization == "" {
@@ -65,10 +72,5 @@ func AuthMiddleware(c *gin.Context) {
 }
 
 func Auth() gin.HandlerFunc {
-	return func(c *gin.Context) {
-		var req = AuthReq{}
-		if req.Authorization == "" {
-			c.JSON(globals.HTTP_ERROR_UNKNOWN.ToResp())
-		}
-	}
+	return from_request.FromRequest(AuthReq{})
 }

@@ -545,28 +545,48 @@ func (scanner *Scanner) writeOperation(operation *spec.Operation, handlerFuncDec
 	scanned := map[*types.Scope]bool{}
 
 	scope := scanner.Program.ScopeOf(handlerFuncDecl)
-	scanner.pickOperationInfo(operation, scope, scanned)
 
+	for id, obj := range scanner.Program.UsesInScope(scope) {
+		switch obj.(type) {
+		case *types.Func:
+			if (id.Name == "FromRequest") {
+				callExpr := scanner.Program.CallFuncById(id)
+				scanner.writeOperationFromRequestCallExpr(operation, callExpr, false)
+			}
+		}
+	}
+
+	scanner.pickOperationInfo(operation, scope, scanned)
 	scanner.writeSummaryDesc(operation, handlerFuncDecl.Doc.Text())
 }
 
-func (scanner *Scanner) writeOperationFromRequest(operation *spec.Operation, ident *ast.Ident) {
-	pkgInfo := scanner.Program.PackageInfoOf(ident)
-	tpe := scanner.Program.TypeOf(ident)
+func (scanner *Scanner) writeOperationFromRequestCallExpr(operation *spec.Operation, callExpr *ast.CallExpr, asOperation bool) {
+	if len(callExpr.Args) == 1 {
+		tpe := scanner.Program.TypeOf(callExpr.Args[0])
+		expr := scanner.Program.WhereDecl(tpe)
 
-	for _, def := range pkgInfo.Defs {
-		if tpeFunc, ok := def.(*types.Func); ok {
-			if tpeFunc.Name() == "Handle" {
-				scope := tpeFunc.Scope()
-				for _, name := range scope.Names() {
-					if tpe == scope.Lookup(name).Type() {
-						scanned := map[*types.Scope]bool{}
-						scanner.pickOperationInfo(operation, scope, scanned)
-						scanner.writeSummaryDesc(operation, scanner.getNodeDoc(ident))
+		if ident, ok := expr.(*ast.Ident); ok {
+			methods := scanner.Program.MethodsOf(tpe)
+			for tpeFunc := range methods {
+				if tpeFunc.Name() == "Handle" {
+					scope := tpeFunc.Scope()
+					for _, name := range scope.Names() {
+						if tpe == scope.Lookup(name).Type() {
+							scanned := map[*types.Scope]bool{}
+							scanner.pickOperationInfo(operation, scope, scanned)
+							scanner.writeSummaryDesc(operation, scanner.getNodeDoc(ident))
+						}
+					}
+
+					if asOperation {
+						pkgInfo := scanner.Program.PackageInfoOf(ident)
+						operation.WithTags(pkgInfo.Pkg.Name())
+						operation.WithID(ident.String())
 					}
 				}
 			}
 		}
+
 	}
 }
 
@@ -638,20 +658,7 @@ func (scanner *Scanner) collectOperation(method string, ginPath string, handlerE
 			if funcDecl, ok := ident.Obj.Decl.(*ast.FuncDecl); ok {
 				if funcDecl.Name.Name == "FromRequest" {
 					if callExpr, ok := handlerExpr.(*ast.CallExpr); ok {
-						if len(callExpr.Args) == 1 {
-							if compositeLit, ok := callExpr.Args[0].(*ast.CompositeLit); ok {
-								if selectorExpr, ok := compositeLit.Type.(*ast.SelectorExpr); ok {
-									ident := scanner.Program.IdentOf(scanner.Program.DefOf(selectorExpr.Sel))
-									scanner.writeOperationFromRequest(operation, ident)
-
-									if idx == lastIdx {
-										pkgInfo := scanner.Program.PackageInfoOf(ident)
-										operation.WithTags(pkgInfo.Pkg.Name())
-										operation.WithID(ident.String())
-									}
-								}
-							}
-						}
+						scanner.writeOperationFromRequestCallExpr(operation, callExpr, idx == lastIdx)
 					}
 				} else {
 					scanner.writeOperation(operation, funcDecl)
