@@ -104,6 +104,41 @@
         }
       }
     },
+    "/auto": {
+      "get": {
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "from_request"
+        ],
+        "summary": "Get User",
+        "operationId": "GetUser",
+        "parameters": [
+          {
+            "type": "string",
+            "x-go-name": "Id",
+            "name": "id",
+            "in": "query",
+            "required": true
+          },
+          {
+            "type": "string",
+            "x-go-name": "Age",
+            "name": "age",
+            "in": "query",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "schema": {
+              "$ref": "#/definitions/GetUser"
+            }
+          }
+        }
+      }
+    },
     "/test": {
       "get": {
         "description": "Others\nheheheh",
@@ -373,6 +408,24 @@
             "type": "string"
           },
           "x-go-name": "Source"
+        }
+      }
+    },
+    "GetUser": {
+      "description": "Get User",
+      "type": "object",
+      "required": [
+        "id",
+        "age"
+      ],
+      "properties": {
+        "age": {
+          "type": "string",
+          "x-go-name": "Age"
+        },
+        "id": {
+          "type": "string",
+          "x-go-name": "Id"
         }
       }
     },

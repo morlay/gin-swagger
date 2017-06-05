@@ -5,6 +5,7 @@ package main
 import (
 	"gopkg.in/gin-gonic/gin.v1"
 
+	"github.com/morlay/gin-swagger/example/from_request"
 	"github.com/morlay/gin-swagger/example/test"
 	"github.com/morlay/gin-swagger/example/test2"
 	"github.com/morlay/gin-swagger/example/test3"
@@ -18,6 +19,7 @@ func main() {
 
 	router.POST("/", test.Test)
 	router.GET("/test", test.Auth(), test3.Test3)
+	router.GET("/auto", from_request.FromRequest(from_request.GetUser{}))
 
 	userRoute := router.Group("/user", test.AuthMiddleware)
 	userRouteWith := userRoute.Group("/test")

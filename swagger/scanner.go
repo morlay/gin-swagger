@@ -331,7 +331,7 @@ func (scanner *Scanner) writeParameter(operation *spec.Operation, t types.Type) 
 					}
 				}
 
-				if (location != "context") {
+				if location != "context" {
 					var param spec.Parameter
 
 					if location == "body" {
@@ -550,6 +550,26 @@ func (scanner *Scanner) writeOperation(operation *spec.Operation, handlerFuncDec
 	scanner.writeSummaryDesc(operation, handlerFuncDecl.Doc.Text())
 }
 
+func (scanner *Scanner) writeOperationFromRequest(operation *spec.Operation, ident *ast.Ident) {
+	pkgInfo := scanner.Program.PackageInfoOf(ident)
+	tpe := scanner.Program.TypeOf(ident)
+
+	for _, def := range pkgInfo.Defs {
+		if tpeFunc, ok := def.(*types.Func); ok {
+			if tpeFunc.Name() == "Handle" {
+				scope := tpeFunc.Scope()
+				for _, name := range scope.Names() {
+					if tpe == scope.Lookup(name).Type() {
+						scanned := map[*types.Scope]bool{}
+						scanner.pickOperationInfo(operation, scope, scanned)
+						scanner.writeSummaryDesc(operation, scanner.getNodeDoc(ident))
+					}
+				}
+			}
+		}
+	}
+}
+
 func (scanner *Scanner) patchPathWithZero(swaggerPath string, operation *spec.Operation) string {
 	r := regexp.MustCompile("/\\{([^/\\}]+)\\}")
 
@@ -616,19 +636,38 @@ func (scanner *Scanner) collectOperation(method string, ginPath string, handlerE
 			ident := scanner.Program.IdentOf(scanner.Program.DefOf(handleIdent))
 
 			if funcDecl, ok := ident.Obj.Decl.(*ast.FuncDecl); ok {
-				scanner.writeOperation(operation, funcDecl)
+				if funcDecl.Name.Name == "FromRequest" {
+					if callExpr, ok := handlerExpr.(*ast.CallExpr); ok {
+						if len(callExpr.Args) == 1 {
+							if compositeLit, ok := callExpr.Args[0].(*ast.CompositeLit); ok {
+								if selectorExpr, ok := compositeLit.Type.(*ast.SelectorExpr); ok {
+									ident := scanner.Program.IdentOf(scanner.Program.DefOf(selectorExpr.Sel))
+									scanner.writeOperationFromRequest(operation, ident)
 
-				if idx == lastIdx {
-					pkgInfo := scanner.Program.PackageInfoOf(funcDecl)
-					operation.WithTags(pkgInfo.Pkg.Name())
-					operation.WithID(handleIdent.String())
+									if idx == lastIdx {
+										pkgInfo := scanner.Program.PackageInfoOf(ident)
+										operation.WithTags(pkgInfo.Pkg.Name())
+										operation.WithID(ident.String())
+									}
+								}
+							}
+						}
+					}
+				} else {
+					scanner.writeOperation(operation, funcDecl)
+
+					if idx == lastIdx {
+						pkgInfo := scanner.Program.PackageInfoOf(funcDecl)
+						operation.WithTags(pkgInfo.Pkg.Name())
+						operation.WithID(handleIdent.String())
+					}
+
 				}
 			}
 		}
 	}
 
 	patchOperationConsumes(operation)
-
 	scanner.Swagger.AddOperation(method, scanner.patchPathWithZero(swaggerPath, operation), operation)
 }
 
