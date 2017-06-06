@@ -16,6 +16,7 @@ import (
 	"github.com/logrusorgru/aurora"
 	"gopkg.in/gin-gonic/gin.v1"
 
+	"github.com/davecgh/go-spew/spew"
 	"github.com/morlay/gin-swagger/codegen"
 	"github.com/morlay/gin-swagger/http_error_code"
 	"github.com/morlay/gin-swagger/program"
@@ -549,7 +550,7 @@ func (scanner *Scanner) writeOperation(operation *spec.Operation, handlerFuncDec
 	for id, obj := range scanner.Program.UsesInScope(scope) {
 		switch obj.(type) {
 		case *types.Func:
-			if (id.Name == "FromRequest") {
+			if id.Name == "FromRequest" {
 				callExpr := scanner.Program.CallFuncById(id)
 				scanner.writeOperationFromRequestCallExpr(operation, callExpr, false)
 			}
@@ -742,6 +743,7 @@ func (scanner *Scanner) Scan() {
 				if pointer, ok := selection.Recv().(*types.Pointer); ok {
 					if typeOfGinEngine(pointer) || typeOfGinRouterGroup(pointer) {
 						if isGinMethod(selectorExpr.Sel.Name) {
+
 							if callExpr := program.FindCallExprByFunc(pkgInfo.Info, selectorExpr); callExpr != nil {
 								method := selectorExpr.Sel.Name
 								prefix := ""

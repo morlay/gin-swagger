@@ -45,8 +45,12 @@ func isFuncWithGinContext(tpeFunc *types.Func) bool {
 }
 
 func hasImportedGin(packages []*types.Package) bool {
+	var hasGin bool
+
 	for _, pkg := range packages {
-		return isGinPkg(pkg)
+		if isGinPkg(pkg) {
+			hasGin = true
+		}
 	}
-	return false
+	return hasGin
 }
