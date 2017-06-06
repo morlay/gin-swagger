@@ -39,6 +39,13 @@ type GeneralError struct {
 	Source []string `json:"source"`
 }
 
+type GetUser struct {
+	//
+	Age string `json:"age"`
+	//
+	Id string `json:"id"`
+}
+
 type ItemData struct {
 	//
 	Id string `json:"id"`

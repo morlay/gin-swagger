@@ -9,15 +9,31 @@ import (
 func NewClientService(baseURL string, timeout time.Duration) *ClientService {
 	return &ClientService{
 		Client: client.Client{
-			ID:      "ClientService",
 			BaseURL: baseURL,
-			Timeout: timeout,
+			Timeout: timeout / time.Millisecond,
 		},
 	}
 }
 
 type ClientService struct {
 	client.Client
+}
+
+type GetUserRequest struct {
+	//
+	Id string `json:"id" in:"query"`
+	//
+	Age string `json:"age" in:"query"`
+}
+
+type GetUserResponse struct {
+	//
+	Body GetUser `json:"body"`
+}
+
+func (c ClientService) GetUser(req GetUserRequest) (resp GetUserResponse, err error) {
+	err = c.DoRequest("ClientService.GetUser", "GET", "/auto", req, &resp)
+	return
 }
 
 type TestRequest struct {
@@ -39,9 +55,10 @@ type TestResponse struct {
 }
 
 // @httpError(40000200,HTTP_ERROR_UNKNOWN,"未定义","",false);
+// @httpError(400002002,HTTP_ERROR__TEST2,"Test2","Description",true);
 // 正常返回
 func (c ClientService) Test(req TestRequest) (resp TestResponse, err error) {
-	err = c.DoRequest("Test", "POST", "/", req, &resp)
+	err = c.DoRequest("ClientService.Test", "POST", "/", req, &resp)
 	return
 }
 
@@ -73,11 +90,15 @@ type Test2Response struct {
 
 // @httpError(400002000,HTTP_ERROR_UNKNOWN,"未定义","",false);
 // @httpError(400002001,HTTP_ERROR__TEST,"Summary","",true);
-// @httpError(400002002,HTTP_ERROR__TEST2,"Test2","Description",true);
 // 正常返回
 func (c ClientService) Test2(req Test2Request) (resp Test2Response, err error) {
-	err = c.DoRequest("Test2", "GET", "/user/test/:name/0", req, &resp)
+	err = c.DoRequest("ClientService.Test2", "GET", "/user/test/:name/0", req, &resp)
 	return
+}
+
+type Test3Request struct {
+	//
+	Authorization string `json:"authorization" in:"header"`
 }
 
 type Test3Response struct {
@@ -86,9 +107,7 @@ type Test3Response struct {
 }
 
 // @httpError(400002000,HTTP_ERROR_UNKNOWN,"未定义","",false);
-// @httpError(400002001,HTTP_ERROR__TEST,"Summary","",true);
-// @httpError(400002002,HTTP_ERROR__TEST2,"Test2","Description",true);
-func (c ClientService) Test3() (resp Test3Response, err error) {
-	err = c.DoRequest("Test3", "GET", "/test", nil, &resp)
+func (c ClientService) Test3(req Test3Request) (resp Test3Response, err error) {
+	err = c.DoRequest("ClientService.Test3", "GET", "/test", req, &resp)
 	return
 }

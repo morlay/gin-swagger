@@ -16,7 +16,6 @@ import (
 	"github.com/logrusorgru/aurora"
 	"gopkg.in/gin-gonic/gin.v1"
 
-	"github.com/davecgh/go-spew/spew"
 	"github.com/morlay/gin-swagger/codegen"
 	"github.com/morlay/gin-swagger/http_error_code"
 	"github.com/morlay/gin-swagger/program"

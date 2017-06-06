@@ -5,7 +5,6 @@ import (
 )
 
 type Client struct {
-	ID      string
 	BaseURL string
 	Timeout time.Duration
 }

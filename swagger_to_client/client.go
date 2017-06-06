@@ -36,9 +36,8 @@ func (c *ClientInfo) RenderDecl() string {
 	func New{{ .Name }}(baseURL string, timeout time.Duration) *{{ .Name }} {
 		return &{{ .Name }}{
 			Client: client.Client{
-				ID: "{{ .Name }}",
 				BaseURL: baseURL,
-				Timeout: timeout,
+				Timeout: timeout / time.Millisecond,
 			},
 		}
 	}
@@ -96,6 +95,7 @@ func (c *ClientInfo) AddOperation(method, path string, operation *spec.Operation
 
 	if respSchema, desc := getDataResponse(operation, responses); respSchema != nil {
 		o := OperationInfo{
+			ServiceName: c.Name,
 			ID:          operation.ID,
 			Method:      strings.ToUpper(method),
 			Path:        convertSwaggerPathToGinPath(path),
@@ -163,6 +163,7 @@ func (c *ClientInfo) Render() string {
 }
 
 type OperationInfo struct {
+	ServiceName string
 	ID          string
 	Method      string
 	Path        string
@@ -262,13 +263,13 @@ func (op *OperationInfo) RenderRespDecl() string {
 func (op *OperationInfo) RenderOperationMethod() string {
 	if len(op.Parameters) > 0 {
 		return codegen.TemplateRender(`{{ .ID }}(req {{ .ID }}Request) (resp {{ .ID }}Response, err error) {
-			err = c.DoRequest("{{ .ID }}", "{{ .Method  }}", "{{ .Path }}", req, &resp)
+			err = c.DoRequest("{{ .ServiceName }}.{{ .ID }}", "{{ .Method  }}", "{{ .Path }}", req, &resp)
 			return
 	}`)(op)
 	}
 
 	return codegen.TemplateRender(`{{ .ID }}() (resp {{ .ID }}Response, err error) {
-		err = c.DoRequest("{{ .ID }}", "{{ .Method  }}", "{{ .Path }}", nil, &resp)
+		err = c.DoRequest("{{ .ServiceName }}.{{ .ID }}", "{{ .Method  }}", "{{ .Path }}", nil, &resp)
 		return
 	}`)(op)
 }
