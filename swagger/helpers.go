@@ -4,8 +4,9 @@ import (
 	"regexp"
 	"strings"
 
-	"github.com/morlay/gin-swagger/program"
 	"go/ast"
+
+	"github.com/morlay/gin-swagger/program"
 )
 
 func isGinMethod(method string) bool {

@@ -2,11 +2,12 @@ package swagger
 
 import (
 	"fmt"
-	"github.com/go-openapi/spec"
 	"reflect"
 	"regexp"
 	"strconv"
 	"strings"
+
+	"github.com/go-openapi/spec"
 )
 
 func NewSwagger() *Swagger {

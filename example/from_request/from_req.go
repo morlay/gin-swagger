@@ -1,8 +1,9 @@
 package from_request
 
 import (
-	"gopkg.in/gin-gonic/gin.v1"
 	"reflect"
+
+	"gopkg.in/gin-gonic/gin.v1"
 )
 
 type Request interface {

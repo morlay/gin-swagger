@@ -1,8 +1,9 @@
 package from_request
 
 import (
-	"gopkg.in/gin-gonic/gin.v1"
 	"net/http"
+
+	"gopkg.in/gin-gonic/gin.v1"
 )
 
 // Get User

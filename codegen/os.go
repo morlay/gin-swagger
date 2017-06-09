@@ -2,13 +2,14 @@ package codegen
 
 import (
 	"encoding/json"
-	"github.com/logrusorgru/aurora"
 	"io/ioutil"
 	"log"
 	"os"
 	"os/exec"
 	"path"
 	"path/filepath"
+
+	"github.com/logrusorgru/aurora"
 )
 
 func OpenFile(path string) string {

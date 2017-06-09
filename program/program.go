@@ -9,10 +9,12 @@ import (
 	"sort"
 	"strings"
 
-	"golang.org/x/tools/go/loader"
 	"log"
 
+	"golang.org/x/tools/go/loader"
+
 	"github.com/logrusorgru/aurora"
+
 	"github.com/morlay/gin-swagger/codegen"
 )
 

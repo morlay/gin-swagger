@@ -8,9 +8,10 @@ import (
 	"strconv"
 	"strings"
 
+	"sort"
+
 	"github.com/morlay/gin-swagger/codegen"
 	"github.com/morlay/gin-swagger/program"
-	"sort"
 )
 
 func NewErrorGenerator(packagePath string, errorType string) *ErrorGenerator {

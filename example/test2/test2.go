@@ -1,10 +1,12 @@
 package test2
 
 import (
-	"github.com/morlay/gin-swagger/example/globals"
-	"gopkg.in/gin-gonic/gin.v1"
 	"net/http"
 	"time"
+
+	"gopkg.in/gin-gonic/gin.v1"
+
+	"github.com/morlay/gin-swagger/example/globals"
 )
 
 // swagger:strfmt date-time

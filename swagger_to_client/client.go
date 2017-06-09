@@ -2,10 +2,11 @@ package swagger_to_client
 
 import (
 	"fmt"
-	"github.com/go-openapi/spec"
-	"gopkg.in/gin-gonic/gin.v1"
 	"sort"
 	"strings"
+
+	"github.com/go-openapi/spec"
+	"gopkg.in/gin-gonic/gin.v1"
 
 	"github.com/morlay/gin-swagger/codegen"
 )

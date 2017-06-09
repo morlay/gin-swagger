@@ -2,11 +2,13 @@ package test
 
 import (
 	"fmt"
+	"net/http"
+
+	"gopkg.in/gin-gonic/gin.v1"
+
 	"github.com/morlay/gin-swagger/example/from_request"
 	"github.com/morlay/gin-swagger/example/globals"
 	"github.com/morlay/gin-swagger/example/test2"
-	"gopkg.in/gin-gonic/gin.v1"
-	"net/http"
 )
 
 // ErrorMap
