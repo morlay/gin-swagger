@@ -400,18 +400,18 @@ func (scanner *Scanner) writeResponse(operation *spec.Operation, ginContextCallE
 					}
 					operation.Produces = []string{gin.MIMEJSON}
 				}
-			// c.HTML(code int, );
-			// c.HTMLString(http.StatusOK, format, values)
+				// c.HTML(code int, );
+				// c.HTMLString(http.StatusOK, format, values)
 			case "HTML", "HTMLString":
 				operation.Produces = []string{gin.MIMEHTML}
-			// c.String(http.StatusOK, format, values)
+				// c.String(http.StatusOK, format, values)
 			case "String":
 				schema := spec.Schema{}
 				schema.Typed("string", "")
 				resp.WithSchema(&schema)
-			// c.Render(code init, )
-			// c.Data(code init, )
-			// c.Redirect(code init, )
+				// c.Render(code init, )
+				// c.Data(code init, )
+				// c.Redirect(code init, )
 			case "Render", "Data", "Redirect":
 			}
 
@@ -473,15 +473,24 @@ func (scanner *Scanner) pickOperationInfo(operation *spec.Operation, scope *type
 		if funType != nil {
 			log.Printf("Picking operation from %s\n", aurora.Blue(funType.FullName()))
 
+			hasGinContext := false
 			for _, name := range scope.Names() {
 				tpe := scope.Lookup(name).Type()
 
-				if !isHttpErrorMethodScope {
-					isHttpErrorMethodScope = program.IsTypeName(tpe, http_error_code.HttpErrorVarName)
+				if packageOfGin(tpe.String()) && getExportedNameOfPackage(tpe.String()) == "Context" {
+					hasGinContext = true
 				}
 
+				if program.IsTypeName(tpe, http_error_code.HttpErrorVarName) {
+					isHttpErrorMethodScope = true
+				}
+			}
+
+			for _, name := range scope.Names() {
+				tpe := scope.Lookup(name).Type()
+
 				// get parameters from type of var `req` or `request`;
-				if name == "req" || name == "request" {
+				if hasGinContext && (name == "req" || name == "request") {
 					if structTpe, ok := program.Indirect(tpe).(*types.Struct); ok {
 						astStruct := scanner.Program.WhereDecl(tpe)
 						log.Printf("\t Picking parameters from %s\n", aurora.Sprintf(aurora.Green("%s"), astStruct))
