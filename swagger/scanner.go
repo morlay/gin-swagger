@@ -24,20 +24,19 @@ import (
 func NewScanner(packagePath string) *Scanner {
 	prog := program.NewProgram(packagePath)
 	swag := NewSwagger()
+	httpErrorScanner := NewHttpErrorScanner()
 	return &Scanner{
 		Swagger: swag,
 		Program: prog,
+		HttpErr: httpErrorScanner,
 	}
 }
 
 type Scanner struct {
-	GinPath              string
-	Swagger              *Swagger
-	Program              *program.Program
-	httpErrors           map[*types.Package]map[string]http_error_code.HttpErrorValue
-	funcUsesHttpErrors   map[*types.Func]map[string]http_error_code.HttpErrorValue
-	funcMarkedHttpErrors map[*types.Func][]string
-	httpErrorType        types.Type
+	GinPath string
+	Swagger *Swagger
+	Program *program.Program
+	HttpErr *HttpErrorScanner
 }
 
 func (scanner *Scanner) getRouterPrefixByIdent(id *ast.Ident) (string, []ast.Expr) {
@@ -436,8 +435,8 @@ func ParseHttpError(doc string) (string, []string) {
 func (scanner *Scanner) writeResponseByHttpErrorValue(operation *spec.Operation, statusCode int, httpErrorCode string) {
 	resp := newOrMergeResponse(operation, statusCode)
 
-	if resp.Schema == nil && !strings.Contains(scanner.httpErrorType.String(), "untyped nil") {
-		schema := scanner.defineSchemaBy(scanner.httpErrorType)
+	if resp.Schema == nil && !strings.Contains(scanner.HttpErr.ErrorType.String(), "untyped nil") {
+		schema := scanner.defineSchemaBy(scanner.HttpErr.ErrorType)
 		resp.WithSchema(&schema)
 		operation.Produces = []string{gin.MIMEJSON}
 	}
@@ -513,27 +512,27 @@ func (scanner *Scanner) pickOperationInfo(operation *spec.Operation, scope *type
 						} else if !scanned[tpeFunc.Scope()] {
 							if isFuncWithGinContext(tpeFunc) {
 								scanner.pickOperationInfo(operation, tpeFunc.Scope(), scanned)
-							} else if httpErrors, ok := scanner.funcMarkedHttpErrors[tpeFunc]; ok {
+							} else if httpErrors, ok := scanner.HttpErr.GetMarkedErrorsForFunc(tpeFunc); ok {
 								for _, httpError := range httpErrors {
 									matched := rxHttpError.FindAllStringSubmatch(httpError, -1)
 									statusCode := http_error_code.CodeToStatus(matched[0][1])
 									scanner.writeResponseByHttpErrorValue(operation, statusCode, httpError)
 								}
 							} else {
-								for pkgDefHttpError := range scanner.httpErrors {
+								scanner.HttpErr.ForEachError(func(pkgDefHttpError *types.Package) {
 									if tpeFunc.Pkg() == pkgDefHttpError || program.PkgContains(tpeFunc.Pkg().Imports(), pkgDefHttpError) {
 										scanner.pickOperationInfo(operation, tpeFunc.Scope(), scanned)
 									}
-								}
+								})
 							}
 						}
 					}
 				case *types.Const:
-					if len(scanner.httpErrors) > 0 {
+					if len(scanner.HttpErr.HttpErrors) > 0 {
 						constObj := obj.(*types.Const)
 
 						if !isHttpErrorMethodScope && program.IsTypeName(obj.Type(), http_error_code.HttpErrorVarName) {
-							if httpErrorValue, ok := scanner.httpErrors[obj.Pkg()][constObj.Val().String()]; ok {
+							if httpErrorValue, ok := scanner.HttpErr.HttpErrors[obj.Pkg()][constObj.Val().String()]; ok {
 								scanner.writeResponseByHttpErrorValue(operation, httpErrorValue.ToStatus(), httpErrorValue.ToDesc())
 							}
 						}
@@ -687,63 +686,8 @@ func (scanner *Scanner) collectOperation(method string, ginPath string, handlerE
 	scanner.Swagger.AddOperation(method, scanner.patchPathWithZero(swaggerPath, operation), operation)
 }
 
-func (scanner *Scanner) CollectHttpErrors() {
-	scanner.httpErrors = http_error_code.CollectErrors(scanner.Program)
-	scanner.funcUsesHttpErrors = map[*types.Func]map[string]http_error_code.HttpErrorValue{}
-	scanner.funcMarkedHttpErrors = map[*types.Func][]string{}
-
-	httpErrorMethods := map[*types.Func]*types.Signature{}
-
-	for pkg, pkgInfo := range scanner.Program.AllPackages {
-		for id, obj := range pkgInfo.Defs {
-			if tpeFunc, ok := obj.(*types.Func); ok {
-				if id.Obj != nil {
-					if funcDecl, ok := id.Obj.Decl.(*ast.FuncDecl); ok {
-						_, httpErrors := ParseHttpError(funcDecl.Doc.Text())
-						if len(httpErrors) > 0 {
-							scanner.funcMarkedHttpErrors[tpeFunc] = httpErrors
-						}
-					}
-				}
-
-				for pkgDefHttpError, httpErrorMap := range scanner.httpErrors {
-					if pkg == pkgDefHttpError || program.PkgContains(pkg.Imports(), pkgDefHttpError) {
-						for id, obj := range pkgInfo.Uses {
-							if tpeFunc.Scope() != nil && tpeFunc.Scope().Contains(id.Pos()) {
-								if constObj, ok := obj.(*types.Const); ok {
-									if program.IsTypeName(obj.Type(), http_error_code.HttpErrorVarName) {
-										code := constObj.Val().String()
-										if httpErrorValue, ok := httpErrorMap[code]; ok {
-											if scanner.httpErrorType == nil {
-												httpErrorMethods = scanner.Program.MethodsOf(obj.Type())
-												for funcType, method := range httpErrorMethods {
-													if funcType.Name() == "ToError" {
-														scanner.httpErrorType = method.Results().At(0).Type()
-													}
-												}
-											}
-
-											if httpErrorMethods[tpeFunc] == nil {
-												if scanner.funcUsesHttpErrors[tpeFunc] == nil {
-													scanner.funcUsesHttpErrors[tpeFunc] = map[string]http_error_code.HttpErrorValue{}
-												}
-												scanner.funcUsesHttpErrors[tpeFunc][code] = httpErrorValue
-											}
-										}
-									}
-								}
-							}
-						}
-					}
-				}
-			}
-		}
-
-	}
-}
-
 func (scanner *Scanner) Scan() {
-	scanner.CollectHttpErrors()
+	scanner.HttpErr.Scan(scanner.Program)
 
 	for pkg, pkgInfo := range scanner.Program.AllPackages {
 		if hasImportedGin(pkg.Imports()) {
