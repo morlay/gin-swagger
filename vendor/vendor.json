@@ -143,7 +143,7 @@
 			"revisionTime": "2017-01-14T04:22:49Z"
 		},
 		{
-			"checksumSHA1": "KqecwXo3OO+p4N+E9RhlHvl9I+w=",
+			"checksumSHA1": "osOGEHNPu9kb9d7d9DKEoZOSPbs=",
 			"path": "golang.org/x/sys/unix",
 			"revision": "b699b7032584f0953262cb2788a0ca19bb494703",
 			"revisionTime": "2016-11-10T11:58:56Z"
@@ -155,34 +155,34 @@
 			"revisionTime": "2016-10-16T16:34:30Z"
 		},
 		{
-			"checksumSHA1": "Aj3JSVO324FCjEAGm4ZwmC79bbo=",
+			"checksumSHA1": "aihk1EHGiDFDRDZuRf5CWqWpcYs=",
 			"path": "golang.org/x/text/unicode/norm",
 			"revision": "5a42fa2464759cbb7ee0af9de00b54d69f09a29c",
 			"revisionTime": "2016-10-16T16:34:30Z"
 		},
 		{
-			"checksumSHA1": "DVLYAo9qL2EilduyXwBKMqL44U4=",
+			"checksumSHA1": "pd6XBf0WgpUlkBcoSMImKd3l3zo=",
 			"path": "golang.org/x/text/width",
 			"revision": "5a42fa2464759cbb7ee0af9de00b54d69f09a29c",
 			"revisionTime": "2016-10-16T16:34:30Z"
 		},
 		{
-			"checksumSHA1": "ikor+YKJu2eKwyFteBWhsb8IGy8=",
+			"checksumSHA1": "p3gWsy4fQOSXGRMUHr3TnmVFias=",
 			"path": "golang.org/x/tools/go/ast/astutil",
-			"revision": "f7f4b0b08a3ec1e3560fffa2d769052b12b5b1d2",
-			"revisionTime": "2017-02-16T21:19:20Z"
+			"revision": "2a3bccfb1bf676aea1cfefb8eae1c7f4c566d22d",
+			"revisionTime": "2017-06-07T23:57:47Z"
 		},
 		{
-			"checksumSHA1": "VtflDqIRy6TlpT4Dbwr55lxmsh8=",
+			"checksumSHA1": "AnXFEvmaJ7w2Q7hWPcLUmCbPgq0=",
 			"path": "golang.org/x/tools/go/buildutil",
-			"revision": "f7f4b0b08a3ec1e3560fffa2d769052b12b5b1d2",
-			"revisionTime": "2017-02-16T21:19:20Z"
+			"revision": "2a3bccfb1bf676aea1cfefb8eae1c7f4c566d22d",
+			"revisionTime": "2017-06-07T23:57:47Z"
 		},
 		{
-			"checksumSHA1": "7lF1vQ7O3i4Lk19amETdLazbDBU=",
+			"checksumSHA1": "3HnsDHAsl+izX3j9xpU6veKrWpk=",
 			"path": "golang.org/x/tools/go/loader",
-			"revision": "f7f4b0b08a3ec1e3560fffa2d769052b12b5b1d2",
-			"revisionTime": "2017-02-16T21:19:20Z"
+			"revision": "2a3bccfb1bf676aea1cfefb8eae1c7f4c566d22d",
+			"revisionTime": "2017-06-07T23:57:47Z"
 		},
 		{
 			"checksumSHA1": "hT+7DPyl8tQ96kUXW3Sr5o0Pcj0=",
