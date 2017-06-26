@@ -58,6 +58,7 @@ func WriteFile(filename string, content string) {
 func WriteGoFile(path string, content string) {
 	WriteFile(path, content)
 	exec.Command("gofmt", "-w", path).CombinedOutput()
+	exec.Command("goimports", "-w", path).CombinedOutput()
 }
 
 func WriteJSONFile(path string, data interface{}) {
