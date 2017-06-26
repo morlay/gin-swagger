@@ -9,13 +9,11 @@ func packageOfGin(packagePath string) bool {
 	return strings.Contains(packagePath, "gin")
 }
 
-func typeOfGinEngine(pointer *types.Pointer) bool {
-	packagePath := pointer.String()
+func typeOfGinEngine(packagePath string) bool {
 	return packageOfGin(packagePath) && getExportedNameOfPackage(packagePath) == "Engine"
 }
 
-func typeOfGinRouterGroup(pointer *types.Pointer) bool {
-	packagePath := pointer.String()
+func typeOfGinRouterGroup(packagePath string) bool {
 	return packageOfGin(packagePath) && getExportedNameOfPackage(packagePath) == "RouterGroup"
 }
 

@@ -23,6 +23,10 @@ func isGinMethod(method string) bool {
 	return ginMethods[method]
 }
 
+func isGinGroup(method string) bool {
+	return method == "Group"
+}
+
 func getJSONNameAndFlags(tagValue string) (string, []string) {
 	values := strings.SplitN(tagValue, ",", -1)
 	return values[0], values[1:]

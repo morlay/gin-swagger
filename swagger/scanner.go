@@ -5,7 +5,6 @@ import (
 	"go/ast"
 	"go/types"
 	"log"
-	"path"
 	"reflect"
 	"regexp"
 	"sort"
@@ -24,11 +23,14 @@ import (
 func NewScanner(packagePath string) *Scanner {
 	prog := program.NewProgram(packagePath)
 	swag := NewSwagger()
-	httpErrorScanner := NewHttpErrorScanner()
+	httpErr := NewHttpErrorScanner()
+	routes := NewRoutesScanner()
+
 	return &Scanner{
 		Swagger: swag,
 		Program: prog,
-		HttpErr: httpErrorScanner,
+		HttpErr: httpErr,
+		Routes:  routes,
 	}
 }
 
@@ -37,6 +39,7 @@ type Scanner struct {
 	Swagger *Swagger
 	Program *program.Program
 	HttpErr *HttpErrorScanner
+	Routes  *RoutesScanner
 }
 
 func (scanner *Scanner) getRouterPrefixByIdent(id *ast.Ident) (string, []ast.Expr) {
@@ -50,7 +53,7 @@ func (scanner *Scanner) getRouterPrefixByIdent(id *ast.Ident) (string, []ast.Exp
 		if assignStmt, ok := program.GetIdentDecl(id).(*ast.AssignStmt); ok {
 			callExpr := assignStmt.Rhs[0].(*ast.CallExpr)
 			if pointer, ok := def.Type().(*types.Pointer); ok {
-				if !typeOfGinEngine(pointer) {
+				if !typeOfGinEngine(pointer.String()) {
 					if nextIdent, ok := callExpr.Fun.(*ast.SelectorExpr).X.(*ast.Ident); ok {
 						parentPrefix, parentArgs := scanner.getRouterPrefixByIdent(nextIdent)
 						args = append(args, parentArgs...)
@@ -506,7 +509,7 @@ func (scanner *Scanner) pickOperationInfo(operation *spec.Operation, scope *type
 					tpeFunc := obj.(*types.Func)
 					if tpeFunc.Pkg() != nil {
 						if isFuncOfGin(tpeFunc) {
-							if callExpr := scanner.Program.CallFuncById(id); callExpr != nil {
+							if callExpr := scanner.Program.CallExprById(id); callExpr != nil {
 								scanner.writeResponse(operation, callExpr, scanner.getNodeDoc(callExpr))
 							}
 						} else if !scanned[tpeFunc.Scope()] {
@@ -558,7 +561,7 @@ func (scanner *Scanner) writeOperation(operation *spec.Operation, handlerFuncDec
 		switch obj.(type) {
 		case *types.Func:
 			if id.Name == "FromRequest" {
-				callExpr := scanner.Program.CallFuncById(id)
+				callExpr := scanner.Program.CallExprById(id)
 				scanner.writeOperationFromRequestCallExpr(operation, callExpr, false)
 			}
 		}
@@ -688,34 +691,10 @@ func (scanner *Scanner) collectOperation(method string, ginPath string, handlerE
 
 func (scanner *Scanner) Scan() {
 	scanner.HttpErr.Scan(scanner.Program)
+	scanner.Routes.Scan(scanner.Program)
 
-	for pkg, pkgInfo := range scanner.Program.AllPackages {
-		if hasImportedGin(pkg.Imports()) {
-			for selectorExpr, selection := range pkgInfo.Info.Selections {
-				if pointer, ok := selection.Recv().(*types.Pointer); ok {
-					if typeOfGinEngine(pointer) || typeOfGinRouterGroup(pointer) {
-						if isGinMethod(selectorExpr.Sel.Name) {
-
-							if callExpr := program.FindCallExprByFunc(pkgInfo.Info, selectorExpr); callExpr != nil {
-								method := selectorExpr.Sel.Name
-								prefix := ""
-								args := []ast.Expr{}
-
-								if typeOfGinRouterGroup(pointer) {
-									prefix, args = scanner.getRouterPrefixByIdent(selectorExpr.X.(*ast.Ident))
-								}
-
-								ginPath := path.Join(prefix, getRouterPathByCallExpr(callExpr))
-
-								args = append(args, callExpr.Args[1:]...)
-
-								scanner.collectOperation(method, ginPath, args)
-							}
-						}
-					}
-				}
-			}
-		}
+	for router := range scanner.Routes.Routers {
+		scanner.collectOperation(router.Method, router.GetPath(), router.GetArgs())
 	}
 }
 

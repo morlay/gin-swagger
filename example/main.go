@@ -7,9 +7,17 @@ import (
 
 	"github.com/morlay/gin-swagger/example/from_request"
 	"github.com/morlay/gin-swagger/example/test"
-	"github.com/morlay/gin-swagger/example/test2"
 	"github.com/morlay/gin-swagger/example/test3"
 )
+
+func SetupRoutes(router *gin.Engine) {
+	router.GET("/test", test.Auth(), test3.Test3)
+	router.GET("/auto", from_request.FromRequest(from_request.GetUser{}))
+
+	userRouter := router.Group("/user", test.AuthMiddleware)
+
+	test.SetupUserRoutes(userRouter)
+}
 
 func main() {
 	router := gin.New()
@@ -18,14 +26,12 @@ func main() {
 	router.Use(gin.Recovery())
 
 	router.POST("/", test.Test)
-	router.GET("/test", test.Auth(), test3.Test3)
-	router.GET("/auto", from_request.FromRequest(from_request.GetUser{}))
 
-	userRoute := router.Group("/user", test.AuthMiddleware)
-	userRouteWith := userRoute.Group("/test")
-	{
-		userRouteWith.GET("/:name/:action", test2.Test2)
-	}
+	SetupRoutes(router)
+
+	//userRouter := router.Group("/user2")
+
+	//test.SetupUserRoutes(userRouter)
 
 	router.Run(":8080")
 }

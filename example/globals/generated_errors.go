@@ -2,9 +2,8 @@ package globals
 
 import (
 	"fmt"
-	"strconv"
-
 	"github.com/morlay/gin-swagger/http_error_code/httplib"
+	"strconv"
 )
 
 func (c HttpErrorCode) Code() int32 {

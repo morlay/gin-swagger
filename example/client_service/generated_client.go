@@ -1,10 +1,9 @@
 package client_service
 
 import (
-	"time"
-
 	"github.com/morlay/gin-swagger/example/test2"
 	"github.com/morlay/gin-swagger/swagger_to_client/client"
+	"time"
 )
 
 func NewClientService(baseURL string, timeout time.Duration) *ClientService {

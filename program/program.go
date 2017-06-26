@@ -213,7 +213,7 @@ func (program *Program) PackageInfoOf(node ast.Node) *loader.PackageInfo {
 	return nil
 }
 
-func (program *Program) CallFuncById(id *ast.Ident) *ast.CallExpr {
+func (program *Program) CallExprById(id *ast.Ident) *ast.CallExpr {
 	pkgInfo := program.WithPkgInfoContains(id.Pos())
 
 	for expr := range pkgInfo.Types {
@@ -235,6 +235,21 @@ func (program *Program) CallFuncById(id *ast.Ident) *ast.CallExpr {
 	return nil
 }
 
+func (program *Program) DefsInScope(scope *types.Scope) map[*ast.Ident]types.Object {
+	defs := map[*ast.Ident]types.Object{}
+	pkgInfo := program.WithPkgInfoContains(scope.Pos())
+
+	if pkgInfo != nil {
+		for id, def := range pkgInfo.Defs {
+			if scope.Contains(id.Pos()) {
+				defs[id] = def
+			}
+		}
+	}
+
+	return defs
+}
+
 func (program *Program) UsesInScope(scope *types.Scope) map[*ast.Ident]types.Object {
 	uses := map[*ast.Ident]types.Object{}
 	pkgInfo := program.WithPkgInfoContains(scope.Pos())
@@ -248,6 +263,21 @@ func (program *Program) UsesInScope(scope *types.Scope) map[*ast.Ident]types.Obj
 	}
 
 	return uses
+}
+
+func (program *Program) SelectionsInScope(scope *types.Scope) map[*ast.SelectorExpr]*types.Selection {
+	selections := map[*ast.SelectorExpr]*types.Selection{}
+	pkgInfo := program.WithPkgInfoContains(scope.Pos())
+
+	if pkgInfo != nil {
+		for selectorExpr, selection := range pkgInfo.Selections {
+			if scope.Contains(selectorExpr.Pos()) {
+				selections[selectorExpr] = selection
+			}
+		}
+	}
+
+	return selections
 }
 
 type Option struct {
@@ -345,7 +375,7 @@ func getCommentsFor(file ast.Node, targetNode ast.Node, commentMap ast.CommentMa
 		if comments, ok := commentMap[targetNode]; ok {
 			commentList = append(commentList, comments...)
 		}
-	// Node has comments
+		// Node has comments
 	case *ast.File, *ast.Field, ast.Stmt, ast.Decl:
 		if comments, ok := commentMap[targetNode]; ok {
 			commentList = comments
