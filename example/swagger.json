@@ -311,6 +311,137 @@
           }
         }
       }
+    },
+    "/user2/test/{name}/0": {
+      "get": {
+        "description": "Others\nheheheh",
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "test2"
+        ],
+        "summary": "Summary",
+        "operationId": "Test2",
+        "parameters": [
+          {
+            "maximum": 20,
+            "exclusiveMaximum": true,
+            "minimum": -1,
+            "type": "integer",
+            "format": "int8",
+            "default": "10",
+            "x-go-name": "Size",
+            "x-go-validate": "@int8[-1,20)",
+            "description": "分页大小",
+            "name": "size",
+            "in": "query"
+          },
+          {
+            "maximum": 100,
+            "minimum": -1,
+            "type": "integer",
+            "format": "int8",
+            "default": "0",
+            "x-go-name": "Offset",
+            "x-go-validate": "@int8[-1,100]",
+            "description": "分页偏移",
+            "name": "offset",
+            "in": "query"
+          },
+          {
+            "type": "array",
+            "items": {
+              "maximum": 100,
+              "minimum": -1,
+              "type": "integer",
+              "format": "int8"
+            },
+            "collectionFormat": "csv",
+            "x-go-name": "Ids",
+            "description": "ids",
+            "name": "ids",
+            "in": "query",
+            "required": true
+          },
+          {
+            "type": "integer",
+            "format": "int8",
+            "x-go-name": "Id",
+            "name": "id",
+            "in": "query",
+            "required": true
+          },
+          {
+            "type": "string",
+            "x-go-name": "Name",
+            "name": "name",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "boolean",
+            "x-go-name": "Is",
+            "x-go-named": "github.com/morlay/gin-swagger/example/test2.Bool",
+            "name": "is",
+            "in": "path",
+            "required": true
+          },
+          {
+            "enum": [
+              "ONE"
+            ],
+            "type": "string",
+            "x-enum-labels": [
+              "one",
+              "two",
+              "three",
+              "four"
+            ],
+            "x-enum-vals": [
+              1,
+              2,
+              3,
+              105
+            ],
+            "x-enum-values": [
+              "ONE",
+              "TWO",
+              "THREE",
+              "FOUR"
+            ],
+            "x-go-name": "State",
+            "x-go-named": "github.com/morlay/gin-swagger/example/test2.State",
+            "x-go-validate": "@string{ONE}",
+            "name": "state",
+            "in": "query",
+            "required": true
+          },
+          {
+            "type": "string",
+            "format": "date-time",
+            "x-go-name": "StartTime",
+            "x-go-named": "github.com/morlay/gin-swagger/example/test2.Date",
+            "name": "startTime",
+            "in": "query",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "正常返回",
+            "schema": {
+              "$ref": "#/definitions/Some"
+            }
+          },
+          "400": {
+            "description": "@httpError(400002001,HTTP_ERROR__TEST,\"Summary\",\"\",true);",
+            "schema": {
+              "$ref": "#/definitions/GeneralError"
+            }
+          }
+        }
+      }
     }
   },
   "definitions": {

@@ -29,9 +29,9 @@ func main() {
 
 	SetupRoutes(router)
 
-	//userRouter := router.Group("/user2")
+	userRouter := router.Group("/user2")
 
-	//test.SetupUserRoutes(userRouter)
+	test.SetupUserRoutes(userRouter)
 
 	router.Run(":8080")
 }
