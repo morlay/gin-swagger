@@ -10,6 +10,8 @@ import (
 
 	"sort"
 
+	"go/build"
+
 	"github.com/morlay/gin-swagger/codegen"
 	"github.com/morlay/gin-swagger/program"
 )
@@ -109,7 +111,9 @@ func (g *ErrorGenerator) Output() {
 
 			sort.Sort(ByHttpErrorValue(sortedHttpErrorValues))
 
-			path, _ := filepath.Rel(cwd, filepath.Join(os.Getenv("GOPATH"), "src", pkg.Path()))
+			p, _ := build.Default.Import(pkg.Path(), "", build.FindOnly)
+
+			path, _ := filepath.Rel(cwd, p.Dir)
 
 			importedErrorType, errorType := program.ParsePkgExpose(g.ErrorType)
 
