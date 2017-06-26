@@ -97,37 +97,6 @@ func (c ClientService) Test2(req Test2Request) (resp Test2Response, err error) {
 	return
 }
 
-type Test2Request struct {
-	// 分页大小
-	Size int8 `json:"size" in:"query" default:"10" validate:"@int8[-1,20)"`
-	// 分页偏移
-	Offset int8 `json:"offset" in:"query" default:"0" validate:"@int8[-1,100]"`
-	// ids
-	Ids string `json:"ids" in:"query"`
-	//
-	Id int8 `json:"id" in:"query"`
-	//
-	Name string `json:"name" in:"path"`
-	//
-	Is test2.Bool `json:"is" in:"path"`
-	//
-	State test2.State `json:"state,string" in:"query" validate:"@string{ONE}"`
-	//
-	StartTime test2.Date `json:"startTime,string" in:"query"`
-}
-
-type Test2Response struct {
-	//
-	Body Some `json:"body"`
-}
-
-// @httpError(400002001,HTTP_ERROR__TEST,"Summary","",true);
-// 正常返回
-func (c ClientService) Test2(req Test2Request) (resp Test2Response, err error) {
-	err = c.DoRequest("ClientService.Test2", "GET", "/user2/test/:name/0", req, &resp)
-	return
-}
-
 type Test3Request struct {
 	//
 	Authorization string `json:"authorization" in:"header"`
