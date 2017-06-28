@@ -637,15 +637,32 @@ func (scanner *Scanner) patchPathWithZero(swaggerPath string, operation *spec.Op
 
 func patchOperationConsumes(operation *spec.Operation) {
 	var isParameterHasBodySchema = false
+	var isParameterHasFormMultiple = false
+	var isParameterHasFormData = false
 
 	for _, parameter := range operation.Parameters {
 		if parameter.In == "body" && parameter.Schema != nil {
 			isParameterHasBodySchema = true
 		}
+
+		if parameter.In == "formData" {
+			isParameterHasFormData = true
+			if parameter.Type == "file" {
+				isParameterHasFormMultiple = true
+			}
+		}
 	}
 
 	if isParameterHasBodySchema {
-		operation.WithConsumes(gin.MIMEJSON)
+		operation.Consumes = []string{gin.MIMEJSON}
+	}
+
+	if isParameterHasFormData {
+		operation.Consumes = []string{gin.MIMEPOSTForm}
+	}
+
+	if isParameterHasFormMultiple {
+		operation.Consumes = []string{gin.MIMEMultipartPOSTForm}
 	}
 }
 

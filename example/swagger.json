@@ -3,6 +3,9 @@
   "paths": {
     "/": {
       "post": {
+        "consumes": [
+          "multipart/form-data"
+        ],
         "produces": [
           "application/json"
         ],
