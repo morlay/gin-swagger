@@ -57,13 +57,6 @@ type ItemData struct {
 	State test2.State `json:"state"`
 }
 
-type ReqBody struct {
-	//
-	Name string `json:"name"`
-	//
-	UserName string `json:"username"`
-}
-
 type Some struct {
 	//
 	Data []ItemData `json:"data"`

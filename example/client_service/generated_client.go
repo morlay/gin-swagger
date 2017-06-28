@@ -1,6 +1,7 @@
 package client_service
 
 import (
+	"mime/multipart"
 	"time"
 
 	"github.com/morlay/gin-swagger/example/test2"
@@ -47,7 +48,7 @@ type TestRequest struct {
 	//
 	State test2.State `json:"state,string" in:"query" validate:"@string{TWO}"`
 	//
-	Body ReqBody `json:"body" in:"body"`
+	File multipart.FileHeader `json:"file" in:"formData"`
 }
 
 type TestResponse struct {

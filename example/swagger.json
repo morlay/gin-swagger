@@ -3,9 +3,6 @@
   "paths": {
     "/": {
       "post": {
-        "consumes": [
-          "application/json"
-        ],
         "produces": [
           "application/json"
         ],
@@ -79,13 +76,12 @@
             "required": true
           },
           {
-            "type": "object",
-            "x-go-name": "Body",
-            "name": "body",
-            "in": "body",
-            "schema": {
-              "$ref": "#/definitions/ReqBody"
-            }
+            "type": "file",
+            "x-go-name": "File",
+            "x-go-named": "mime/multipart.FileHeader",
+            "name": "file",
+            "in": "formData",
+            "required": true
           }
         ],
         "responses": {
@@ -492,24 +488,6 @@
           ],
           "x-go-name": "State",
           "x-go-named": "github.com/morlay/gin-swagger/example/test2.State"
-        }
-      }
-    },
-    "ReqBody": {
-      "description": "ReqBody",
-      "type": "object",
-      "required": [
-        "name",
-        "username"
-      ],
-      "properties": {
-        "name": {
-          "type": "string",
-          "x-go-name": "Name"
-        },
-        "username": {
-          "type": "string",
-          "x-go-name": "UserName"
         }
       }
     },

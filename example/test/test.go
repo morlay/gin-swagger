@@ -6,6 +6,8 @@ import (
 
 	"gopkg.in/gin-gonic/gin.v1"
 
+	"mime/multipart"
+
 	"github.com/morlay/gin-swagger/example/from_request"
 	"github.com/morlay/gin-swagger/example/globals"
 	"github.com/morlay/gin-swagger/example/test2"
@@ -31,9 +33,9 @@ type ReqBody struct {
 type SomeReq struct {
 	// Body
 	test2.Pager
-	StartTime test2.Date  `in:"query" json:"startTime"`
-	State     test2.State `in:"query" json:"state" validate:"@string{TWO}"`
-	Body      ReqBody
+	StartTime test2.Date           `in:"query" json:"startTime"`
+	State     test2.State          `in:"query" json:"state" validate:"@string{TWO}"`
+	File      multipart.FileHeader `in:"formData" json:"file"`
 }
 
 // @httpError(40000200,HTTP_ERROR_UNKNOWN,"未定义","",false);

@@ -314,8 +314,12 @@ func (scanner *Scanner) writeParameter(operation *spec.Operation, t types.Type) 
 			if field.Anonymous() {
 				scanner.writeParameter(operation, program.Indirect(fieldType))
 			} else {
-				location := structFieldTags.Get("in")
+				locationTag := structFieldTags.Get("in")
 				name, flags := getJSONNameAndFlags(structFieldTags.Get("json"))
+
+				locations := strings.Split(locationTag, ",")
+
+				location := locations[0]
 
 				if location == "" {
 					if fieldName == "Body" {
@@ -338,6 +342,12 @@ func (scanner *Scanner) writeParameter(operation *spec.Operation, t types.Type) 
 
 					if location == "body" {
 						param = scanner.getBodyParameter(fieldType)
+					} else if location == "formData" && fieldType.String() == "mime/multipart.FileHeader" {
+						param.Typed("file", "")
+						param.WithLocation(location)
+						param.Named(name)
+						param.AddExtension("x-go-named", fieldType.String())
+						param.AsRequired()
 					} else {
 						param = scanner.getNonBodyParameter(name, location, structFieldTags, fieldType)
 						if len(flags) > 0 {
