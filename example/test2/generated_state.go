@@ -23,6 +23,22 @@ func (v State) String() string {
 	return "UNKNOWN"
 }
 
+func (v State) Label() string {
+	switch v {
+	case STATE_UNKNOWN:
+		return ""
+	case STATE__ONE:
+		return "one"
+	case STATE__TWO:
+		return "two"
+	case STATE__THREE:
+		return "three"
+	case STATE__FOUR:
+		return "four"
+	}
+	return "UNKNOWN"
+}
+
 func ParseStateFromString(s string) (State, error) {
 	switch s {
 	case "":

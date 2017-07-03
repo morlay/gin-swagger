@@ -146,6 +146,7 @@ func (g *EnumGenerator) Output(src ...string) {
 			codegen.DeclImports("errors", "strings"),
 			codegen.DeclVar("Invalid"+enum.Name, `errors.New("invalid `+name+`")`),
 			ParseEnumStringify(enum),
+			ParseEnumLabel(enum),
 			ParseEnumParser(enum),
 			ParseEnumJSONMarshal(enum),
 		}
@@ -199,6 +200,31 @@ func ParseEnumStringify(enum Enum) string {
 	for _, option := range enum.Values {
 		lines = append(lines, codegen.DeclCase(prefix+"__"+option.Value))
 		lines = append(lines, codegen.DeclReturn(codegen.WithQuotes(option.Value)))
+	}
+
+	lines = append(lines, `}
+	return "UNKNOWN"
+	}`)
+
+	return strings.Join(lines, "\n")
+}
+
+func ParseEnumLabel(enum Enum) string {
+	firstLine := codegen.TemplateRender(`func (v {{ .Name }}) Label() string {
+	switch v {`)(enum)
+
+	var lines = []string{
+		firstLine,
+	}
+
+	prefix := codegen.ToUpperSnakeCase(enum.Name)
+
+	lines = append(lines, codegen.DeclCase(prefix+"_UNKNOWN"))
+	lines = append(lines, codegen.DeclReturn(codegen.WithQuotes("")))
+
+	for _, option := range enum.Values {
+		lines = append(lines, codegen.DeclCase(prefix+"__"+option.Value))
+		lines = append(lines, codegen.DeclReturn(codegen.WithQuotes(option.Label)))
 	}
 
 	lines = append(lines, `}
