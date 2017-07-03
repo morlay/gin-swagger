@@ -177,6 +177,11 @@ func (scanner *Scanner) defineSchemaBy(tpe types.Type) spec.Schema {
 
 		for i := 0; i < structType.NumFields(); i++ {
 			field := structType.Field(i)
+
+			if !field.Exported() {
+				continue
+			}
+
 			fieldAst := structTypeAst.Fields.List[i]
 			structFieldType := field.Type()
 			structFieldTags := reflect.StructTag(structType.Tag(i))
