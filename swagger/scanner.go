@@ -306,6 +306,11 @@ func (scanner *Scanner) writeParameter(operation *spec.Operation, t types.Type) 
 
 		for i := 0; i < st.NumFields(); i++ {
 			var field = st.Field(i)
+
+			if !field.Exported() {
+				continue
+			}
+
 			var astField = structType.Fields.List[i]
 			var structFieldTags = reflect.StructTag(st.Tag(i))
 			var fieldType = field.Type()
