@@ -37,6 +37,12 @@ func (c ClientService) GetUser(req GetUserRequest) (resp GetUserResponse, err er
 	err = c.DoRequest("ClientService.GetUser", "GET", "/auto", req, &resp)
 	return
 }
+func (c *ClientService) InjectGetUser(resp GetUserResponse, err error) {
+	c.Inject("ClientService.GetUser", resp, err)
+}
+func (c *ClientService) ResetGetUser() {
+	c.Reset("ClientService.GetUser")
+}
 
 type TestRequest struct {
 	// 分页大小
@@ -62,6 +68,12 @@ type TestResponse struct {
 func (c ClientService) Test(req TestRequest) (resp TestResponse, err error) {
 	err = c.DoRequest("ClientService.Test", "POST", "/", req, &resp)
 	return
+}
+func (c *ClientService) InjectTest(resp TestResponse, err error) {
+	c.Inject("ClientService.Test", resp, err)
+}
+func (c *ClientService) ResetTest() {
+	c.Reset("ClientService.Test")
 }
 
 type Test2Request struct {
@@ -97,6 +109,12 @@ func (c ClientService) Test2(req Test2Request) (resp Test2Response, err error) {
 	err = c.DoRequest("ClientService.Test2", "GET", "/user/test/:name/0", req, &resp)
 	return
 }
+func (c *ClientService) InjectTest2(resp Test2Response, err error) {
+	c.Inject("ClientService.Test2", resp, err)
+}
+func (c *ClientService) ResetTest2() {
+	c.Reset("ClientService.Test2")
+}
 
 type Test3Request struct {
 	//
@@ -112,4 +130,10 @@ type Test3Response struct {
 func (c ClientService) Test3(req Test3Request) (resp Test3Response, err error) {
 	err = c.DoRequest("ClientService.Test3", "GET", "/test", req, &resp)
 	return
+}
+func (c *ClientService) InjectTest3(resp Test3Response, err error) {
+	c.Inject("ClientService.Test3", resp, err)
+}
+func (c *ClientService) ResetTest3() {
+	c.Reset("ClientService.Test3")
 }

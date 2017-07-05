@@ -111,7 +111,8 @@ func (c *ClientInfo) AddOperation(method, path string, operation *spec.Operation
 }
 
 func (c *ClientInfo) RenderOperations() (string, []string) {
-	prefix := codegen.TemplateRender("func (c {{ .Name }}) ")(c)
+	receiver := codegen.TemplateRender("func (c {{ .Name }}) ")(c)
+	pointerReceiver := codegen.TemplateRender("func (c *{{ .Name }}) ")(c)
 
 	methods := []string{}
 	deps := []string{}
@@ -134,7 +135,9 @@ func (c *ClientInfo) RenderOperations() (string, []string) {
 				o.RenderReqDecl(),
 				o.RenderRespDecl(),
 				strings.Join(descList, "\n"),
-				prefix+o.RenderOperationMethod(),
+				receiver+o.RenderOperationMethod(),
+				pointerReceiver+o.RenderOperationMockInject(),
+				pointerReceiver+o.RenderOperationMockInjectReset(),
 			))
 
 		deps = append(deps, o.GetDeps()...)
@@ -279,6 +282,18 @@ func (op *OperationInfo) RenderOperationMethod() string {
 	return codegen.TemplateRender(`{{ .ID }}() (resp {{ .ID }}Response, err error) {
 		err = c.DoRequest("{{ .ServiceName }}.{{ .ID }}", "{{ .Method  }}", "{{ .Path }}", nil, &resp)
 		return
+	}`)(op)
+}
+
+func (op *OperationInfo) RenderOperationMockInject() string {
+	return codegen.TemplateRender(`Inject{{ .ID }}(resp {{ .ID }}Response, err error) {
+		c.Inject("{{ .ServiceName }}.{{ .ID }}", resp, err)
+	}`)(op)
+}
+
+func (op *OperationInfo) RenderOperationMockInjectReset() string {
+	return codegen.TemplateRender(`Reset{{ .ID }}() {
+		c.Reset("{{ .ServiceName }}.{{ .ID }}")
 	}`)(op)
 }
 
