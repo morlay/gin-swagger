@@ -2,7 +2,7 @@ package test
 
 import (
 	"github.com/morlay/gin-swagger/example/test2"
-	"gopkg.in/gin-gonic/gin.v1"
+	"github.com/gin-gonic/gin"
 )
 
 func SetupUserRoutes(userRouter *gin.RouterGroup) {

@@ -3,7 +3,7 @@
 package main
 
 import (
-	"gopkg.in/gin-gonic/gin.v1"
+	"github.com/gin-gonic/gin"
 
 	"github.com/morlay/gin-swagger/example/from_request"
 	"github.com/morlay/gin-swagger/example/test"

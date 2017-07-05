@@ -1,11 +1,15 @@
-package codegen
+package codegen_test
 
 import (
-	"fmt"
 	"testing"
+
+	"github.com/morlay/gin-swagger/codegen"
+	"github.com/stretchr/testify/assert"
 )
 
-func TestPrinter(t *testing.T) {
-	fmt.Println(DeclPackage("some_package"))
-	fmt.Println(DeclType("Test", "int"))
+func TestPrinter(tt *testing.T) {
+	t := assert.New(tt)
+
+	t.Equal("package some_package\n", codegen.DeclPackage("some_package"))
+	t.Equal("type Test int\n", codegen.DeclType("Test", "int"))
 }

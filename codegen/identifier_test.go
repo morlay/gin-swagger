@@ -1,50 +1,61 @@
-package codegen
+package codegen_test
 
 import (
 	"testing"
 
+	"github.com/morlay/gin-swagger/codegen"
 	"github.com/stretchr/testify/assert"
 )
 
-func TestSplitToWords(t *testing.T) {
-	assert.Equal(t, []string{}, SplitToWords(""))
-	assert.Equal(t, []string{"lowercase"}, SplitToWords("lowercase"))
-	assert.Equal(t, []string{"Class"}, SplitToWords("Class"))
-	assert.Equal(t, []string{"My", "Class"}, SplitToWords("MyClass"))
-	assert.Equal(t, []string{"My", "C"}, SplitToWords("MyC"))
-	assert.Equal(t, []string{"HTML"}, SplitToWords("HTML"))
-	assert.Equal(t, []string{"PDF", "Loader"}, SplitToWords("PDFLoader"))
-	assert.Equal(t, []string{"A", "String"}, SplitToWords("AString"))
-	assert.Equal(t, []string{"Simple", "XML", "Parser"}, SplitToWords("SimpleXMLParser"))
-	assert.Equal(t, []string{"vim", "RPC", "Plugin"}, SplitToWords("vimRPCPlugin"))
-	assert.Equal(t, []string{"GL", "11", "Version"}, SplitToWords("GL11Version"))
-	assert.Equal(t, []string{"99", "Bottles"}, SplitToWords("99Bottles"))
-	assert.Equal(t, []string{"May", "5"}, SplitToWords("May5"))
-	assert.Equal(t, []string{"BFG", "9000"}, SplitToWords("BFG9000"))
-	assert.Equal(t, []string{"Böse", "Überraschung"}, SplitToWords("BöseÜberraschung"))
-	assert.Equal(t, []string{"Two", "spaces"}, SplitToWords("Two  spaces"))
-	assert.Equal(t, []string{"BadUTF8\xe2\xe2\xa1"}, SplitToWords("BadUTF8\xe2\xe2\xa1"))
-	assert.Equal(t, []string{"snake", "case"}, SplitToWords("snake_case"))
-	assert.Equal(t, []string{"snake", "case"}, SplitToWords("snake_ case"))
+func TestSplitToWords(tt *testing.T) {
+	t := assert.New(tt)
+
+	t.Equal([]string{}, codegen.SplitToWords(""))
+	t.Equal([]string{"lowercase"}, codegen.SplitToWords("lowercase"))
+	t.Equal([]string{"Class"}, codegen.SplitToWords("Class"))
+	t.Equal([]string{"My", "Class"}, codegen.SplitToWords("MyClass"))
+	t.Equal([]string{"My", "C"}, codegen.SplitToWords("MyC"))
+	t.Equal([]string{"HTML"}, codegen.SplitToWords("HTML"))
+	t.Equal([]string{"PDF", "Loader"}, codegen.SplitToWords("PDFLoader"))
+	t.Equal([]string{"A", "String"}, codegen.SplitToWords("AString"))
+	t.Equal([]string{"Simple", "XML", "Parser"}, codegen.SplitToWords("SimpleXMLParser"))
+	t.Equal([]string{"vim", "RPC", "Plugin"}, codegen.SplitToWords("vimRPCPlugin"))
+	t.Equal([]string{"GL", "11", "Version"}, codegen.SplitToWords("GL11Version"))
+	t.Equal([]string{"99", "Bottles"}, codegen.SplitToWords("99Bottles"))
+	t.Equal([]string{"May", "5"}, codegen.SplitToWords("May5"))
+	t.Equal([]string{"BFG", "9000"}, codegen.SplitToWords("BFG9000"))
+	t.Equal([]string{"Böse", "Überraschung"}, codegen.SplitToWords("BöseÜberraschung"))
+	t.Equal([]string{"Two", "spaces"}, codegen.SplitToWords("Two  spaces"))
+	t.Equal([]string{"BadUTF8\xe2\xe2\xa1"}, codegen.SplitToWords("BadUTF8\xe2\xe2\xa1"))
+	t.Equal([]string{"snake", "case"}, codegen.SplitToWords("snake_case"))
+	t.Equal([]string{"snake", "case"}, codegen.SplitToWords("snake_ case"))
 }
 
-func TestToUpperCamelCase(t *testing.T) {
-	assert.Equal(t, "SnakeCase", ToUpperCamelCase("snake_case"))
-	assert.Equal(t, "IDCase", ToUpperCamelCase("id_case"))
+func TestToUpperCamelCase(tt *testing.T) {
+	t := assert.New(tt)
+
+	t.Equal("SnakeCase", codegen.ToUpperCamelCase("snake_case"))
+	t.Equal("IDCase", codegen.ToUpperCamelCase("id_case"))
 }
 
-func TestToLowerCamelCase(t *testing.T) {
-	assert.Equal(t, "snakeCase", ToLowerCamelCase("snake_case"))
-	assert.Equal(t, "idCase", ToLowerCamelCase("id_case"))
+func TestToLowerCamelCase(tt *testing.T) {
+	t := assert.New(tt)
+
+	t.Equal("snakeCase", codegen.ToLowerCamelCase("snake_case"))
+	t.Equal("idCase", codegen.ToLowerCamelCase("id_case"))
 }
 
-func TestToUpperSnakeCase(t *testing.T) {
-	assert.Equal(t, "SNAKE_CASE", ToUpperSnakeCase("snakeCase"))
-	assert.Equal(t, "ID_CASE", ToUpperSnakeCase("idCase"))
+func TestToUpperSnakeCase(tt *testing.T) {
+	t := assert.New(tt)
+
+	t.Equal("SNAKE_CASE", codegen.ToUpperSnakeCase("snakeCase"))
+	t.Equal("ID_CASE", codegen.ToUpperSnakeCase("idCase"))
 }
 
-func TestToLowerSnakeCase(t *testing.T) {
-	assert.Equal(t, "snake_case", ToLowerSnakeCase("snakeCase"))
-	assert.Equal(t, "id_case", ToLowerSnakeCase("idCase"))
-	assert.Equal(t, "i7_case", ToLowerSnakeCase("i7Case"))
+func TestToLowerSnakeCase(tt *testing.T) {
+	t := assert.New(tt)
+
+	t.Equal("snake_case", codegen.ToLowerSnakeCase("snakeCase"))
+	t.Equal("id_case", codegen.ToLowerSnakeCase("idCase"))
+	t.Equal("i7_case", codegen.ToLowerSnakeCase("i7Case"))
 }

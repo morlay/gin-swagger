@@ -13,7 +13,7 @@ import (
 
 	"github.com/go-openapi/spec"
 	"github.com/logrusorgru/aurora"
-	"gopkg.in/gin-gonic/gin.v1"
+	"github.com/gin-gonic/gin"
 
 	"github.com/morlay/gin-swagger/codegen"
 	"github.com/morlay/gin-swagger/http_error_code"

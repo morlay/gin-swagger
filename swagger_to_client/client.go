@@ -5,9 +5,8 @@ import (
 	"sort"
 	"strings"
 
+	"github.com/gin-gonic/gin"
 	"github.com/go-openapi/spec"
-	"gopkg.in/gin-gonic/gin.v1"
-
 	"github.com/morlay/gin-swagger/codegen"
 )
 
