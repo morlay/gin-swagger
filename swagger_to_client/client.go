@@ -210,9 +210,17 @@ func (op *OperationInfo) RenderReqDecl() string {
 			} else {
 				schema := spec.Schema{}
 				schema.Typed(parameter.Type, parameter.Format)
+				if parameter.Items != nil {
+					itemSchema := spec.Schema{}
+					itemSchema.Typed(parameter.Items.Type, parameter.Items.Format)
+					schema.Items = &spec.SchemaOrArray{
+						Schema: &itemSchema,
+					}
+				}
 				schema.Extensions = parameter.Extensions
 
 				goType, subDeps = GetTypeFromSchema(schema)
+
 				op.addDeps(subDeps...)
 			}
 

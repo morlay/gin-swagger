@@ -72,7 +72,7 @@ type Test2Request struct {
 	// 分页偏移
 	Offset int8 `json:"offset" in:"query" default:"0" validate:"@int8[-1,100]"`
 	// ids
-	Ids string `json:"ids" in:"query"`
+	Ids []int8 `json:"ids" in:"query"`
 	//
 	Id int8 `json:"id" in:"query"`
 	//
