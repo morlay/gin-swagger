@@ -135,6 +135,10 @@ func IsTypeName(tpe types.Type, typeName string) bool {
 
 func ParsePkgExpose(pkgExpose string) (string, string) {
 	pkgPaths := strings.Split(pkgExpose, ".")
+	if len(pkgPaths) == 1 {
+		return "", pkgExpose
+	}
+
 	imported := strings.Join(pkgPaths[:len(pkgPaths)-1], ".")
 	paths := strings.Split(imported, "/")
 

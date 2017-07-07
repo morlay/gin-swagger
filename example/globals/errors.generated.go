@@ -66,13 +66,10 @@ func (c HttpErrorCode) CanBeErrTalk() bool {
 	switch c {
 	case HTTP_ERROR_UNKNOWN:
 		return false
-
 	case HTTP_ERROR__TEST:
 		return true
-
 	case HTTP_ERROR__TEST2:
 		return true
-
 	}
 	return false
 }

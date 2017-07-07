@@ -117,9 +117,18 @@ func (g *ErrorGenerator) Output() {
 
 			importedErrorType, errorType := program.ParsePkgExpose(g.ErrorType)
 
+			var imports = []string{
+				"strconv",
+				"fmt",
+			}
+
+			if importedErrorType != "" {
+				imports = append(imports, importedErrorType)
+			}
+
 			blocks := []string{
 				codegen.DeclPackage(pkg.Name()),
-				codegen.DeclImports("strconv", "fmt", importedErrorType),
+				codegen.DeclImports(imports...),
 				ParseOthers(errorType),
 				ParseKeyParser(sortedHttpErrorValues),
 				ParseMsgParser(sortedHttpErrorValues),
@@ -193,7 +202,7 @@ func ParseErrorTalkParser(httpErrorValues []HttpErrorValue) string {
 
 	for _, httpErrorValue := range httpErrorValues {
 		lines = append(lines, codegen.DeclCase(httpErrorValue.Name))
-		lines = append(lines, codegen.DeclReturn(fmt.Sprintln(httpErrorValue.CanBeErrTalk)))
+		lines = append(lines, codegen.DeclReturn(strconv.FormatBool(httpErrorValue.CanBeErrTalk)))
 	}
 
 	lines = append(lines, "}")
