@@ -18,6 +18,7 @@ func (c HttpErrorCode) Status() int {
 
 func (c HttpErrorCode) ToError() *httplib.GeneralError {
 	return &httplib.GeneralError{
+		Key:            c.Key(),
 		Code:           c.Code(),
 		Msg:            c.Msg(),
 		Desc:           c.Desc(),
@@ -25,8 +26,16 @@ func (c HttpErrorCode) ToError() *httplib.GeneralError {
 	}
 }
 
-func (c HttpErrorCode) ToResp() (int, *httplib.GeneralError) {
-	return c.Status(), c.ToError()
+func (c HttpErrorCode) Key() string {
+	switch c {
+	case HTTP_ERROR_UNKNOWN:
+		return "HTTP_ERROR_UNKNOWN"
+	case HTTP_ERROR__TEST:
+		return "HTTP_ERROR__TEST"
+	case HTTP_ERROR__TEST2:
+		return "HTTP_ERROR__TEST2"
+	}
+	return ""
 }
 
 func (c HttpErrorCode) Msg() string {

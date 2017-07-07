@@ -64,14 +64,14 @@ type AuthReq struct {
 
 func (req AuthReq) Handle(c *gin.Context) {
 	if req.Authorization == "" {
-		c.JSON(globals.HTTP_ERROR_UNKNOWN.ToResp())
+		c.JSON(globals.HTTP_ERROR_UNKNOWN.Status(), globals.HTTP_ERROR_UNKNOWN.ToError())
 	}
 }
 
 func AuthMiddleware(c *gin.Context) {
 	var req = AuthReq{}
 	if req.Authorization == "" {
-		c.JSON(globals.HTTP_ERROR_UNKNOWN.ToResp())
+		c.JSON(globals.HTTP_ERROR_UNKNOWN.Status(), globals.HTTP_ERROR_UNKNOWN.ToError())
 	}
 }
 

@@ -9,6 +9,8 @@ import (
 	"path"
 	"path/filepath"
 
+	"strings"
+
 	"github.com/logrusorgru/aurora"
 )
 
@@ -55,10 +57,18 @@ func WriteFile(filename string, content string) {
 	log.Printf(aurora.Sprintf(aurora.Green("Generated file to %s(%d KiB, %d B)"), aurora.Blue(path.Join(pwd, filename)), n3/1024, n3))
 }
 
-func WriteGoFile(path string, content string) {
-	WriteFile(path, content)
-	exec.Command("gofmt", "-w", path).CombinedOutput()
-	exec.Command("goimports", "-w", path).CombinedOutput()
+func WriteGoFile(p string, content string) {
+	WriteFile(p, content)
+	exec.Command("gofmt", "-w", p).CombinedOutput()
+	exec.Command("goimports", "-w", p).CombinedOutput()
+}
+
+func forceRenameGoGeneratedGo(p string) string {
+	return strings.Replace(p, path.Ext(p), ".generated.go", -1)
+}
+
+func GenerateGoFile(p string, content string) {
+	WriteGoFile(forceRenameGoGeneratedGo(p), content)
 }
 
 func WriteJSONFile(path string, data interface{}) {

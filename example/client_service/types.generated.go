@@ -33,6 +33,8 @@ type GeneralError struct {
 	ErrorFields []ErrorFieldModel `json:"errorFields"`
 	// Request Id
 	Id string `json:"id"`
+	// 详细描述
+	Key string `json:"key"`
 	// 错误信息
 	Msg string `json:"msg"`
 	// 错误溯源

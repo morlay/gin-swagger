@@ -366,6 +366,7 @@
     "GeneralError": {
       "type": "object",
       "required": [
+        "key",
         "code",
         "msg",
         "desc",
@@ -403,6 +404,11 @@
           "description": "Request Id",
           "type": "string",
           "x-go-name": "Id"
+        },
+        "key": {
+          "description": "详细描述",
+          "type": "string",
+          "x-go-name": "Key"
         },
         "msg": {
           "description": "错误信息",

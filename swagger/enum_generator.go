@@ -127,8 +127,8 @@ func (g *EnumGenerator) Output(src ...string) {
 		ParseGetEnumFunc(),
 		ParseInitEnumFunc(g.Enums),
 	}
-	codegen.WriteGoFile(
-		codegen.JoinWithSlash(relPath, "generated_enum_map.go"),
+	codegen.GenerateGoFile(
+		codegen.JoinWithSlash(relPath, "enum_map.go"),
 		strings.Join(initBlocks, "\n\n"),
 	)
 
@@ -151,8 +151,8 @@ func (g *EnumGenerator) Output(src ...string) {
 			ParseEnumJSONMarshal(enum),
 		}
 
-		codegen.WriteGoFile(
-			codegen.JoinWithSlash(relPath, codegen.ToLowerSnakeCase("generated_"+enum.Name)+".go"),
+		codegen.GenerateGoFile(
+			codegen.JoinWithSlash(relPath, codegen.ToLowerSnakeCase(enum.Name)+".go"),
 			strings.Join(blocks, "\n\n"),
 		)
 	}

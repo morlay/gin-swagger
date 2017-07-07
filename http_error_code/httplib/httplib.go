@@ -13,6 +13,8 @@ type ErrorFieldModel struct {
 
 type GeneralError struct {
 	// 详细描述
+	Key string `json:"key"`
+	// 详细描述
 	Code int32 `json:"code"`
 	// 错误信息
 	Msg string `json:"msg"`
@@ -28,16 +30,16 @@ type GeneralError struct {
 	Id string `json:"id"`
 }
 
-func (g GeneralError) AddErrorField(field string, in string, msg string) GeneralError {
+func (g GeneralError) AddErrorField(field string, in string, msg string) *GeneralError {
 	g.ErrorFields = append(g.ErrorFields, ErrorFieldModel{
 		Field: field,
 		In:    in,
 		Msg:   msg,
 	})
-	return g
+	return &g
 }
 
-func (g GeneralError) AppendSource(s string) GeneralError {
+func (g GeneralError) AppendSource(s string) *GeneralError {
 	g.Source = append(g.Source, s)
-	return g
+	return &g
 }

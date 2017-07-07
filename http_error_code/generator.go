@@ -121,16 +121,14 @@ func (g *ErrorGenerator) Output() {
 				codegen.DeclPackage(pkg.Name()),
 				codegen.DeclImports("strconv", "fmt", importedErrorType),
 				ParseOthers(errorType),
+				ParseKeyParser(sortedHttpErrorValues),
 				ParseMsgParser(sortedHttpErrorValues),
 				ParseDescParser(sortedHttpErrorValues),
 				ParseErrorTalkParser(sortedHttpErrorValues),
 			}
 
-			codegen.WriteGoFile(
-				codegen.JoinWithSlash(
-					path,
-					"generated_errors.go",
-				),
+			codegen.GenerateGoFile(
+				codegen.JoinWithSlash(path, "errors.go"),
 				strings.Join(blocks, "\n\n"),
 			)
 		}
@@ -146,6 +144,24 @@ func ParseMsgParser(httpErrorValues []HttpErrorValue) string {
 	for _, httpErrorValue := range httpErrorValues {
 		lines = append(lines, codegen.DeclCase(httpErrorValue.Name))
 		lines = append(lines, codegen.DeclReturn(strconv.Quote(httpErrorValue.Msg)))
+	}
+
+	lines = append(lines, "}")
+	lines = append(lines, codegen.DeclReturn(strconv.Quote("")))
+	lines = append(lines, "}")
+
+	return strings.Join(lines, "\n")
+}
+
+func ParseKeyParser(httpErrorValues []HttpErrorValue) string {
+	firstLine := `func (c ` + HttpErrorVarName + `) Key() string {
+	switch (c) {`
+
+	lines := []string{firstLine}
+
+	for _, httpErrorValue := range httpErrorValues {
+		lines = append(lines, codegen.DeclCase(httpErrorValue.Name))
+		lines = append(lines, codegen.DeclReturn(strconv.Quote(httpErrorValue.Name)))
 	}
 
 	lines = append(lines, "}")
@@ -200,15 +216,12 @@ func (c ` + HttpErrorVarName + `) Status() int {
 
 func (c ` + HttpErrorVarName + `) ToError() *` + errorTypeSelector + `{
 	return &` + errorTypeSelector + `{
+		Key:            c.Key(),
 		Code:           c.Code(),
 		Msg:            c.Msg(),
 		Desc:           c.Desc(),
 		CanBeErrorTalk: c.CanBeErrTalk(),
 	}
-}
-
-func (c ` + HttpErrorVarName + `) ToResp() (int, *` + errorTypeSelector + `) {
-	return c.Status(), c.ToError()
 }
 `
 }

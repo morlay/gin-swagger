@@ -70,6 +70,6 @@ func Test2(c *gin.Context) {
 			Name:  uint64(req.Size),
 		})
 	} else {
-		c.JSON(globals.HTTP_ERROR__TEST.ToResp())
+		c.JSON(globals.HTTP_ERROR__TEST.Status(), globals.HTTP_ERROR__TEST.ToError())
 	}
 }

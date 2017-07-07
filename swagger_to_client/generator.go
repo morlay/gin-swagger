@@ -36,6 +36,6 @@ func (c *ClientGenerator) LoadSwaggerFromFile(path string) {
 
 func (c *ClientGenerator) Output() {
 	pkgName := codegen.ToLowerSnakeCase("Client-" + c.Name)
-	codegen.WriteGoFile(codegen.JoinWithSlash(pkgName, "generated_types.go"), ToTypes(pkgName, c.Swagger))
-	codegen.WriteGoFile(codegen.JoinWithSlash(pkgName, "generated_client.go"), ToClient(c.BaseClient, pkgName, c.Swagger))
+	codegen.GenerateGoFile(codegen.JoinWithSlash(pkgName, "types.go"), ToTypes(pkgName, c.Swagger))
+	codegen.GenerateGoFile(codegen.JoinWithSlash(pkgName, "client.go"), ToClient(c.BaseClient, pkgName, c.Swagger))
 }
