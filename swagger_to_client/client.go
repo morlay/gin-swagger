@@ -35,7 +35,7 @@ func (c *ClientInfo) RenderDecl() string {
 	return codegen.TemplateRender(`
 	type {{ .Name }} struct {
 		client.Client
-		Host string ` + "`" + `default:"service-` + codegen.ToLowerLinkCase(strings.TrimPrefix(c.Name, "Client")) + `" external_link:"$$/$$:$$"` + "`" + `
+		Host string ` + "`" + `default:"service-` + codegen.ToLowerLinkCase(strings.TrimPrefix(c.Name, "Client")) + `" docker:"@external_link=$$/$$:$$"` + "`" + `
 	}
 	`)(c)
 }
