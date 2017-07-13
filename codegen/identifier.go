@@ -155,3 +155,7 @@ func ToUpperSnakeCase(s string) string {
 func ToLowerSnakeCase(s string) string {
 	return strings.ToLower(ToUpperSnakeCase(s))
 }
+
+func ToLowerLinkCase(s string) string {
+	return strings.Replace(ToLowerSnakeCase(s), "_", "-", -1)
+}

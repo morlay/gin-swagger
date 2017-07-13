@@ -33,17 +33,9 @@ func (a OperationByID) Less(i, j int) bool {
 
 func (c *ClientInfo) RenderDecl() string {
 	return codegen.TemplateRender(`
-	func New{{ .Name }}(baseURL string, timeout time.Duration) *{{ .Name }} {
-		return &{{ .Name }}{
-			Client: client.Client{
-				BaseURL: baseURL,
-				Timeout: timeout / time.Millisecond,
-			},
-		}
-	}
-
 	type {{ .Name }} struct {
 		client.Client
+		Host string ` + "`" + `default:"service-` + codegen.ToLowerLinkCase(strings.TrimPrefix(c.Name, "Client")) + `" external_link:"$$/$$:$$"` + "`" + `
 	}
 	`)(c)
 }
