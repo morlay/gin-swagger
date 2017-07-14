@@ -111,8 +111,7 @@ func (g *ErrorGenerator) Output() {
 
 			sort.Sort(ByHttpErrorValue(sortedHttpErrorValues))
 
-			p, _ := build.Default.Import(pkg.Path(), "", build.FindOnly)
-
+			p, _ := build.Import(pkg.Path(), "", build.FindOnly)
 			path, _ := filepath.Rel(cwd, p.Dir)
 
 			importedErrorType, errorType := program.ParsePkgExpose(g.ErrorType)

@@ -2,23 +2,14 @@ package client_service
 
 import (
 	"mime/multipart"
-	"time"
 
 	"github.com/morlay/gin-swagger/example/test2"
 	"github.com/morlay/gin-swagger/swagger_to_client/client"
 )
 
-func NewClientService(baseURL string, timeout time.Duration) *ClientService {
-	return &ClientService{
-		Client: client.Client{
-			BaseURL: baseURL,
-			Timeout: timeout / time.Millisecond,
-		},
-	}
-}
-
 type ClientService struct {
 	client.Client
+	Host string `default:"service-service" docker:"@external_link=$$/$$:$$"`
 }
 
 type GetUserRequest struct {

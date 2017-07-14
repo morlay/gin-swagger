@@ -2,9 +2,8 @@ package cmd
 
 import (
 	"fmt"
+	"go/build"
 	"os"
-	"os/exec"
-	"strings"
 
 	"github.com/spf13/cobra"
 
@@ -16,8 +15,12 @@ var (
 )
 
 func getPackageName() string {
-	output, _ := exec.Command("go", "list").CombinedOutput()
-	return strings.TrimSpace(string(output))
+	pwd, _ := os.Getwd()
+	pkg, err := build.ImportDir(pwd, build.FindOnly)
+	if err != nil {
+		panic(err)
+	}
+	return pkg.ImportPath
 }
 
 var cmdRoot = &cobra.Command{
