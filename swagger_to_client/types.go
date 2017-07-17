@@ -97,7 +97,14 @@ func GetTypeFromSchema(schema spec.Schema) (tpe string, deps []string) {
 
 	if schema.Type.Contains("object") {
 		if schema.AdditionalProperties != nil {
-			goType, subDeps := GetTypeFromSchema(*schema.AdditionalProperties.Schema)
+			schema := schema.AdditionalProperties.Schema
+
+			if schema == nil {
+				schema = &spec.Schema{}
+				schema.Typed("string", "")
+			}
+
+			goType, subDeps := GetTypeFromSchema(*schema)
 			deps = append(deps, subDeps...)
 			tpe = codegen.DeclMap("string", goType)
 			return
