@@ -3,6 +3,8 @@ package test2
 import (
 	"errors"
 	"strings"
+
+	"github.com/morlay/gin-swagger/swagger/enum"
 )
 
 var InvalidState = errors.New("invalid state")
@@ -67,4 +69,11 @@ func (v *State) UnmarshalJSON(data []byte) (err error) {
 	s := strings.Trim(strings.ToUpper(string(data)), "\"")
 	*v, err = ParseStateFromString(s)
 	return
+}
+
+func init() {
+	enum.RegistryEnum("State", "ONE", "one")
+	enum.RegistryEnum("State", "TWO", "two")
+	enum.RegistryEnum("State", "THREE", "three")
+	enum.RegistryEnum("State", "FOUR", "four")
 }

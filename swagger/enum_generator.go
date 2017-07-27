@@ -1,7 +1,6 @@
 package swagger
 
 import (
-	"fmt"
 	"go/types"
 	"path/filepath"
 	"strings"
@@ -10,12 +9,13 @@ import (
 	"github.com/morlay/gin-swagger/program"
 )
 
-func NewEnumGenerator(packagePath string) *EnumGenerator {
+func NewEnumGenerator(packagePath string, registerEnumMethod string) *EnumGenerator {
 	prog := program.NewProgram(packagePath)
 
 	return &EnumGenerator{
-		PackagePath: packagePath,
-		Program:     prog,
+		PackagePath:        packagePath,
+		RegisterEnumMethod: registerEnumMethod,
+		Program:            prog,
 	}
 }
 
@@ -33,9 +33,10 @@ type Enum struct {
 }
 
 type EnumGenerator struct {
-	PackagePath string
-	Program     *program.Program
-	Enums       []Enum
+	PackagePath        string
+	RegisterEnumMethod string
+	Program            *program.Program
+	Enums              []Enum
 }
 
 func (g *EnumGenerator) addEnum(name string, tpe string, pkg *types.Package, enumOptions []program.Option) {
@@ -110,27 +111,6 @@ func (g *EnumGenerator) Output(src ...string) {
 	if len(g.Enums) < 1 {
 		return
 	}
-	relPath, _ := filepath.Rel(g.PackagePath, g.Enums[0].Pathname)
-	initBlocks := []string{
-		codegen.DeclPackage(g.Enums[0].PackageName),
-		codegen.DeclType(
-			"EnumOption",
-			codegen.DeclStruct(
-				[]string{
-					codegen.DeclField("Option", "string", []string{codegen.DeclTag("json", "option")}, "选项"),
-					codegen.DeclField("Label", "string", []string{codegen.DeclTag("json", "label")}, "说明"),
-				},
-			),
-		),
-		codegen.DeclVar("EnumsMap", codegen.DeclMap("string", "[]EnumOption")+"{}"),
-		ParseAddEnumMapFunc(),
-		ParseGetEnumFunc(),
-		ParseInitEnumFunc(g.Enums),
-	}
-	codegen.GenerateGoFile(
-		codegen.JoinWithSlash(relPath, "enum_map.go"),
-		strings.Join(initBlocks, "\n\n"),
-	)
 
 	for _, enum := range g.Enums {
 		if HasElem(src, enum.Name) == false {
@@ -141,9 +121,17 @@ func (g *EnumGenerator) Output(src ...string) {
 
 		name := strings.Replace(codegen.ToLowerSnakeCase(enum.Name), "_", " ", -1)
 
+		imports := []string{"errors", "strings"}
+
+		registerEnumImport, registerEnumMethod := program.ParsePkgExpose(g.RegisterEnumMethod)
+
+		if registerEnumImport != "" {
+			imports = append(imports, registerEnumImport)
+		}
+
 		blocks := []string{
 			codegen.DeclPackage(enum.PackageName),
-			codegen.DeclImports("errors", "strings"),
+			codegen.DeclImports(imports...),
 			codegen.DeclVar("Invalid"+enum.Name, `errors.New("invalid `+name+`")`),
 			ParseEnumStringify(enum),
 			ParseEnumLabel(enum),
@@ -151,12 +139,32 @@ func (g *EnumGenerator) Output(src ...string) {
 			ParseEnumJSONMarshal(enum),
 		}
 
+		if registerEnumMethod != "" {
+			blocks = append(blocks, ParseRegisterEnum(registerEnumMethod, enum))
+		}
+
 		codegen.GenerateGoFile(
 			codegen.JoinWithSlash(relPath, codegen.ToLowerSnakeCase(enum.Name)+".go"),
 			strings.Join(blocks, "\n\n"),
 		)
 	}
+}
 
+func ParseRegisterEnum(registerEnumMethod string, enum Enum) string {
+	codes := `func init () {
+	`
+
+	for _, option := range enum.Values {
+		codes += registerEnumMethod + `(` + strings.Join([]string{
+			codegen.WithQuotes(enum.Name),
+			codegen.WithQuotes(option.Value),
+			codegen.WithQuotes(option.Label),
+		}, ", ") + `)
+		`
+	}
+
+	codes += `}`
+	return codes
 }
 
 func ParseEnumParser(enum Enum) string {
@@ -249,38 +257,4 @@ func (v *{{ .Name }}) UnmarshalJSON(data []byte) (err error) {
 	*v, err = Parse{{ .Name }}FromString(s)
 	return
 }`)(enum)
-}
-
-func ParseAddEnumMapFunc() string {
-	return `
-func addEnumMap(enum string, option string, label string) {
-	if _, ok := EnumsMap[enum]; !ok {
-		EnumsMap[enum] = []EnumOption{}
-	}
-	EnumsMap[enum] = append(EnumsMap[enum], EnumOption{Option: option, Label: label})
-}`
-}
-
-func ParseGetEnumFunc() string {
-	return `
-func GetEnumValueList(enum string) (enumList []EnumOption, found bool) {
-	enumList, found = EnumsMap[enum]
-	return
-}
-`
-}
-
-func ParseInitEnumFunc(enums []Enum) string {
-	funcStr := `
-func init() {`
-	for _, enum := range enums {
-		for _, enumValue := range enum.Values {
-			funcStr += fmt.Sprintf(`
-	addEnumMap("%s", "%s", "%s")`, enum.Name, enumValue.Value, enumValue.Label)
-		}
-	}
-	funcStr += `
-}
-`
-	return funcStr
 }

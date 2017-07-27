@@ -1,7 +1,7 @@
 package test2
 
 // swagger:enum
-//go:generate gin-swagger enum State
+//go:generate gin-swagger enum -r github.com/morlay/gin-swagger/swagger/enum.RegistryEnum State
 type State int
 
 const (
