@@ -70,8 +70,12 @@ func CollectErrors(p *program.Program) map[*types.Package]map[string]HttpErrorVa
 		for ident, obj := range pkgInfo.Defs {
 			if constObj, ok := obj.(*types.Const); ok {
 				if program.IsTypeName(obj.Type(), HttpErrorVarName) {
-					doc := program.GetTextFromCommentGroup(p.CommentGroupFor(ident))
 					name := constObj.Name()
+					if name == "_" {
+						continue
+					}
+
+					doc := program.GetTextFromCommentGroup(p.CommentGroupFor(ident))
 					code := constObj.Val().String()
 					msg, desc, canBeErrTalk := ParseHttpCodeDesc(doc)
 					pkg := constObj.Pkg()

@@ -20,6 +20,8 @@ const (
 	HTTP_ERROR_UNKNOWN HttpErrorCode = iota + ServiceB*1e3 + http.StatusBadRequest*1e6
 	// @errTalk Summary
 	HTTP_ERROR__TEST
+	_
+	_
 	// @errTalk Test2
 	// Description
 	HTTP_ERROR__TEST2

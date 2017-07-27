@@ -54,7 +54,7 @@ type TestResponse struct {
 }
 
 // @httpError(40000200,HTTP_ERROR_UNKNOWN,"未定义","",false);
-// @httpError(400002002,HTTP_ERROR__TEST2,"Test2","Description",true);
+// @httpError(400002004,HTTP_ERROR__TEST2,"Test2","Description",true);
 // 正常返回
 func (c ClientService) Test(req TestRequest) (resp TestResponse, err error) {
 	err = c.DoRequest("ClientService.Test", "POST", "/", req, &resp)
