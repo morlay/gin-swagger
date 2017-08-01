@@ -5,7 +5,7 @@ import (
 )
 
 func init() {
-	httplib.RegisterError("HTTP_ERROR_UNKNOWN", HTTP_ERROR_UNKNOWN, "未定义", "", false)
-	httplib.RegisterError("HTTP_ERROR__TEST", HTTP_ERROR__TEST, "Summary", "", true)
-	httplib.RegisterError("HTTP_ERROR__TEST2", HTTP_ERROR__TEST2, "Test2", "Description", true)
+	httplib.RegisterError("HTTP_ERROR_UNKNOWN", 400002000, "未定义", "", false)
+	httplib.RegisterError("HTTP_ERROR__TEST", 400002001, "Summary", "", true)
+	httplib.RegisterError("HTTP_ERROR__TEST2", 400002004, "Test2", "Description", true)
 }

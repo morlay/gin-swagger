@@ -9,10 +9,10 @@ var HttpErrorCodes = map[HttpErrorCode]*GeneralError{}
 
 type HttpErrorCode int32
 
-func RegisterError(key string, code HttpErrorCode, msg string, desc string, canBeErrTalk bool) {
-	HttpErrorCodes[code] = &GeneralError{
+func RegisterError(key string, code int32, msg string, desc string, canBeErrTalk bool) {
+	HttpErrorCodes[HttpErrorCode(code)] = &GeneralError{
 		Key:            key,
-		Code:           int32(code),
+		Code:           code,
 		Msg:            msg,
 		Desc:           desc,
 		CanBeErrorTalk: canBeErrTalk,

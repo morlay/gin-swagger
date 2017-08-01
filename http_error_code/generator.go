@@ -150,7 +150,7 @@ func ParseErrorRegister(httpErrorValues []HttpErrorValue, errorRegisterMethod st
 	for _, httpErrorValue := range httpErrorValues {
 		codes += errorRegisterMethod + `( ` + strings.Join([]string{
 			strconv.Quote(httpErrorValue.Name),
-			httpErrorValue.Name,
+			httpErrorValue.Code,
 			strconv.Quote(httpErrorValue.Msg),
 			strconv.Quote(httpErrorValue.Desc),
 			strconv.FormatBool(httpErrorValue.CanBeErrTalk),
