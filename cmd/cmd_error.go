@@ -7,20 +7,20 @@ import (
 )
 
 var (
-	cmdErrorFlagErrorType string
+	cmdErrorFlagErrorRegisterMethod string
 )
 
 var cmdError = &cobra.Command{
 	Use:   "error",
 	Short: "stringify http errors",
 	Run: func(cmd *cobra.Command, args []string) {
-		eg := http_error_code.NewErrorGenerator(packageName, cmdErrorFlagErrorType)
+		eg := http_error_code.NewErrorGenerator(packageName, cmdErrorFlagErrorRegisterMethod)
 		eg.Output()
 	},
 }
 
 func init() {
-	cmdError.Flags().StringVarP(&cmdErrorFlagErrorType, "error-type", "t", "github.com/morlay/gin-swagger/http_error_code/httplib.GeneralError", "error type")
+	cmdError.Flags().StringVarP(&cmdErrorFlagErrorRegisterMethod, "error-register-method", "r", "github.com/morlay/gin-swagger/http_error_code/httplib.RegisterError", "error register method")
 
 	cmdRoot.AddCommand(cmdError)
 }

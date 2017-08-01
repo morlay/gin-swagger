@@ -16,13 +16,13 @@ import (
 	"github.com/morlay/gin-swagger/program"
 )
 
-func NewErrorGenerator(packagePath string, errorType string) *ErrorGenerator {
+func NewErrorGenerator(packagePath string, errorRegisterMethod string) *ErrorGenerator {
 	prog := program.NewProgram(packagePath)
 
 	return &ErrorGenerator{
-		ErrorType:   errorType,
-		PackagePath: packagePath,
-		Program:     prog,
+		ErrorRegisterMethod: errorRegisterMethod,
+		PackagePath:         packagePath,
+		Program:             prog,
 	}
 }
 
@@ -57,10 +57,10 @@ func (a ByHttpErrorValue) Less(i, j int) bool {
 }
 
 type ErrorGenerator struct {
-	ErrorType   string
-	PackagePath string
-	Program     *program.Program
-	HttpErrors  map[*types.Package]map[string]HttpErrorValue
+	ErrorRegisterMethod string
+	PackagePath         string
+	Program             *program.Program
+	HttpErrors          map[*types.Package]map[string]HttpErrorValue
 }
 
 func CollectErrors(p *program.Program) map[*types.Package]map[string]HttpErrorValue {
@@ -118,7 +118,7 @@ func (g *ErrorGenerator) Output() {
 			p, _ := build.Import(pkg.Path(), "", build.FindOnly)
 			path, _ := filepath.Rel(cwd, p.Dir)
 
-			importedErrorType, errorType := program.ParsePkgExpose(g.ErrorType)
+			importedErrorType, method := program.ParsePkgExpose(g.ErrorRegisterMethod)
 
 			var imports = []string{
 				"strconv",
@@ -132,11 +132,7 @@ func (g *ErrorGenerator) Output() {
 			blocks := []string{
 				codegen.DeclPackage(pkg.Name()),
 				codegen.DeclImports(imports...),
-				ParseOthers(errorType),
-				ParseKeyParser(sortedHttpErrorValues),
-				ParseMsgParser(sortedHttpErrorValues),
-				ParseDescParser(sortedHttpErrorValues),
-				ParseErrorTalkParser(sortedHttpErrorValues),
+				ParseErrorRegister(sortedHttpErrorValues, method),
 			}
 
 			codegen.GenerateGoFile(
@@ -147,93 +143,22 @@ func (g *ErrorGenerator) Output() {
 	}
 }
 
-func ParseMsgParser(httpErrorValues []HttpErrorValue) string {
-	firstLine := `func (c ` + HttpErrorVarName + `) Msg() string {
-	switch (c) {`
-
-	lines := []string{firstLine}
+func ParseErrorRegister(httpErrorValues []HttpErrorValue, errorRegisterMethod string) string {
+	codes := `func init () {
+	`
 
 	for _, httpErrorValue := range httpErrorValues {
-		lines = append(lines, codegen.DeclCase(httpErrorValue.Name))
-		lines = append(lines, codegen.DeclReturn(strconv.Quote(httpErrorValue.Msg)))
+		codes += errorRegisterMethod + `( ` + strings.Join([]string{
+			strconv.Quote(httpErrorValue.Name),
+			httpErrorValue.Name,
+			strconv.Quote(httpErrorValue.Msg),
+			strconv.Quote(httpErrorValue.Desc),
+			strconv.FormatBool(httpErrorValue.CanBeErrTalk),
+		}, ", ") + `)
+		`
 	}
 
-	lines = append(lines, "}")
-	lines = append(lines, codegen.DeclReturn(strconv.Quote("")))
-	lines = append(lines, "}")
+	codes += `}`
 
-	return strings.Join(lines, "\n")
-}
-
-func ParseKeyParser(httpErrorValues []HttpErrorValue) string {
-	firstLine := `func (c ` + HttpErrorVarName + `) Key() string {
-	switch (c) {`
-
-	lines := []string{firstLine}
-
-	for _, httpErrorValue := range httpErrorValues {
-		lines = append(lines, codegen.DeclCase(httpErrorValue.Name))
-		lines = append(lines, codegen.DeclReturn(strconv.Quote(httpErrorValue.Name)))
-	}
-
-	lines = append(lines, "}")
-	lines = append(lines, codegen.DeclReturn(strconv.Quote("")))
-	lines = append(lines, "}")
-
-	return strings.Join(lines, "\n")
-}
-
-func ParseDescParser(httpErrorValues []HttpErrorValue) string {
-	lines := []string{`func (c ` + HttpErrorVarName + `) Desc() string {
-	switch (c) {`}
-
-	for _, httpErrorValue := range httpErrorValues {
-		lines = append(lines, codegen.DeclCase(httpErrorValue.Name))
-		lines = append(lines, codegen.DeclReturn(strconv.Quote(httpErrorValue.Desc)))
-	}
-
-	lines = append(lines, "}")
-	lines = append(lines, codegen.DeclReturn(strconv.Quote("")))
-	lines = append(lines, "}")
-
-	return strings.Join(lines, "\n")
-}
-
-func ParseErrorTalkParser(httpErrorValues []HttpErrorValue) string {
-	lines := []string{`func (c ` + HttpErrorVarName + `) CanBeErrTalk() bool {
-	switch (c) {`}
-
-	for _, httpErrorValue := range httpErrorValues {
-		lines = append(lines, codegen.DeclCase(httpErrorValue.Name))
-		lines = append(lines, codegen.DeclReturn(strconv.FormatBool(httpErrorValue.CanBeErrTalk)))
-	}
-
-	lines = append(lines, "}")
-	lines = append(lines, codegen.DeclReturn("false"))
-	lines = append(lines, "}")
-
-	return strings.Join(lines, "\n")
-}
-
-func ParseOthers(errorTypeSelector string) string {
-	return `
-func (c ` + HttpErrorVarName + `) Code() int32 {
-	return int32(c)
-}
-
-func (c ` + HttpErrorVarName + `) Status() int {
-	status, _ := strconv.Atoi(fmt.Sprintln(c)[:3])
-	return status
-}
-
-func (c ` + HttpErrorVarName + `) ToError() *` + errorTypeSelector + `{
-	return &` + errorTypeSelector + `{
-		Key:            c.Key(),
-		Code:           c.Code(),
-		Msg:            c.Msg(),
-		Desc:           c.Desc(),
-		CanBeErrorTalk: c.CanBeErrTalk(),
-	}
-}
-`
+	return codes
 }
