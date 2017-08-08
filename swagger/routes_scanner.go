@@ -218,8 +218,4 @@ func (scanner *RoutesScanner) Scan(prog *program.Program) {
 			}
 		}
 	}
-
-	for route := range scanner.Routers {
-		spew.Dump(route)
-	}
 }

@@ -1,5 +1,7 @@
 {
   "swagger": "2.0",
+  "info": {},
+  "basePath": "/",
   "paths": {
     "/": {
       "post": {
