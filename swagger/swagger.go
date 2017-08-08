@@ -14,6 +14,9 @@ func NewSwagger() *Swagger {
 	swagger := new(spec.Swagger)
 	swagger.Swagger = "2.0"
 
+	swagger.Info = &spec.Info{}
+	swagger.BasePath = "/"
+
 	if swagger.Paths == nil {
 		swagger.Paths = new(spec.Paths)
 	}

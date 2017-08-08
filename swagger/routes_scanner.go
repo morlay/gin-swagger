@@ -133,7 +133,11 @@ func (scanner *RoutesScanner) WithRouterGroup(router *Router, id *ast.Ident) {
 
 			if selectorExpr, ok := callExpr.Fun.(*ast.SelectorExpr); ok {
 				if selectorExpr.Sel.Name == "Group" && len(callExpr.Args) >= 1 {
-					router.AddGroup(NewGroup(getRouterPathByCallExpr(callExpr), callExpr.Args[1:]...))
+					if _, ok := callExpr.Args[0].(*ast.BasicLit); ok {
+						router.AddGroup(NewGroup(getRouterPathByCallExpr(callExpr), callExpr.Args[1:]...))
+					} else {
+						router.AddGroup(NewGroup("/"))
+					}
 
 					if nextIdent, ok := selectorExpr.X.(*ast.Ident); ok {
 						scanner.WithRouterGroup(router, nextIdent)
