@@ -10,7 +10,7 @@ import (
 )
 
 func NewEnumGenerator(packagePath string, registerEnumMethod string) *EnumGenerator {
-	prog := program.NewProgram(packagePath)
+	prog := program.NewProgram(packagePath, true)
 
 	return &EnumGenerator{
 		PackagePath:        packagePath,

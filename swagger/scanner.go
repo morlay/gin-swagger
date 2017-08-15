@@ -11,9 +11,9 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/gin-gonic/gin"
 	"github.com/go-openapi/spec"
 	"github.com/logrusorgru/aurora"
-	"github.com/gin-gonic/gin"
 
 	"github.com/morlay/gin-swagger/codegen"
 	"github.com/morlay/gin-swagger/http_error_code"
@@ -21,7 +21,7 @@ import (
 )
 
 func NewScanner(packagePath string) *Scanner {
-	prog := program.NewProgram(packagePath)
+	prog := program.NewProgram(packagePath, false)
 	swag := NewSwagger()
 	httpErr := NewHttpErrorScanner()
 	routes := NewRoutesScanner()

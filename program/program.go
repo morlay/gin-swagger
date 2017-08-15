@@ -31,8 +31,10 @@ func PkgContains(pkgs []*types.Package, targetPkg *types.Package) bool {
 	return false
 }
 
-func NewProgram(packagePath string) *Program {
-	ldr := loader.Config{}
+func NewProgram(packagePath string, allowErrors bool) *Program {
+	ldr := loader.Config{
+		AllowErrors: allowErrors,
+	}
 
 	ldr.ParserMode = parser.ParseComments
 	ldr.Import(packagePath)

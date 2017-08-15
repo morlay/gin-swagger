@@ -17,7 +17,7 @@ import (
 )
 
 func NewErrorGenerator(packagePath string, errorRegisterMethod string) *ErrorGenerator {
-	prog := program.NewProgram(packagePath)
+	prog := program.NewProgram(packagePath, true)
 
 	return &ErrorGenerator{
 		ErrorRegisterMethod: errorRegisterMethod,

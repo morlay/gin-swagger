@@ -18,7 +18,7 @@ const FIXTURES = "github.com/morlay/gin-swagger/program/fixtures"
 
 func TestProgram_CommentGroupFor(t *testing.T) {
 	pkgComments := FIXTURES + "/comments"
-	p := NewProgram(pkgComments)
+	p := NewProgram(pkgComments, false)
 	pkgInfo := p.Program.Package(pkgComments)
 
 	for _, file := range pkgInfo.Files {

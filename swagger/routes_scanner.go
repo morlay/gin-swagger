@@ -7,7 +7,6 @@ import (
 
 	"path"
 
-	"github.com/davecgh/go-spew/spew"
 	"github.com/morlay/gin-swagger/program"
 )
 
