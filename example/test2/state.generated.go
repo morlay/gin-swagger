@@ -57,6 +57,22 @@ func ParseStateFromString(s string) (State, error) {
 	return STATE_UNKNOWN, InvalidState
 }
 
+func ParseStateFromLabelString(s string) (State, error) {
+	switch s {
+	case "":
+		return STATE_UNKNOWN, nil
+	case "one":
+		return STATE__ONE, nil
+	case "two":
+		return STATE__TWO, nil
+	case "three":
+		return STATE__THREE, nil
+	case "four":
+		return STATE__FOUR, nil
+	}
+	return STATE_UNKNOWN, InvalidState
+}
+
 func (v State) MarshalJSON() ([]byte, error) {
 	str := v.String()
 	if str == "UNKNOWN" {

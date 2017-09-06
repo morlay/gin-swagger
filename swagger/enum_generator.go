@@ -136,6 +136,7 @@ func (g *EnumGenerator) Output(src ...string) {
 			ParseEnumStringify(enum),
 			ParseEnumLabel(enum),
 			ParseEnumParser(enum),
+			ParseEnumLabelParser(enum),
 			ParseEnumJSONMarshal(enum),
 		}
 
@@ -165,6 +166,31 @@ func ParseRegisterEnum(registerEnumMethod string, enum Enum) string {
 
 	codes += `}`
 	return codes
+}
+
+func ParseEnumLabelParser(enum Enum) string {
+	firstLine := codegen.TemplateRender(`func Parse{{ .Name }}FromLabelString(s string) ({{ .Name }}, error) {
+	switch s {`)(enum)
+
+	var lines = []string{
+		firstLine,
+	}
+
+	prefix := codegen.ToUpperSnakeCase(enum.Name)
+
+	lines = append(lines, codegen.DeclCase(codegen.WithQuotes("")))
+	lines = append(lines, codegen.DeclReturn(codegen.JoinWithComma(prefix+"_UNKNOWN", "nil")))
+
+	for _, option := range enum.Values {
+		lines = append(lines, codegen.DeclCase(codegen.WithQuotes(option.Label)))
+		lines = append(lines, codegen.DeclReturn(codegen.JoinWithComma(prefix+"__"+option.Value, "nil")))
+	}
+
+	lines = append(lines, "}")
+	lines = append(lines, codegen.DeclReturn(codegen.JoinWithComma(prefix+"_UNKNOWN", codegen.TemplateRender(`Invalid{{ .Name }}`)(enum))))
+	lines = append(lines, "}")
+
+	return strings.Join(lines, "\n")
 }
 
 func ParseEnumParser(enum Enum) string {
