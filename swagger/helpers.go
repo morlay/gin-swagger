@@ -27,9 +27,16 @@ func isGinGroup(method string) bool {
 	return method == "Group"
 }
 
-func getJSONNameAndFlags(tagValue string) (string, []string) {
+func getJSONNameAndFlags(tagValue string) (name string, flags map[string]bool) {
 	values := strings.SplitN(tagValue, ",", -1)
-	return values[0], values[1:]
+	for _, flag := range values[1:] {
+		if flags == nil {
+			flags = map[string]bool{}
+		}
+		flags[flag] = true
+	}
+	name = values[0]
+	return
 }
 
 func parseCommentToSummaryDesc(str string) (string, string) {

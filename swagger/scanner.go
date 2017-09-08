@@ -204,7 +204,7 @@ func (scanner *Scanner) defineSchemaBy(tpe types.Type) spec.Schema {
 
 				propSchema := scanner.defineSchemaBy(structFieldType)
 
-				if len(flags) == 1 {
+				if flags != nil && flags["string"] {
 					propSchema.Typed("string", propSchema.Format)
 				}
 
@@ -360,8 +360,7 @@ func (scanner *Scanner) writeParameter(operation *spec.Operation, t types.Type) 
 						param.AsRequired()
 					} else {
 						param = scanner.getNonBodyParameter(name, location, structFieldTags, fieldType)
-						if len(flags) > 0 {
-							// todo check other flags;
+						if flags != nil && flags["string"] {
 							param.Typed("string", param.Format)
 						}
 					}
