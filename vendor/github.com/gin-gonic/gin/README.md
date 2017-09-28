@@ -1,6 +1,6 @@
 # Gin Web Framework
 
-<img align="right" src="https://raw.githubusercontent.com/gin-gonic/gin/master/logo.png">
+<img align="right" width="159px" src="https://raw.githubusercontent.com/gin-gonic/logo/master/color.png">
 
 [![Build Status](https://travis-ci.org/gin-gonic/gin.svg)](https://travis-ci.org/gin-gonic/gin)
  [![codecov](https://codecov.io/gh/gin-gonic/gin/branch/master/graph/badge.svg)](https://codecov.io/gh/gin-gonic/gin)
@@ -44,41 +44,40 @@ Gin uses a custom version of [HttpRouter](https://github.com/julienschmidt/httpr
 
 [See all benchmarks](/BENCHMARKS.md)
 
+Benchmark name                              | (1)        | (2)         | (3) 		    | (4)
+--------------------------------------------|-----------:|------------:|-----------:|---------:
+**BenchmarkGin_GithubAll**                  | **30000**  |  **48375**  |     **0**  |   **0**
+BenchmarkAce_GithubAll                      |   10000    |   134059    |   13792    |   167
+BenchmarkBear_GithubAll                     |    5000    |   534445    |   86448    |   943
+BenchmarkBeego_GithubAll                    |    3000    |   592444    |   74705    |   812
+BenchmarkBone_GithubAll                     |     200    |  6957308    |  698784    |  8453
+BenchmarkDenco_GithubAll                    |   10000    |   158819    |   20224    |   167
+BenchmarkEcho_GithubAll                     |   10000    |   154700    |    6496    |   203
+BenchmarkGocraftWeb_GithubAll               |    3000    |   570806    |  131656    |  1686
+BenchmarkGoji_GithubAll                     |    2000    |   818034    |   56112    |   334
+BenchmarkGojiv2_GithubAll                   |    2000    |  1213973    |  274768    |  3712
+BenchmarkGoJsonRest_GithubAll               |    2000    |   785796    |  134371    |  2737
+BenchmarkGoRestful_GithubAll                |     300    |  5238188    |  689672    |  4519
+BenchmarkGorillaMux_GithubAll               |     100    | 10257726    |  211840    |  2272
+BenchmarkHttpRouter_GithubAll               |   20000    |   105414    |   13792    |   167
+BenchmarkHttpTreeMux_GithubAll              |   10000    |   319934    |   65856    |   671
+BenchmarkKocha_GithubAll                    |   10000    |   209442    |   23304    |   843
+BenchmarkLARS_GithubAll                     |   20000    |    62565    |       0    |     0
+BenchmarkMacaron_GithubAll                  |    2000    |  1161270    |  204194    |  2000
+BenchmarkMartini_GithubAll                  |     200    |  9991713    |  226549    |  2325
+BenchmarkPat_GithubAll                      |     200    |  5590793    | 1499568    | 27435
+BenchmarkPossum_GithubAll                   |   10000    |   319768    |   84448    |   609
+BenchmarkR2router_GithubAll                 |   10000    |   305134    |   77328    |   979
+BenchmarkRivet_GithubAll                    |   10000    |   132134    |   16272    |   167
+BenchmarkTango_GithubAll                    |    3000    |   552754    |   63826    |  1618
+BenchmarkTigerTonic_GithubAll               |    1000    |  1439483    |  239104    |  5374
+BenchmarkTraffic_GithubAll                  |     100    | 11383067    | 2659329    | 21848
+BenchmarkVulcan_GithubAll                   |    5000    |   394253    |   19894    |   609
 
-Benchmark name 					| (1) 		| (2) 		| (3) 		| (4)
---------------------------------|----------:|----------:|----------:|------:
-BenchmarkAce_GithubAll 			| 10000 	| 109482 	| 13792 	| 167
-BenchmarkBear_GithubAll 		| 10000 	| 287490 	| 79952 	| 943
-BenchmarkBeego_GithubAll 		| 3000 		| 562184 	| 146272 	| 2092
-BenchmarkBone_GithubAll 		| 500 		| 2578716 	| 648016 	| 8119
-BenchmarkDenco_GithubAll 		| 20000 	| 94955 	| 20224 	| 167
-BenchmarkEcho_GithubAll 		| 30000 	| 58705 	| 0 		| 0
-**BenchmarkGin_GithubAll** 		| **30000** | **50991** | **0** 	| **0**
-BenchmarkGocraftWeb_GithubAll 	| 5000 		| 449648 	| 133280 	| 1889
-BenchmarkGoji_GithubAll 		| 2000 		| 689748 	| 56113 	| 334
-BenchmarkGoJsonRest_GithubAll 	| 5000 		| 537769 	| 135995 	| 2940
-BenchmarkGoRestful_GithubAll 	| 100 		| 18410628 	| 797236 	| 7725
-BenchmarkGorillaMux_GithubAll 	| 200 		| 8036360 	| 153137 	| 1791
-BenchmarkHttpRouter_GithubAll 	| 20000 	| 63506 	| 13792 	| 167
-BenchmarkHttpTreeMux_GithubAll 	| 10000 	| 165927 	| 56112 	| 334
-BenchmarkKocha_GithubAll 		| 10000 	| 171362 	| 23304 	| 843
-BenchmarkMacaron_GithubAll 		| 2000 		| 817008 	| 224960 	| 2315
-BenchmarkMartini_GithubAll 		| 100 		| 12609209 	| 237952 	| 2686
-BenchmarkPat_GithubAll 			| 300 		| 4830398 	| 1504101 	| 32222
-BenchmarkPossum_GithubAll 		| 10000 	| 301716 	| 97440 	| 812
-BenchmarkR2router_GithubAll 	| 10000 	| 270691 	| 77328 	| 1182
-BenchmarkRevel_GithubAll 		| 1000 		| 1491919 	| 345553 	| 5918
-BenchmarkRivet_GithubAll 		| 10000 	| 283860 	| 84272 	| 1079
-BenchmarkTango_GithubAll 		| 5000 		| 473821 	| 87078 	| 2470
-BenchmarkTigerTonic_GithubAll 	| 2000 		| 1120131 	| 241088 	| 6052
-BenchmarkTraffic_GithubAll 		| 200 		| 8708979 	| 2664762 	| 22390
-BenchmarkVulcan_GithubAll 		| 5000 		| 353392 	| 19894 	| 609
-BenchmarkZeus_GithubAll 		| 2000 		| 944234 	| 300688 	| 2648
-
-(1): Total Repetitions  
-(2): Single Repetition Duration (ns/op)  
-(3): Heap Memory (B/op)  
-(4): Average Allocations per Repetition (allocs/op)  
+(1): Total Repetitions achieved in constant time, higher means more confident result  
+(2): Single Repetition Duration (ns/op), lower is better  
+(3): Heap Memory (B/op), lower is better  
+(4): Average Allocations per Repetition (allocs/op), lower is better  
 
 ## Gin v1. stable
 
@@ -87,7 +86,6 @@ BenchmarkZeus_GithubAll 		| 2000 		| 944234 	| 300688 	| 2648
 - [x] Complete suite of unit tests
 - [x] Battle tested
 - [x] API frozen, new releases will not break your code.
-
 
 ## Start using it
 
@@ -139,6 +137,14 @@ $ curl https://raw.githubusercontent.com/gin-gonic/gin/master/examples/basic/mai
 
 ```sh
 $ go run main.go
+```
+
+## Build with [jsoniter](https://github.com/json-iterator/go)
+
+Gin use `encoding/json` as default json package but you can change to [jsoniter](https://github.com/json-iterator/go) by build from other tags.
+
+```sh
+$ go build -tags=jsoniter .
 ```
 
 ## API Examples
@@ -275,8 +281,11 @@ func main() {
 		// single file
 		file, _ := c.FormFile("file")
 		log.Println(file.Filename)
-
-		c.String(http.StatusOK, fmt.Printf("'%s' uploaded!", file.Filename))
+        
+		// Upload the file to specific dst.
+		// c.SaveUploadedFile(file, dst)       
+		
+		c.String(http.StatusOK, fmt.Sprintf("'%s' uploaded!", file.Filename))
 	})
 	router.Run(":8080")
 }
@@ -304,8 +313,11 @@ func main() {
 
 		for _, file := range files {
 			log.Println(file.Filename)
+			
+			// Upload the file to specific dst.
+			// c.SaveUploadedFile(file, dst)       
 		}
-		c.String(http.StatusOK, fmt.Printf("%d files uploaded!", len(files)))
+		c.String(http.StatusOK, fmt.Sprintf("%d files uploaded!", len(files)))
 	})
 	router.Run(":8080")
 }
@@ -357,6 +369,7 @@ r := gin.New()
 instead of
 
 ```go
+// Default With the Logger and Recovery middleware already attached
 r := gin.Default()
 ```
 
@@ -368,7 +381,10 @@ func main() {
 	r := gin.New()
 
 	// Global middleware
+	// Logger middleware will write the logs to gin.DefaultWriter even you set with GIN_MODE=release. By default gin.DefaultWriter = os.Stdout
 	r.Use(gin.Logger())
+	
+	// Recovery middleware recovers from any panics and writes a 500 if there was one.
 	r.Use(gin.Recovery())
 
 	// Per route middleware, you can add as many as you desire.
@@ -399,6 +415,8 @@ func main() {
 ### Model binding and validation
 
 To bind a request body into a type, use model binding. We currently support binding of JSON, XML and standard form values (foo=bar&boo=baz).
+
+Gin uses [**go-playground/validator.v8**](https://github.com/go-playground/validator) for validation. Check the full docs on tags usage [here](http://godoc.org/gopkg.in/go-playground/validator.v8#hdr-Baked_In_Validators_and_Tags).
 
 Note that you need to set the corresponding binding tag on all fields you want to bind. For example, when binding from JSON, set `json:"fieldname"`.
 
@@ -446,7 +464,43 @@ func main() {
 }
 ```
 
-### Bind Query String
+### Only Bind Query String
+
+`BindQuery` function only binds the query params and not the post data. See the [detail information](https://github.com/gin-gonic/gin/issues/742#issuecomment-315953017).
+
+```go
+package main
+
+import (
+	"log"
+
+	"github.com/gin-gonic/gin"
+)
+
+type Person struct {
+	Name    string `form:"name"`
+	Address string `form:"address"`
+}
+
+func main() {
+	route := gin.Default()
+	route.Any("/testing", startPage)
+	route.Run(":8085")
+}
+
+func startPage(c *gin.Context) {
+	var person Person
+	if c.BindQuery(&person) == nil {
+		log.Println("====== Only Bind By Query String ======")
+		log.Println(person.Name)
+		log.Println(person.Address)
+	}
+	c.String(200, "Success")
+}
+
+```
+
+### Bind Query String or Post Data
 
 See the [detail information](https://github.com/gin-gonic/gin/issues/742#issuecomment-264681292).
 
@@ -471,7 +525,7 @@ func startPage(c *gin.Context) {
 	var person Person
 	// If `GET`, only `Form` binding engine (`query`) used.
 	// If `POST`, first checks the `content-type` for `JSON` or `XML`, then uses `Form` (`form-data`).
-	// See more at https://github.com/gin-gonic/gin/blob/develop/binding/binding.go#L45
+	// See more at https://github.com/gin-gonic/gin/blob/master/binding/binding.go#L48
 	if c.Bind(&person) == nil {
 		log.Println(person.Name)
 		log.Println(person.Address)
@@ -479,6 +533,52 @@ func startPage(c *gin.Context) {
 
 	c.String(200, "Success")
 }
+```
+
+### Bind HTML checkboxes
+
+See the [detail information](https://github.com/gin-gonic/gin/issues/129#issuecomment-124260092)
+
+main.go
+
+```go
+...
+
+type myForm struct {
+    Colors []string `form:"colors[]"`
+}
+
+...
+
+func formHandler(c *gin.Context) {
+    var fakeForm myForm
+    c.Bind(&fakeForm)
+    c.JSON(200, gin.H{"color": fakeForm.Colors})
+}
+
+...
+
+```
+
+form.html
+
+```html
+<form action="/" method="POST">
+    <p>Check some colors</p>
+    <label for="red">Red</label>
+    <input type="checkbox" name="colors[]" value="red" id="red" />
+    <label for="green">Green</label>
+    <input type="checkbox" name="colors[]" value="green" id="green" />
+    <label for="blue">Blue</label>
+    <input type="checkbox" name="colors[]" value="blue" id="blue" />
+    <input type="submit" />
+</form>
+```
+
+result:
+
+```
+{"color":["red","green","blue"]}
 ```
 
 ### Multipart/Urlencoded binding
@@ -558,6 +658,29 @@ func main() {
 	r.Run(":8080")
 }
 ```
+
+#### SecureJSON
+
+Using SecureJSON to prevent json hijacking. Default prepends `"while(1),"` to response body if the given struct is array values.
+
+```go
+func main() {
+	r := gin.Default()
+
+	// You can also use your own secure json prefix
+	// r.SecureJsonPrefix(")]}',\n")
+
+	r.GET("/someJSON", func(c *gin.Context) {
+		names := []string{"lena", "austin", "foo"}
+
+		// Will output  :   while(1);["lena","austin","foo"]
+		c.SecureJSON(http.StatusOK, names)
+	})
+
+	// Listen and serve on 0.0.0.0:8080
+	r.Run(":8080")
+}
+```  
 
 ### Serving static files
 
@@ -645,6 +768,8 @@ templates/users/index.tmpl
 {{ end }}
 ```
 
+#### Custom Template renderer
+
 You can also use your own html template render
 
 ```go
@@ -658,6 +783,8 @@ func main() {
 }
 ```
 
+#### Custom Delimiters
+
 You may use custom delims
 
 ```go
@@ -666,33 +793,44 @@ You may use custom delims
 	r.LoadHTMLGlob("/path/to/templates"))
 ```  
 
-#### Add custom template funcs
+#### Custom Template Funcs
+
+See the detail [example code](examples/template).
 
 main.go
 
 ```go
-	...
-	
-	func formatAsDate(t time.Time) string {
-		year, month, day := t.Date()
-		return fmt.Sprintf("%d/%02d/%02d", year, month, day)
-	}
-	
-	...
-	
-	router.SetFuncMap(template.FuncMap{
-		"formatAsDate": formatAsDate,
-	})
-	
-	...
-	
-	router.GET("/raw", func(c *Context) {
-		c.HTML(http.StatusOK, "raw.tmpl", map[string]interface{}{
-			"now": time.Date(2017, 07, 01, 0, 0, 0, 0, time.UTC),
-		})
-	})
-	
-	...
+import (
+    "fmt"
+    "html/template"
+    "net/http"
+    "time"
+
+    "github.com/gin-gonic/gin"
+)
+
+func formatAsDate(t time.Time) string {
+    year, month, day := t.Date()
+    return fmt.Sprintf("%d%02d/%02d", year, month, day)
+}
+
+func main() {
+    router := gin.Default()
+    router.Delims("{[{", "}]}")
+    router.SetFuncMap(template.FuncMap{
+        "formatAsDate": formatAsDate,
+    })
+    router.LoadHTMLFiles("./fixtures/basic/raw.tmpl")
+
+    router.GET("/raw", func(c *gin.Context) {
+        c.HTML(http.StatusOK, "raw.tmpl", map[string]interface{}{
+            "now": time.Date(2017, 07, 01, 0, 0, 0, 0, time.UTC),
+        })
+    })
+
+    router.Run(":8080")
+}
+
 ```
 
 raw.tmpl
@@ -994,7 +1132,7 @@ func main() {
 }
 ```
 
-## Users
+## Users  [![Sourcegraph](https://sourcegraph.com/github.com/gin-gonic/gin/-/badge.svg)](https://sourcegraph.com/github.com/gin-gonic/gin?badge)
 
 Awesome project lists using [Gin](https://github.com/gin-gonic/gin) web framework.
 

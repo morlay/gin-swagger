@@ -85,6 +85,8 @@ type Test2Request struct {
 	//
 	State test2.State `json:"state,string" in:"query" validate:"@string{ONE}"`
 	//
+	States []test2.State `json:"states" in:"query"`
+	//
 	StartTime test2.Date `json:"startTime,string" in:"query"`
 }
 

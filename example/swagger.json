@@ -222,6 +222,7 @@
           {
             "type": "array",
             "items": {
+              "x-go-validate": "@int8[-1,100]",
               "maximum": 100,
               "minimum": -1,
               "type": "integer",
@@ -284,6 +285,40 @@
             "x-go-named": "github.com/morlay/gin-swagger/example/test2.State",
             "x-go-validate": "@string{ONE}",
             "name": "state",
+            "in": "query",
+            "required": true
+          },
+          {
+            "type": "array",
+            "items": {
+              "x-enum-labels": [
+                "one",
+                "two",
+                "three",
+                "four"
+              ],
+              "x-enum-vals": [
+                1,
+                2,
+                3,
+                105
+              ],
+              "x-enum-values": [
+                "ONE",
+                "TWO",
+                "THREE",
+                "FOUR"
+              ],
+              "x-go-named": "github.com/morlay/gin-swagger/example/test2.State",
+              "x-go-validate": "@string{ONE}",
+              "enum": [
+                "ONE"
+              ],
+              "type": "string"
+            },
+            "collectionFormat": "csv",
+            "x-go-name": "States",
+            "name": "states",
             "in": "query",
             "required": true
           },

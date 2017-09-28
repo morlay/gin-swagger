@@ -208,6 +208,7 @@ func (op *OperationInfo) RenderReqDecl() string {
 				if parameter.Items != nil {
 					itemSchema := spec.Schema{}
 					itemSchema.Typed(parameter.Items.Type, parameter.Items.Format)
+					itemSchema.VendorExtensible = parameter.Items.VendorExtensible
 					schema.Items = &spec.SchemaOrArray{
 						Schema: &itemSchema,
 					}

@@ -29,12 +29,13 @@ type Pager struct {
 type SomeReq struct {
 	Pager
 	// ids
-	Ids       []int8 `json:"ids" in:"query" validate:"@int8[-1,100]"`
-	Id        int8   `json:"id" in:"query"`
-	Name      string `json:"name" in:"path"`
-	Is        Bool   `json:"is" in:"path"`
-	State     State  `json:"state" in:"query" validate:"@string{ONE}"`
-	StartTime Date   `json:"startTime" in:"query"`
+	Ids       []int8  `json:"ids" in:"query" validate:"@int8[-1,100]"`
+	Id        int8    `json:"id" in:"query"`
+	Name      string  `json:"name" in:"path"`
+	Is        Bool    `json:"is" in:"path"`
+	State     State   `json:"state" in:"query" validate:"@string{ONE}"`
+	States    []State `json:"states" in:"query" validate:"@string{ONE}"`
+	StartTime Date    `json:"startTime" in:"query"`
 }
 
 type ItemData struct {

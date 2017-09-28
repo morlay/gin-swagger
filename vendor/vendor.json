@@ -27,22 +27,22 @@
 			"revisionTime": "2017-01-09T09:34:21Z"
 		},
 		{
-			"checksumSHA1": "K7uFMVTdZTKI1XtUOY/QtrL7Jng=",
+			"checksumSHA1": "BmFay6NQtnL4uLPdqkwmrmVZYEk=",
 			"path": "github.com/gin-gonic/gin",
-			"revision": "22fc0284e3ae2101f44e8188dde8cad797ce51e6",
-			"revisionTime": "2017-07-05T02:42:56Z"
+			"revision": "3856206bd07d1a5627eb951e345fff25f9b6209c",
+			"revisionTime": "2017-08-17T04:18:50Z"
 		},
 		{
-			"checksumSHA1": "YVt5lqmGq95m5tFdiz5pr2BF1Jo=",
+			"checksumSHA1": "qqjlx9qLgTw1+t6uDDTBlCmT6DQ=",
 			"path": "github.com/gin-gonic/gin/binding",
-			"revision": "22fc0284e3ae2101f44e8188dde8cad797ce51e6",
-			"revisionTime": "2017-07-05T02:42:56Z"
+			"revision": "3856206bd07d1a5627eb951e345fff25f9b6209c",
+			"revisionTime": "2017-08-17T04:18:50Z"
 		},
 		{
-			"checksumSHA1": "M3FwiqpVbXwo9t2FyI5/gKxCDKY=",
+			"checksumSHA1": "BKtrc+GGYJT9NOPmiZ/OAqZNMps=",
 			"path": "github.com/gin-gonic/gin/render",
-			"revision": "22fc0284e3ae2101f44e8188dde8cad797ce51e6",
-			"revisionTime": "2017-07-05T02:42:56Z"
+			"revision": "3856206bd07d1a5627eb951e345fff25f9b6209c",
+			"revisionTime": "2017-08-17T04:18:50Z"
 		},
 		{
 			"checksumSHA1": "6dTGC5A1Y1xnv+JSi9z8S6JfnH0=",
@@ -57,10 +57,10 @@
 			"revisionTime": "2016-11-05T16:21:50Z"
 		},
 		{
-			"checksumSHA1": "aqXFT7Wc3P0PPGlel/lxVDj4bWg=",
+			"checksumSHA1": "x1yvWanIW3DJS8I5HMuN6CdZXDg=",
 			"path": "github.com/go-openapi/spec",
-			"revision": "9cf697d99bf904e29363382a2e8c23dde5c8d377",
-			"revisionTime": "2017-06-15T22:04:54Z"
+			"revision": "7abd5745472fff5eb3685386d5fb8bf38683154d",
+			"revisionTime": "2017-09-14T06:12:47Z"
 		},
 		{
 			"checksumSHA1": "Wz6dE9E9ZwCK4oWRr5lNazhgMY0=",
@@ -69,10 +69,10 @@
 			"revisionTime": "2017-06-06T14:27:51Z"
 		},
 		{
-			"checksumSHA1": "qlPUeFabwF4RKAOF1H+yBFU1Veg=",
+			"checksumSHA1": "yqF125xVSkmfLpIVGrLlfE05IUk=",
 			"path": "github.com/golang/protobuf/proto",
-			"revision": "6a1fa9404c0aebf36c879bc50152edcc953910d2",
-			"revisionTime": "2017-06-22T20:25:51Z"
+			"revision": "ab9f9a6dab164b7d1246e0e688b0ab7b94d8553e",
+			"revisionTime": "2017-08-16T00:15:14Z"
 		},
 		{
 			"checksumSHA1": "40vJyUB4ezQSn/NSadsKEOrudMc=",
@@ -184,34 +184,34 @@
 			"revisionTime": "2017-06-27T21:03:49Z"
 		},
 		{
-			"checksumSHA1": "p3gWsy4fQOSXGRMUHr3TnmVFias=",
+			"checksumSHA1": "8bP6iLolDGDRKAnx89Qb/OatWDE=",
 			"path": "golang.org/x/tools/go/ast/astutil",
-			"revision": "1b3bb8de7d39fe135abc674c1e6d642cce854d4a",
-			"revisionTime": "2017-06-29T19:41:28Z"
+			"revision": "3b1faeda9afbcba128c2d794b38ffe7982141139",
+			"revisionTime": "2017-09-01T15:45:22Z"
 		},
 		{
 			"checksumSHA1": "AnXFEvmaJ7w2Q7hWPcLUmCbPgq0=",
 			"path": "golang.org/x/tools/go/buildutil",
-			"revision": "1b3bb8de7d39fe135abc674c1e6d642cce854d4a",
-			"revisionTime": "2017-06-29T19:41:28Z"
+			"revision": "3b1faeda9afbcba128c2d794b38ffe7982141139",
+			"revisionTime": "2017-09-01T15:45:22Z"
 		},
 		{
-			"checksumSHA1": "aXtllsj+ZEheKoMt22s6hPTHdTM=",
+			"checksumSHA1": "ZpAR2KupZto/mWf9zu5e6IKDWt0=",
 			"path": "golang.org/x/tools/go/loader",
-			"revision": "1b3bb8de7d39fe135abc674c1e6d642cce854d4a",
-			"revisionTime": "2017-06-29T19:41:28Z"
+			"revision": "3b1faeda9afbcba128c2d794b38ffe7982141139",
+			"revisionTime": "2017-09-01T15:45:22Z"
 		},
 		{
-			"checksumSHA1": "39V1idWER42Lmcmg2Uy40wMzOlo=",
+			"checksumSHA1": "P/k5ZGf0lEBgpKgkwy++F7K1PSg=",
 			"path": "gopkg.in/go-playground/validator.v8",
-			"revision": "5f57d2222ad794d0dffb07e664ea05e2ee07d60c",
-			"revisionTime": "2016-07-18T13:41:25Z"
+			"revision": "5f1438d3fca68893a817e4a66806cea46a9e4ebf",
+			"revisionTime": "2017-07-30T05:02:35Z"
 		},
 		{
-			"checksumSHA1": "fALlQNY1fM99NesfLJ50KguWsio=",
+			"checksumSHA1": "RDJpJQwkF012L6m/2BJizyOksNw=",
 			"path": "gopkg.in/yaml.v2",
-			"revision": "cd8b52f8269e0feb286dfeef29f8fe4d5b397e0b",
-			"revisionTime": "2017-04-07T17:21:22Z"
+			"revision": "eb3733d160e74a9c7e442f435eb3bea458e1d19f",
+			"revisionTime": "2017-08-12T16:00:11Z"
 		}
 	],
 	"rootPath": "github.com/morlay/gin-swagger"
