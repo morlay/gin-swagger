@@ -60,7 +60,7 @@ func (scanner *HttpErrorScanner) Scan(prog *program.Program) {
 						for id, obj := range pkgInfo.Uses {
 							if tpeFunc.Scope() != nil && tpeFunc.Scope().Contains(id.Pos()) {
 								if constObj, ok := obj.(*types.Const); ok {
-									if program.IsTypeName(obj.Type(), http_error_code.HttpErrorVarName) {
+									if http_error_code.IsHttpCode(obj.Type()) {
 										code := constObj.Val().String()
 										if httpErrorValue, ok := httpErrorMap[code]; ok {
 											if scanner.ErrorType == nil {

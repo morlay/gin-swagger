@@ -502,7 +502,7 @@ func (scanner *Scanner) pickOperationInfo(operation *spec.Operation, scope *type
 					hasGinContext = true
 				}
 
-				if program.IsTypeName(tpe, http_error_code.HttpErrorVarName) {
+				if http_error_code.IsHttpCode(tpe) {
 					isHttpErrorMethodScope = true
 				}
 			}
@@ -553,7 +553,7 @@ func (scanner *Scanner) pickOperationInfo(operation *spec.Operation, scope *type
 					if len(scanner.HttpErr.HttpErrors) > 0 {
 						constObj := obj.(*types.Const)
 
-						if !isHttpErrorMethodScope && program.IsTypeName(obj.Type(), http_error_code.HttpErrorVarName) {
+						if !isHttpErrorMethodScope && http_error_code.IsHttpCode(obj.Type()) {
 							if httpErrorValue, ok := scanner.HttpErr.HttpErrors[obj.Pkg()][constObj.Val().String()]; ok {
 								scanner.writeResponseByHttpErrorValue(operation, httpErrorValue.ToStatus(), httpErrorValue.ToDesc())
 							}

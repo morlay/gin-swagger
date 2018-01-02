@@ -27,6 +27,11 @@ func NewErrorGenerator(packagePath string, errorRegisterMethod string) *ErrorGen
 }
 
 var HttpErrorVarName = "HttpErrorCode"
+var StatusErrorVarName = "StatusErrorCode"
+
+func IsHttpCode(tpe types.Type) bool {
+	return program.IsTypeName(tpe, HttpErrorVarName) || program.IsTypeName(tpe, StatusErrorVarName)
+}
 
 type HttpErrorValue struct {
 	Name         string
@@ -69,7 +74,7 @@ func CollectErrors(p *program.Program) map[*types.Package]map[string]HttpErrorVa
 	for _, pkgInfo := range p.AllPackages {
 		for ident, obj := range pkgInfo.Defs {
 			if constObj, ok := obj.(*types.Const); ok {
-				if program.IsTypeName(obj.Type(), HttpErrorVarName) {
+				if IsHttpCode(obj.Type()) {
 					name := constObj.Name()
 					if name == "_" {
 						continue
