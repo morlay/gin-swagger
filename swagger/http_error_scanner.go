@@ -69,6 +69,9 @@ func (scanner *HttpErrorScanner) Scan(prog *program.Program) {
 													if funcType.Name() == "ToError" {
 														scanner.ErrorType = method.Results().At(0).Type()
 													}
+													if funcType.Name() == "StatusError" {
+														scanner.ErrorType = method.Results().At(0).Type()
+													}
 												}
 											}
 
