@@ -352,7 +352,7 @@ func (scanner *Scanner) writeParameter(operation *spec.Operation, t types.Type) 
 
 					if location == "body" {
 						param = scanner.getBodyParameter(fieldType)
-					} else if location == "formData" && fieldType.String() == "mime/multipart.FileHeader" {
+					} else if location == "formData" && strings.Contains(fieldType.String(), "mime/multipart.FileHeader") {
 						param.Typed("file", "")
 						param.WithLocation(location)
 						param.Named(name)
