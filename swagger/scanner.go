@@ -326,6 +326,9 @@ func (scanner *Scanner) writeParameter(operation *spec.Operation, t types.Type) 
 			} else {
 				locationTag := structFieldTags.Get("in")
 				name, flags := getJSONNameAndFlags(structFieldTags.Get("json"))
+				if name == "" {
+					name, flags = getJSONNameAndFlags(structFieldTags.Get("name"))
+				}
 
 				locations := strings.Split(locationTag, ",")
 
@@ -343,7 +346,7 @@ func (scanner *Scanner) writeParameter(operation *spec.Operation, t types.Type) 
 					if fieldName == "Body" {
 						name = "body"
 					} else {
-						panic(fmt.Errorf("missing tag `json` for %s", fieldName))
+						panic(fmt.Errorf("missing tag `json` or `name` for %s", fieldName))
 					}
 				}
 
